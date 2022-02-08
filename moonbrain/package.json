@@ -1,0 +1,28 @@
+{
+  "name": "moonbrain",
+  "version": "0.0.1",
+  "type": "module",
+  "description": "Convert org mode roam notes to structure and vice versa",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "org",
+    "roam",
+    "zettelkasten"
+  ],
+  "author": "me",
+  "license": "MIT",
+  "dependencies": {
+    "orga": "^3.2.1",
+    "rehype-stringify": "^9.0.3",
+    "to-vfile": "^7.2.3",
+    "unified": "^9.2.2",
+    "uniorg-extract-keywords": "^0.4.5",
+    "uniorg-parse": "^0.4.5",
+    "uniorg-rehype": "^0.4.8",
+    "vfile": "^4.2.1"
+  }
+}
