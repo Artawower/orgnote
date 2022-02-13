@@ -9,6 +9,7 @@ specifiers:
   ts-node: 10.5.0
   typescript: 4.5.5
   unified: 9.2.2
+  uniorg: ^0.4.0
   uniorg-extract-keywords: 0.4.5
   uniorg-parse: 0.4.5
   uniorg-rehype: 0.4.8
@@ -19,6 +20,7 @@ dependencies:
   rehype-stringify: 9.0.3
   to-vfile: 6.1.0
   unified: 9.2.2
+  uniorg: 0.4.0
   uniorg-extract-keywords: 0.4.5
   uniorg-parse: 0.4.5
   uniorg-rehype: 0.4.8
@@ -351,6 +353,10 @@ packages:
     dependencies:
       hastscript: 6.0.0
       unist-builder: 2.0.3
+    dev: false
+
+  /uniorg/0.4.0:
+    resolution: {integrity: sha512-J2Qf7ZYo8AHovMiYfdL1Uqr1HMthEMFIS7C3/7LsTQAuohnzwzC57bT+8c5zu0AOSPPhf6EvL76uNqQ11k4rqQ==}
     dev: false
 
   /unist-builder/2.0.3:

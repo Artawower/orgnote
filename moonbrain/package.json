@@ -8,7 +8,11 @@
     "start": "node --loader ts-node/esm src/index.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": ["org", "roam", "zettelkasten"],
+  "keywords": [
+    "org",
+    "roam",
+    "zettelkasten"
+  ],
   "author": "me",
   "license": "MIT",
   "dependencies": {
@@ -16,6 +20,7 @@
     "rehype-stringify": "9.0.3",
     "to-vfile": "6.1.0",
     "unified": "9.2.2",
+    "uniorg": "^0.4.0",
     "uniorg-extract-keywords": "0.4.5",
     "uniorg-parse": "0.4.5",
     "uniorg-rehype": "0.4.8",
