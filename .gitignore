@@ -3,3 +3,4 @@
 .AppleDouble
 .LSOverride
 node_modules
+.pnpm-debug.log

@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: identifier qweqwe
+:ACTIVE: true
 :END:
 
 #+TITLE: Test article
@@ -34,3 +35,10 @@ and so on
 
 | hello | amma | boy |
 |   123 |  123 | qwe |
+
+
+
+#+BEGIN_CENTER
+Everything should be made as simple as possible, \\
+but not any simpler
+#+END_CENTER
