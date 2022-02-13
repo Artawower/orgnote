@@ -1,0 +1,5 @@
+#+TITLE: Zettelkasten.
+
+What is this project about? Its a blog, note and whole system for integration between my org roam inside emacs and other parts of my life, like mobile phone and laptop. The main idea of the project is shareing of knowledge base and update this from alternatives sources.
+
+I'am deeply inspired by Zettelkasten's approach, its a really usefull tool for learning and envolving. And i hope its also will be usefull for you.
