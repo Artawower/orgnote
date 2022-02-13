@@ -1,6 +1,7 @@
 :PROPERTIES:
 :ID: identifier qweqwe
 :ACTIVE: true
+:CATEGORY: article
 :END:
 
 #+TITLE: Test article

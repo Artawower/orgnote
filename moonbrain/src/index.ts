@@ -80,6 +80,16 @@ const makeOrgTreeFromFile = (filePath: string): Article => {
   return article;
 };
 
+const debugPrettyPrint = (o: OrgData) => {
+  if (!o.children) {
+    console.log(o);
+    return;
+  }
+  o.children.forEach((c) => debugPrettyPrint(c));
+};
+
 export { collectOrgNodes, makeOrgTreeFromFile };
 
-console.log(makeOrgTreeFromFile('./miscellaneous/test1.org'));
+debugPrettyPrint(readOrgFileContent('./miscellaneous/test1.org'));
+
+// console.log(makeOrgTreeFromFile('./miscellaneous/test1.org'));
