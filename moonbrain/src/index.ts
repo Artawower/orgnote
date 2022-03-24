@@ -1,14 +1,11 @@
 import { parse } from 'uniorg-parse/lib/parser.js';
-import { OrgData, GreaterElementType, ElementType, PropertyDrawer } from 'uniorg';
+import { ElementType, GreaterElementType, OrgData } from 'uniorg';
 import toVFile from 'to-vfile';
-import { Article, ArticleMeta, ArticleProperties } from './models';
-import { normalizeOrgValue } from './tools';
+import { Note, collectNotes, extractArticleMeta } from './parser/index';
 
 const collectOrgNodes = (nodePath: string) => {};
 
-const PROPERTY_ID = 'id';
-
-const makeOrgTree = (orgContent: string): Article => {
+const makeOrgTree = (orgContent: string): Note => {
   return null;
 };
 
@@ -18,78 +15,27 @@ const readOrgFileContent = (filePath: string): OrgData => {
   return parse(orgFile);
 };
 
-const extractArticleMeta = (orgContent: OrgData): { id: string; meta: ArticleMeta } => {
-  let id: string;
-  const headings: string[] = [];
-  let title: string;
-  let description: string;
-  const properties: ArticleProperties = {};
-  const linkedArticles: string[] = [];
-
-  if (!orgContent?.children) {
-    return;
-  }
-
-  // TODO: add custom enum type instead of string, so dirty
-  const handlers: { [key in GreaterElementType['type']]?: (data: GreaterElementType) => void } = {
-    // Main document properties
-    'property-drawer': (c: PropertyDrawer) =>
-      c.children.forEach((p) => {
-        if (p.key.toLowerCase() === PROPERTY_ID) {
-          id = p.value;
-          return;
-        }
-        properties[p.key.toLowerCase()] = normalizeOrgValue(p.value);
-      }),
-  };
-
-  orgContent.children.forEach((c) => {
-    // TODO: don't check all nested fields when article hasn't id or inactive
-    handlers[c.type]?.(c);
-  });
-
-  // TODO: every node could container nested node
-  //  ...
-  return {
-    id,
-    meta: {
-      headings,
-      description,
-      title,
-      linkedArticles,
-      properties,
-    },
-  };
-};
-
-const makeOrgTreeFromFile = (filePath: string): Article => {
+const collectNotesFromFile = (filePath: string): Note[] => {
   const orgContent = readOrgFileContent(filePath);
-  const { id, meta } = extractArticleMeta(orgContent);
+  const notes = collectNotes(orgContent);
 
-  if (!id) {
-    console.warn("Article doesn't container id! Its very necessary for zettelkasten");
-    return;
-  }
-
-  // const article: Article = {
-  const article: Article = {
-    content: orgContent,
-    id,
-    meta,
-  };
-  return article;
+  return notes;
 };
 
-const debugPrettyPrint = (o: OrgData) => {
+// TODO: type it
+const debugPrettyPrint = (o: { children: any[] }, level: number = 0) => {
+  console.log(' '.repeat(level), o);
   if (!o.children) {
-    console.log(o);
     return;
   }
-  o.children.forEach((c) => debugPrettyPrint(c));
+  o.children.forEach((c) => debugPrettyPrint(c, level + 2));
 };
 
-export { collectOrgNodes, makeOrgTreeFromFile };
+export { collectOrgNodes, collectNotesFromFile };
 
 debugPrettyPrint(readOrgFileContent('./miscellaneous/test1.org'));
+// console.log(readOrgFileContent('./miscellaneous/test1.org'));
+console.log('-------');
 
+// console.log(JSON.stringify(collectNotesFromFile('./miscellaneous/test1.org'), null, 2));
 // console.log(makeOrgTreeFromFile('./miscellaneous/test1.org'));

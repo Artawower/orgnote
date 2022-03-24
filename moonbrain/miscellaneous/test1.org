@@ -8,14 +8,13 @@
 #+DESCRIPTION: This is description!
 #+FILETAGS: :tag1:tag2:tag3:
 #+STARTUP: show2levels
-#+ID: identifier
 #+ACTIVE:
 
 
 * Headline 1
 
 Some text
-** HEadline 2
+** Headline 2
 Another one text
 
 
@@ -43,3 +42,8 @@ and so on
 Everything should be made as simple as possible, \\
 but not any simpler
 #+END_CENTER
+
+
+#+BEGIN_SRC typescript
+console.log('Hello world')
+#+END_SRC

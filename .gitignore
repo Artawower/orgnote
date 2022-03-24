@@ -4,3 +4,4 @@
 .LSOverride
 node_modules
 .pnpm-debug.log
+node_modules/*
