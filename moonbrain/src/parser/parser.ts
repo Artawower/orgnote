@@ -38,6 +38,7 @@ const newEmptyNote = (): Partial<Note> => {
   return {
     meta: {
       headings: [],
+      tags: [],
     },
   };
 };
@@ -47,8 +48,10 @@ export const collectNotes = (content: OrgData): Note[] => {
   // TODO: master real type
   const note: Note = chunks.reduce((acc: Note, cn: NoteNodeChunk) => {
     const headings = cn.headings ?? [];
+    const tags = cn.tags ?? [];
     acc.meta.headings = [...acc.meta.headings, ...headings];
     acc.meta.title = acc.meta.title ?? cn.title;
+    acc.meta.tags = [...acc.meta.tags, ...tags];
     return acc;
   }, newEmptyNote());
 

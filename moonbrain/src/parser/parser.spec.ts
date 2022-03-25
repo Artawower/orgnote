@@ -150,4 +150,36 @@ describe('Parser tests', () => {
     const firstNote = parsedNotes[0];
     expect(firstNote.meta.title).toEqual('123');
   });
+
+  it('Parser should collect tags', () => {
+    const parsedNotes = collectNotes(parsedOrgDocument1);
+    const firstNote = parsedNotes[0];
+    expect(firstNote.meta.tags).toEqual(['tag1', 'tag2', 'tag3']);
+  });
+
+  it('Parser should merge tags from different placements', () => {
+    const parsedNotes = collectNotes(
+      parse(`
+#+FILETAGS: :tag1:tag2:
+#+TITLE: Hellow
+
+*Some text*
+
+#+FILETAGS: :tag3:tag4:`)
+    );
+    const firstNote = parsedNotes[0];
+    expect(firstNote.meta.tags).toEqual(['tag1', 'tag2', 'tag3', 'tag4']);
+  });
+
+  it('Parser should collect tags with spaces', () => {
+    const parsedNotes = collectNotes(parse('#+FILETAGS: :tag 1:tag 2 and spaces:tag 3:'));
+    const firstNote = parsedNotes[0];
+    expect(firstNote.meta.tags).toEqual(['tag 1', 'tag 2 and spaces', 'tag 3']);
+  });
+
+  it('Parser should not collect tag in note without tags', () => {
+    const parsedNotes = collectNotes(parsedOrgDocument2);
+    const firstNote = parsedNotes[0];
+    expect(firstNote.meta.tags).toEqual([]);
+  });
 });

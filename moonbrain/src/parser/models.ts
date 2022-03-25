@@ -26,6 +26,7 @@ export interface NoteMeta {
   keywords?: NoteKeywords;
   externalLinks?: string[];
   startup?: string;
+  tags?: string[];
 }
 
 export interface LinkedNote {
