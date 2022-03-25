@@ -177,9 +177,48 @@ describe('Parser tests', () => {
     expect(firstNote.meta.tags).toEqual(['tag 1', 'tag 2 and spaces', 'tag 3']);
   });
 
+  // TODO: master  add test for merge tags from multiline
+
   it('Parser should not collect tag in note without tags', () => {
     const parsedNotes = collectNotes(parsedOrgDocument2);
     const firstNote = parsedNotes[0];
     expect(firstNote.meta.tags).toEqual([]);
+  });
+
+  it('Parser should collect description', () => {
+    const parsedNotes = collectNotes(parsedOrgDocument1);
+    const firstNote = parsedNotes[0];
+    expect(firstNote.meta.description).toEqual('This is description!');
+  });
+
+  it('Parser should collect description', () => {
+    const parsedNotes = collectNotes(parsedOrgDocument2);
+    const firstNote = parsedNotes[0];
+    expect(firstNote.meta.description).toBeUndefined();
+  });
+
+  it('Parser should collect empty description field', () => {
+    const parsedNotes = collectNotes(parse(`#+DESCRIPTION:`));
+    const firstNote = parsedNotes[0];
+    expect(firstNote.meta.description).toEqual('');
+
+    const parsedNotes2 = collectNotes(parse(`#+DESCRIPTION:`));
+    const firstNote2 = parsedNotes2[0];
+    expect(firstNote2.meta.description).toEqual('');
+  });
+
+  it('Parser should collect only first description as meta', () => {
+    const parsedNotes = collectNotes(
+      parse(`
+#+TITLE: Hello world
+#+DESCRIPTION: first description
+
+*Heading
+
+#+DESCRIPTION: second description
+`)
+    );
+    const firstNote = parsedNotes[0];
+    expect(firstNote.meta.description).toEqual('first description');
   });
 });
