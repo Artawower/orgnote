@@ -60,21 +60,44 @@ const parsedOrgDocument2 = parse(`
 * A lot of
 ** Nested
 ** Fields
-*** 4
-**** 5 level
-***** 6 level
+*** 3
+**** 4 level
+***** 5 level
+* Second level 1
 `);
+
+const parsedOrgDocumentWithoutHeading = parse(`
+
+*Hello its me*
+/and its a italic text/ and normal text and [[link][https://google.com]]`);
 
 describe('Parser tests', () => {
   it('Parser should collect headings', () => {
     const parsedNotes = collectNotes(parsedOrgDocument1);
     const firstNote = parsedNotes[0];
-    expect(firstNote.meta.headings).toEqual(['Headline 1', 'Headline 2']);
+    expect(firstNote.meta.headings).toEqual([
+      { text: 'Headline 1', level: 1 },
+      { text: 'Headline 2', level: 2 },
+    ]);
   });
 
   it('Parser should collect nested headings', () => {
     const parsedNotes = collectNotes(parsedOrgDocument2);
     const firstNote = parsedNotes[0];
-    expect(firstNote.meta.headings).toEqual(['A lot of', 'Nested', 'Fields', '4', '5 level', '6 level']);
+    expect(firstNote.meta.headings).toEqual([
+      { text: 'A lot of', level: 1 },
+      { text: 'Nested', level: 2 },
+      { text: 'Fields', level: 2 },
+      { text: '3', level: 3 },
+      { text: '4 level', level: 4 },
+      { text: '5 level', level: 5 },
+      { text: 'Second level 1', level: 1 },
+    ]);
+  });
+
+  it('Parser without heading should return empty list', () => {
+    const parsedNotes = collectNotes(parsedOrgDocumentWithoutHeading);
+    const firstNote = parsedNotes[0];
+    expect(firstNote.meta.headings).toEqual([]);
   });
 });

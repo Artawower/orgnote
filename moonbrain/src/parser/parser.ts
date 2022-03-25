@@ -1,31 +1,17 @@
 import { ElementType, GreaterElementType, Headline, OrgData } from 'uniorg';
-import { Note } from './models';
+import { Note, NoteHeading } from './models';
 
 interface NoteNodeChunk {
   notes?: Note[];
-  headings: string[];
+  headings: NoteHeading[];
 }
 
-const sectionHandler = (content: OrgData): NoteNodeChunk[] => {
-  let chunks: NoteNodeChunk[] = [];
-  content.children.forEach((c) => {
-    // TODO: recursive collect chunks here
-    const data = handlers[c.type]?.(c);
-    if (!data) {
-      return;
-    }
-    chunks = [...chunks, ...data];
-  });
-  return chunks;
-};
+const sectionHandler = (content: OrgData): NoteNodeChunk[] =>
+  content.children.reduce((chunks, content) => [...chunks, ...(handlers[content.type]?.(content) || [])], []);
 
-const headlineHandler = (content: Headline): NoteNodeChunk[] => {
-  return [
-    {
-      headings: [content.rawValue],
-    },
-  ];
-};
+const headlineHandler = (content: Headline): NoteNodeChunk[] => [
+  { headings: [{ text: content.rawValue, level: content.level }] },
+];
 
 type HandlerType = GreaterElementType & ElementType;
 
@@ -35,23 +21,21 @@ const handlers: { [key in HandlerType['type']]?: (data: GreaterElementType) => N
   headline: headlineHandler,
 };
 
+const newEmptyNote = (): Partial<Note> => {
+  return {
+    meta: {
+      headings: [],
+    },
+  };
+};
+
 export const collectNotes = (content: OrgData): Note[] => {
   const chunks = handlers['section'](content);
-
   // TODO: master real type
-  const note: Note = chunks.reduce<any>(
-    (acc, cn) => {
-      if (!cn.headings) {
-        return;
-      }
-      if (!acc.meta.headings) {
-        acc.meta.headings = [];
-      }
-      acc.meta.headings = [...acc.meta.headings, ...cn.headings];
-      return acc;
-    },
-    { meta: {} }
-  );
+  const note: Note = chunks.reduce((acc: Note, cn: NoteNodeChunk) => {
+    acc.meta.headings = [...acc.meta.headings, ...cn.headings];
+    return acc;
+  }, newEmptyNote());
 
   return [note];
 };

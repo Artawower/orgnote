@@ -9,11 +9,16 @@ export interface NoteKeywords {
   [key: string]: string | boolean | number;
 }
 
+export interface NoteHeading {
+  level: number;
+  text: string;
+}
+
 export interface NoteMeta {
   previewImg?: string;
   title?: string;
   description?: string;
-  headings?: string[];
+  headings: NoteHeading[];
   // TODO: temporary string
   linkedArticles?: string[];
   // TODO: think about whether this properties is needed
