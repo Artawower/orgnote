@@ -100,4 +100,54 @@ describe('Parser tests', () => {
     const firstNote = parsedNotes[0];
     expect(firstNote.meta.headings).toEqual([]);
   });
+
+  it('Parser should extract correct title', () => {
+    const parsedNotes = collectNotes(parsedOrgDocument1);
+    const firstNote = parsedNotes[0];
+    expect(firstNote.meta.title).toEqual('Test article');
+  });
+
+  it('Parser should not collect title from document without title', () => {
+    const parsedNotes = collectNotes(parsedOrgDocument2);
+    const firstNote = parsedNotes[0];
+    expect(firstNote.meta.title).toBeUndefined();
+  });
+
+  it('Parser should collect only first title as the meta info', () => {
+    const parsedNotes = collectNotes(
+      parse(`
+#+TITLE: Hey
+#+DESCRIPTION: 123
+
+* Some heading
+** Another one
+
+#+TITLE: second title
+`)
+    );
+    const firstNote = parsedNotes[0];
+    expect(firstNote.meta.title).toEqual('Hey');
+  });
+
+  it('Parser should collect title that placed not at start of the document', () => {
+    const parsedNotes = collectNotes(
+      parse(`
+      * Hello
+      /I am a roam note/
+
+      - List 3
+      - list 4
+
+      #+TITLE: MY NOTE 1.
+  `)
+    );
+    const firstNote = parsedNotes[0];
+    expect(firstNote.meta.title).toEqual('MY NOTE 1.');
+  });
+
+  it('Parser should collect title that consist only from numbers', () => {
+    const parsedNotes = collectNotes(parse(`#+TITLE: 123`));
+    const firstNote = parsedNotes[0];
+    expect(firstNote.meta.title).toEqual('123');
+  });
 });
