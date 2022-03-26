@@ -1,5 +1,5 @@
 import { Keyword } from 'orga';
-import { ElementType, GreaterElementType, Headline, Link, OrgData, Text } from 'uniorg';
+import { ElementType, GreaterElementType, Headline, Link, NodeProperty, OrgData, Text } from 'uniorg';
 import { NoteLink, Note, NoteHeading } from './models';
 import { isTrue } from './tools';
 
@@ -14,6 +14,7 @@ interface NoteNodeChunk {
   active?: boolean;
   externalLinks?: NoteLink[];
   internalLinks?: NoteLink[];
+  id?: string;
 }
 
 const sectionHandler = (content: OrgData): NoteNodeChunk[] =>
@@ -27,7 +28,6 @@ const keywordHandlers: { [key: string]: (data: Keyword) => NoteNodeChunk[] } = {
   title: (content: Keyword) => [{ title: content.value }],
   filetags: (content: Keyword) => [{ tags: content.value.split(FILETAGS_DEVIDER).filter((v) => v) }],
   description: (content: Keyword) => [{ description: content.value }],
-  active: (content: Keyword) => [{ active: isTrue(content.value) }],
 };
 
 const keywordHandler = (content: Keyword) => keywordHandlers[content.key.toLocaleLowerCase()]?.(content);
@@ -47,6 +47,14 @@ const linkHandler = (link: Link): NoteNodeChunk[] => [
   },
 ];
 
+const propertiesHandlers: { [key: string]: (property: NodeProperty) => NoteNodeChunk[] } = {
+  active: (property: NodeProperty) => [{ active: isTrue(property.value) }],
+  id: (property: NodeProperty) => [{ id: property.value }],
+};
+
+const propertyHandler = (property: NodeProperty): NoteNodeChunk[] =>
+  propertiesHandlers[property.key.toLocaleLowerCase()]?.(property);
+
 type HandlerType = GreaterElementType & ElementType;
 
 const handlers: { [key in HandlerType['type']]?: (data: GreaterElementType) => NoteNodeChunk[] } = {
@@ -55,7 +63,9 @@ const handlers: { [key in HandlerType['type']]?: (data: GreaterElementType) => N
   headline: headlineHandler,
   keyword: keywordHandler,
   link: linkHandler,
-  paragraph: (content: OrgData) => sectionHandler(content),
+  paragraph: sectionHandler,
+  'property-drawer': sectionHandler,
+  'node-property': propertyHandler,
 };
 
 const newEmptyNote = (): Partial<Note> => {
@@ -77,16 +87,15 @@ export const collectNotes = (content: OrgData): Note[] => {
     const tags = cn.tags ?? [];
     const externalLinks = cn.externalLinks ?? [];
     const internalLinks = cn.internalLinks ?? [];
-    // console.log('🦄: [line 69][parser.ts] [35mcn.externalLinks: ', JSON.stringify(cn.externalLinks));
-    // console.log('---------');
 
     acc.meta.headings = [...acc.meta.headings, ...headings];
-    acc.meta.title = acc.meta.title ?? cn.title;
-    acc.meta.description = acc.meta.description ?? cn.description;
-    acc.meta.active = acc.meta.active ?? cn.active;
+    acc.meta.title ??= cn.title;
+    acc.meta.description ??= cn.description;
+    acc.meta.active ??= cn.active;
     acc.meta.tags = [...acc.meta.tags, ...tags];
     acc.meta.externalLinks = [...acc.meta.externalLinks, ...externalLinks];
     acc.meta.linkedArticles = [...acc.meta.linkedArticles, ...internalLinks];
+    acc.id ??= cn.id;
 
     return acc;
   }, newEmptyNote());

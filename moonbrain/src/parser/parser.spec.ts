@@ -5,7 +5,7 @@ import { collectNotes } from './index';
 const orgDocument1 = `
 :PROPERTIES:
 :ID: identifier qweqwe
-:ACTIVE: true
+:ACTIVE:
 :CATEGORY: article
 :END:
 
@@ -13,7 +13,6 @@ const orgDocument1 = `
 #+DESCRIPTION: This is description!
 #+FILETAGS: :tag1:tag2:tag3:
 #+STARTUP: show2levels
-#+ACTIVE:
 
 
 * Headline 1
@@ -61,7 +60,9 @@ console.log('Hello world')
 const parsedOrgDocument1 = parse(orgDocument1);
 const parsedOrgDocument2 = parse(`
 
-#+ACTIVE: true
+:PROPERTIES:
+:ACTIVE: true
+:END:
 
 * A lot of
 ** Nested
@@ -241,19 +242,34 @@ describe('Parser tests', () => {
   });
 
   it('Parser shound not recognize the note as active with random content', () => {
-    const parsedNotes = collectNotes(parse('#+ACTIVE: blabla'));
+    const parsedNotes = collectNotes(
+      parse(`
+:PROPERTIES:
+:ACTIVE: blabla
+:END:`)
+    );
     const firstNote = parsedNotes[0];
     expect(firstNote.meta.active).toEqual(false);
   });
 
   it('Parser shound not recognize the note as active with empty string', () => {
-    const parsedNotes = collectNotes(parse('#+ACTIVE:'));
+    const parsedNotes = collectNotes(
+      parse(`
+:PROPERTIES:
+:ACTIVE:
+:END:`)
+    );
     const firstNote = parsedNotes[0];
     expect(firstNote.meta.active).toEqual(false);
   });
 
   it('Parser shound recognize the note as active with yes keyword', () => {
-    const parsedNotes = collectNotes(parse('#+ACTIVE:yes'));
+    const parsedNotes = collectNotes(
+      parse(`
+:PROPERTIES:
+:ACTIVE: yes
+:END:`)
+    );
     const firstNote = parsedNotes[0];
     expect(firstNote.meta.active).toEqual(true);
   });
@@ -306,5 +322,12 @@ Another one text
     const firstNote = parsedNotes[0];
 
     expect(firstNote.meta.linkedArticles).toEqual([]);
+  });
+
+  it('Parser should collect id', () => {
+    const parsedNotes = collectNotes(parsedOrgDocument1);
+    const firstNote = parsedNotes[0];
+
+    expect(firstNote.id).toEqual('identifier qweqwe');
   });
 });
