@@ -79,7 +79,7 @@ const newEmptyNote = (): Partial<Note> => {
   };
 };
 
-export const collectNotes = (content: OrgData): Note => {
+export const collectNote = (content: OrgData): Note => {
   const chunks = handlers['section'](content);
   // TODO: master real type
   const note: Note = chunks.reduce((acc: Note, cn: NoteNodeChunk) => {
