@@ -20,7 +20,11 @@ const orgDocument1 = `
 
 Some text
 ** Headline 2
+ [[https://google.com][Its a link]]
 Another one text
+
+
+ [[https://du-blog.ru][another link]]
 
 
 *Bold text* - its a bold
@@ -252,5 +256,55 @@ describe('Parser tests', () => {
     const parsedNotes = collectNotes(parse('#+ACTIVE:yes'));
     const firstNote = parsedNotes[0];
     expect(firstNote.meta.active).toEqual(true);
+  });
+
+  it('Parser should collect all external links from document', () => {
+    const parsedNotes = collectNotes(parsedOrgDocument1);
+    const firstNote = parsedNotes[0];
+    // console.log('🦄: [line 268][parser.spec.ts] [35mfirstNote.meta: ', JSON.stringify(firstNote.meta, nil, 2));
+    expect(firstNote.meta.externalLinks).toEqual([
+      { name: 'Its a link', url: 'https://google.com' },
+      { name: 'another link', url: 'https://du-blog.ru' },
+    ]);
+  });
+
+  it('Parser should not collect internal link', () => {
+    const parsedNotes = collectNotes(
+      parse(`
+ [[https://google.com][Its a link]]
+Another one text
+
+ [[https://du-blog.ru][another link]]
+[[id:elisp][Elisp]]
+`)
+    );
+    const firstNote = parsedNotes[0];
+
+    expect(firstNote.meta.externalLinks).toEqual([
+      { name: 'Its a link', url: 'https://google.com' },
+      { name: 'another link', url: 'https://du-blog.ru' },
+    ]);
+  });
+
+  it('Parser should collect only internal link', () => {
+    const parsedNotes = collectNotes(
+      parse(`
+ [[https://google.com][Its a link]]
+Another one text
+
+ [[https://du-blog.ru][another link]]
+[[id:elisp][Elisp]]
+`)
+    );
+    const firstNote = parsedNotes[0];
+
+    expect(firstNote.meta.linkedArticles).toEqual([{ name: 'Elisp', url: 'id:elisp' }]);
+  });
+
+  it('Parser should container empty links lists', () => {
+    const parsedNotes = collectNotes(parsedOrgDocument2);
+    const firstNote = parsedNotes[0];
+
+    expect(firstNote.meta.linkedArticles).toEqual([]);
   });
 });

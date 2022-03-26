@@ -15,11 +15,14 @@
 
 Some text
 ** Headline 2
+ [[https://google.com][Its a link]]
 Another one text
 
 
+ [[https://du-blog.ru][another link]]
 *Bold text* - its a bold
 
+[[id:elisp][Elisp]]
 + list1
 + list2
 

@@ -1,4 +1,4 @@
-import { isTrue, normalizeStringValue } from './tools';
+import { isTrue, normalizeStringValue, trim } from './tools';
 
 describe('Tools test', () => {
   it('Should collect true value from org string', () => {

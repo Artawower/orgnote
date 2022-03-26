@@ -1,17 +1,11 @@
-export interface NoteProperties {
-  active?: boolean;
-  id?: string;
-  [key: string]: string | boolean | number;
-}
-
-export interface NoteKeywords {
-  title?: string;
-  [key: string]: string | boolean | number;
-}
-
 export interface NoteHeading {
   level: number;
   text: string;
+}
+
+export interface NoteLink {
+  url: string;
+  name: string;
 }
 
 export interface NoteMeta {
@@ -19,13 +13,9 @@ export interface NoteMeta {
   title?: string;
   description?: string;
   headings: NoteHeading[];
-  // TODO: temporary string
-  linkedArticles?: string[];
-  // TODO: think about whether this properties is needed
-  properties?: NoteProperties;
-  keywords?: NoteKeywords;
+  linkedArticles?: NoteLink[];
   active?: boolean;
-  externalLinks?: string[];
+  externalLinks?: NoteLink[];
   startup?: string;
   tags?: string[];
 }

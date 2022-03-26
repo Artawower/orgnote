@@ -1,6 +1,6 @@
 import { Keyword } from 'orga';
-import { ElementType, GreaterElementType, Headline, OrgData } from 'uniorg';
-import { Note, NoteHeading } from './models';
+import { ElementType, GreaterElementType, Headline, Link, OrgData, Text } from 'uniorg';
+import { NoteLink, Note, NoteHeading } from './models';
 import { isTrue } from './tools';
 
 const FILETAGS_DEVIDER = ':';
@@ -12,6 +12,8 @@ interface NoteNodeChunk {
   tags?: string[];
   description?: string;
   active?: boolean;
+  externalLinks?: NoteLink[];
+  internalLinks?: NoteLink[];
 }
 
 const sectionHandler = (content: OrgData): NoteNodeChunk[] =>
@@ -30,6 +32,21 @@ const keywordHandlers: { [key: string]: (data: Keyword) => NoteNodeChunk[] } = {
 
 const keywordHandler = (content: Keyword) => keywordHandlers[content.key.toLocaleLowerCase()]?.(content);
 
+const combineRawTextFromChildren = (children: Text[]) =>
+  children.reduce((entireRawText, currentChildren) => `${entireRawText}${currentChildren.value}`, '');
+
+/*
+ * determine link category (internal or external) by link
+ */
+const getLinkCategoryByType = (link: Link): 'externalLinks' | 'internalLinks' =>
+  link.linkType === 'id' ? 'internalLinks' : 'externalLinks';
+
+const linkHandler = (link: Link): NoteNodeChunk[] => [
+  {
+    [getLinkCategoryByType(link)]: [{ name: combineRawTextFromChildren(link.children as Text[]), url: link.rawLink }],
+  },
+];
+
 type HandlerType = GreaterElementType & ElementType;
 
 const handlers: { [key in HandlerType['type']]?: (data: GreaterElementType) => NoteNodeChunk[] } = {
@@ -37,6 +54,8 @@ const handlers: { [key in HandlerType['type']]?: (data: GreaterElementType) => N
   section: sectionHandler,
   headline: headlineHandler,
   keyword: keywordHandler,
+  link: linkHandler,
+  paragraph: (content: OrgData) => sectionHandler(content),
 };
 
 const newEmptyNote = (): Partial<Note> => {
@@ -44,6 +63,8 @@ const newEmptyNote = (): Partial<Note> => {
     meta: {
       headings: [],
       tags: [],
+      externalLinks: [],
+      linkedArticles: [],
     },
   };
 };
@@ -54,11 +75,19 @@ export const collectNotes = (content: OrgData): Note[] => {
   const note: Note = chunks.reduce((acc: Note, cn: NoteNodeChunk) => {
     const headings = cn.headings ?? [];
     const tags = cn.tags ?? [];
+    const externalLinks = cn.externalLinks ?? [];
+    const internalLinks = cn.internalLinks ?? [];
+    // console.log('🦄: [line 69][parser.ts] [35mcn.externalLinks: ', JSON.stringify(cn.externalLinks));
+    // console.log('---------');
+
     acc.meta.headings = [...acc.meta.headings, ...headings];
     acc.meta.title = acc.meta.title ?? cn.title;
     acc.meta.description = acc.meta.description ?? cn.description;
     acc.meta.active = acc.meta.active ?? cn.active;
     acc.meta.tags = [...acc.meta.tags, ...tags];
+    acc.meta.externalLinks = [...acc.meta.externalLinks, ...externalLinks];
+    acc.meta.linkedArticles = [...acc.meta.linkedArticles, ...internalLinks];
+
     return acc;
   }, newEmptyNote());
 
