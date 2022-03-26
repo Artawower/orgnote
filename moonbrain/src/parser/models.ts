@@ -24,6 +24,7 @@ export interface NoteMeta {
   // TODO: think about whether this properties is needed
   properties?: NoteProperties;
   keywords?: NoteKeywords;
+  active?: boolean;
   externalLinks?: string[];
   startup?: string;
   tags?: string[];

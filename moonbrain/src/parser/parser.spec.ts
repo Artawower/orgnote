@@ -57,6 +57,8 @@ console.log('Hello world')
 const parsedOrgDocument1 = parse(orgDocument1);
 const parsedOrgDocument2 = parse(`
 
+#+ACTIVE: true
+
 * A lot of
 ** Nested
 ** Fields
@@ -220,5 +222,35 @@ describe('Parser tests', () => {
     );
     const firstNote = parsedNotes[0];
     expect(firstNote.meta.description).toEqual('first description');
+  });
+
+  it('Parser shound not recognize the note as active', () => {
+    const parsedNotes = collectNotes(parsedOrgDocument1);
+    const firstNote = parsedNotes[0];
+    expect(firstNote.meta.active).toEqual(false);
+  });
+
+  it('Parser shound recognize the note as active', () => {
+    const parsedNotes = collectNotes(parsedOrgDocument2);
+    const firstNote = parsedNotes[0];
+    expect(firstNote.meta.active).toEqual(true);
+  });
+
+  it('Parser shound not recognize the note as active with random content', () => {
+    const parsedNotes = collectNotes(parse('#+ACTIVE: blabla'));
+    const firstNote = parsedNotes[0];
+    expect(firstNote.meta.active).toEqual(false);
+  });
+
+  it('Parser shound not recognize the note as active with empty string', () => {
+    const parsedNotes = collectNotes(parse('#+ACTIVE:'));
+    const firstNote = parsedNotes[0];
+    expect(firstNote.meta.active).toEqual(false);
+  });
+
+  it('Parser shound recognize the note as active with yes keyword', () => {
+    const parsedNotes = collectNotes(parse('#+ACTIVE:yes'));
+    const firstNote = parsedNotes[0];
+    expect(firstNote.meta.active).toEqual(true);
   });
 });

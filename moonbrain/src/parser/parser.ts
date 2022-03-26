@@ -1,6 +1,7 @@
 import { Keyword } from 'orga';
 import { ElementType, GreaterElementType, Headline, OrgData } from 'uniorg';
 import { Note, NoteHeading } from './models';
+import { isTrue } from './tools';
 
 const FILETAGS_DEVIDER = ':';
 
@@ -10,6 +11,7 @@ interface NoteNodeChunk {
   title?: string;
   tags?: string[];
   description?: string;
+  active?: boolean;
 }
 
 const sectionHandler = (content: OrgData): NoteNodeChunk[] =>
@@ -23,6 +25,7 @@ const keywordHandlers: { [key: string]: (data: Keyword) => NoteNodeChunk[] } = {
   title: (content: Keyword) => [{ title: content.value }],
   filetags: (content: Keyword) => [{ tags: content.value.split(FILETAGS_DEVIDER).filter((v) => v) }],
   description: (content: Keyword) => [{ description: content.value }],
+  active: (content: Keyword) => [{ active: isTrue(content.value) }],
 };
 
 const keywordHandler = (content: Keyword) => keywordHandlers[content.key.toLocaleLowerCase()]?.(content);
@@ -54,6 +57,7 @@ export const collectNotes = (content: OrgData): Note[] => {
     acc.meta.headings = [...acc.meta.headings, ...headings];
     acc.meta.title = acc.meta.title ?? cn.title;
     acc.meta.description = acc.meta.description ?? cn.description;
+    acc.meta.active = acc.meta.active ?? cn.active;
     acc.meta.tags = [...acc.meta.tags, ...tags];
     return acc;
   }, newEmptyNote());
