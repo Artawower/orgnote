@@ -79,7 +79,7 @@ const newEmptyNote = (): Partial<Note> => {
   };
 };
 
-export const collectNotes = (content: OrgData): Note[] => {
+export const collectNotes = (content: OrgData): Note => {
   const chunks = handlers['section'](content);
   // TODO: master real type
   const note: Note = chunks.reduce((acc: Note, cn: NoteNodeChunk) => {
@@ -100,5 +100,5 @@ export const collectNotes = (content: OrgData): Note[] => {
     return acc;
   }, newEmptyNote());
 
-  return [note];
+  return note;
 };
