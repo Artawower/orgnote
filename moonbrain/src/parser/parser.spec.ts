@@ -322,7 +322,6 @@ Another one text
 
   it('Parser should collect id', () => {
     const note = collectNote(parsedOrgDocument1);
-
     expect(note.id).toEqual('identifier qweqwe');
   });
 });

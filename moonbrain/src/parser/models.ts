@@ -18,6 +18,7 @@ export interface NoteMeta {
   externalLinks?: NoteLink[];
   startup?: string;
   tags?: string[];
+  images?: string[];
 }
 
 export interface LinkedNote {

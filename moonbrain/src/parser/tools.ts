@@ -29,3 +29,17 @@ export const trim = (str: string, ch: string): string => {
 
   return start > 0 || end < str.length ? str.substring(start, end) : str;
 };
+
+/*
+ * Wrap function result as array
+ */
+export const Arrayify =
+  <T>() =>
+  (target: Function): Function => {
+    const wrapperFn = (...args: any[]): T[] => {
+      return [target(...args)];
+    };
+    return wrapperFn;
+  };
+
+export const asArray = Arrayify();
