@@ -1,3 +1,5 @@
+import { OrgData } from 'uniorg';
+
 export interface NoteHeading {
   level: number;
   text: string;
@@ -29,5 +31,5 @@ export interface LinkedNote {
 export interface Note {
   id: string;
   meta: NoteMeta;
-  content: any;
+  content: OrgData;
 }

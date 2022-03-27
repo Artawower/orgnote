@@ -9,7 +9,11 @@
     "test": "jest",
     "coverage": "jest --coverage"
   },
-  "keywords": ["org", "roam", "zettelkasten"],
+  "keywords": [
+    "org",
+    "roam",
+    "zettelkasten"
+  ],
   "author": "me",
   "license": "MIT",
   "dependencies": {
@@ -21,6 +25,7 @@
     "uniorg-extract-keywords": "0.4.5",
     "uniorg-parse": "0.4.5",
     "uniorg-rehype": "0.4.8",
+    "uniorg-stringify": "^0.4.9",
     "vfile": "5.3.0"
   },
   "devDependencies": {

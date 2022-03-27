@@ -3124,6 +3124,11 @@ uniorg-rehype@0.4.8:
     hastscript "^6.0.0"
     unist-builder "^2.0.3"
 
+uniorg-stringify@^0.4.9:
+  version "0.4.9"
+  resolved "https://registry.yarnpkg.com/uniorg-stringify/-/uniorg-stringify-0.4.9.tgz#6bb478b36e0f312beb0eba149cd6aecfbeb9c0d8"
+  integrity sha512-jeXEQC+BaQu4D7ffpjrQmfJvJnlPv61P7cWR431S3bpo7EZzLkkEo+zc5UWVoPu0yw0NgpP3QXo7mD9JGMX7Sw==
+
 uniorg@0.4.0:
   version "0.4.0"
   resolved "https://registry.yarnpkg.com/uniorg/-/uniorg-0.4.0.tgz#a9a7480236f31f78f0372d00dc40a63f041f45c5"

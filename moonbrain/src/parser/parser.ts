@@ -101,5 +101,6 @@ export const collectNote = (content: OrgData): Note => {
       return acc;
     }, newEmptyNote()) as Note;
 
+  note.content = content;
   return note;
 };
