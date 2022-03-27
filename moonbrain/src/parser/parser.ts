@@ -18,7 +18,10 @@ interface NoteNodeChunk {
 }
 
 const sectionHandler = (content: OrgData): NoteNodeChunk[] =>
-  content.children.reduce((chunks, content) => [...chunks, ...(handlers[content.type]?.(content) || [])], []);
+  content.children.reduce(
+    (chunks: NoteNodeChunk[], content: OrgData) => [...chunks, ...(handlers[content.type]?.(content) || [])],
+    []
+  );
 
 const headlineHandler = (content: Headline): NoteNodeChunk => ({
   headings: [{ text: content.rawValue, level: content.level }],
@@ -26,7 +29,7 @@ const headlineHandler = (content: Headline): NoteNodeChunk => ({
 
 const keywordHandlers: { [key: string]: (data: Keyword) => NoteNodeChunk } = {
   title: (content: Keyword) => ({ title: content.value }),
-  filetags: (content: Keyword) => ({ tags: content.value.split(FILETAGS_DEVIDER).filter((v) => v) }),
+  filetags: (content: Keyword) => ({ tags: content.value.split(FILETAGS_DEVIDER).filter((v: string) => v) }),
   description: (content: Keyword) => ({ description: content.value }),
 };
 
@@ -60,12 +63,12 @@ type HandlerType = GreaterElementType & ElementType;
 
 const handlers: { [key in HandlerType['type']]?: (data: GreaterElementType) => NoteNodeChunk[] } = {
   section: sectionHandler,
-  headline: asArray(headlineHandler),
-  keyword: asArray(keywordHandler),
-  link: asArray(linkHandler),
+  headline: asArray<NoteNodeChunk>(headlineHandler),
+  keyword: asArray<NoteNodeChunk>(keywordHandler),
+  link: asArray<NoteNodeChunk>(linkHandler),
   paragraph: sectionHandler,
   'property-drawer': sectionHandler,
-  'node-property': asArray(propertyHandler),
+  'node-property': asArray<NoteNodeChunk>(propertyHandler),
 };
 
 const newEmptyNote = (): Partial<Note> => {

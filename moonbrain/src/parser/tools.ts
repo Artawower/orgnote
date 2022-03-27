@@ -34,8 +34,8 @@ export const trim = (str: string, ch: string): string => {
  * Wrap function result as array
  */
 export const Arrayify =
-  <T>() =>
-  (target: Function): Function => {
+  () =>
+  <T>(target: Function): (() => T[]) => {
     const wrapperFn = (...args: any[]): T[] => {
       return [target(...args)];
     };

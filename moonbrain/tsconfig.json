@@ -13,7 +13,7 @@
     "experimentalDecorators": true,
     "sourceMap": true,
     "skipLibCheck": true,
-    "types": ["node", "jest"]
+    "types": ["node", "jest", "uniorg", "orga"]
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "**/*.spec.ts"]
