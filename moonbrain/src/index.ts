@@ -40,9 +40,10 @@ const collectNotesFromDir = (dir: string): Note[] => {
 
 export { collectNoteFromFile, collectNotesFromDir };
 
-// debugPrettyPrint(readOrgFileContent('./miscellaneous/test1.org'));
+debugPrettyPrint(readOrgFileContent('./miscellaneous/test1.org'));
+// debugPrettyPrint(readOrgFileContent('./miscellaneous/test2.org'));
 //
 // console.log(readOrgFileContent('./miscellaneous/test1.org'));
-console.log(collectNotesFromDir('/Volumes/DARK SIDE/projects/pet/roam/moonbrain/miscellaneous'));
+// console.log(collectNotesFromDir('/Volumes/DARK SIDE/projects/pet/roam/moonbrain/miscellaneous'));
 // console.log(JSON.stringify(collectNotesFromFile('./miscellaneous/test1.org'), null, 2));
 // console.log(makeOrgTreeFromFile('./miscellaneous/test1.org'));

@@ -35,17 +35,19 @@ const keywordHandler = (content: Keyword) => keywordHandlers[content.key.toLocal
 const combineRawTextFromChildren = (children: Text[]) =>
   children.reduce((entireRawText, currentChildren) => `${entireRawText}${currentChildren.value}`, '');
 
-/*
- * determine link category (internal or external) by link
- */
-const getLinkCategoryByType = (link: Link): 'externalLinks' | 'internalLinks' =>
-  link.linkType === 'id' ? 'internalLinks' : 'externalLinks';
+const linkTypeCategody: { [key: string]: 'internalLinks' | 'externalLinks' } = {
+  id: 'internalLinks',
+  https: 'externalLinks',
+  http: 'externalLinks',
+};
 
-const linkHandler = (link: Link): NoteNodeChunk[] => [
-  {
-    [getLinkCategoryByType(link)]: [{ name: combineRawTextFromChildren(link.children as Text[]), url: link.rawLink }],
-  },
-];
+const linkHandler = (link: Link): NoteNodeChunk[] => {
+  const linkType = linkTypeCategody[link.linkType];
+  if (linkType) {
+    return [{ [linkType]: [{ name: combineRawTextFromChildren(link.children as Text[]), url: link.rawLink }] }];
+  }
+  return [];
+};
 
 const propertiesHandlers: { [key: string]: (property: NodeProperty) => NoteNodeChunk[] } = {
   active: (property: NodeProperty) => [{ active: isTrue(property.value) }],
