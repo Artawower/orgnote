@@ -1,7 +1,7 @@
 import { Keyword } from 'orga';
 import { ElementType, GreaterElementType, Headline, Link, NodeProperty, OrgData, Text } from 'uniorg';
 import { NoteLink, Note, NoteHeading } from './models';
-import { isTrue, asArray } from './tools';
+import { isTrue, asArray, isFileImage } from './tools';
 
 const FILETAGS_DEVIDER = ':';
 
@@ -14,6 +14,7 @@ interface NoteNodeChunk {
   active?: boolean;
   externalLinks?: NoteLink[];
   internalLinks?: NoteLink[];
+  images?: string[];
   id?: string;
 }
 
@@ -38,14 +39,18 @@ const keywordHandler = (content: Keyword): NoteNodeChunk => keywordHandlers[cont
 const combineRawTextFromChildren = (children: Text[]) =>
   children.reduce((entireRawText, currentChildren) => `${entireRawText}${currentChildren.value}`, '');
 
-const linkTypeCategody: { [key: string]: 'internalLinks' | 'externalLinks' } = {
+const linkTypeCategody: { [key: string]: 'internalLinks' | 'externalLinks' | 'file' } = {
   id: 'internalLinks',
   https: 'externalLinks',
   http: 'externalLinks',
+  file: 'file',
 };
 
 const linkHandler = (link: Link): NoteNodeChunk => {
   const linkType = linkTypeCategody[link.linkType];
+  if (linkType === 'file' && isFileImage(link.path)) {
+    return { images: [link.path] };
+  }
   if (linkType) {
     return { [linkType]: [{ name: combineRawTextFromChildren(link.children as Text[]), url: link.rawLink }] };
   }
@@ -78,6 +83,7 @@ const newEmptyNote = (): Partial<Note> => {
       tags: [],
       externalLinks: [],
       linkedArticles: [],
+      images: [],
     },
   };
 };
@@ -91,6 +97,7 @@ export const collectNote = (content: OrgData): Note => {
       const tags = cn.tags ?? [];
       const externalLinks = cn.externalLinks ?? [];
       const internalLinks = cn.internalLinks ?? [];
+      cn.images ??= [];
 
       acc.meta.headings = [...acc.meta.headings, ...headings];
       acc.meta.title ??= cn.title;
@@ -99,6 +106,7 @@ export const collectNote = (content: OrgData): Note => {
       acc.meta.tags = [...acc.meta.tags, ...tags];
       acc.meta.externalLinks = [...acc.meta.externalLinks, ...externalLinks];
       acc.meta.linkedArticles = [...acc.meta.linkedArticles, ...internalLinks];
+      acc.meta.images = [...acc.meta.images, ...cn.images];
       acc.id ??= cn.id;
 
       return acc;

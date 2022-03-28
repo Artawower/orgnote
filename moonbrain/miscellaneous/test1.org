@@ -47,6 +47,7 @@ but not any simpler
 #+END_CENTER
 
 
+[[./test.jpeg]]
 #+BEGIN_SRC typescript
 console.log('Hello world')
 #+END_SRC

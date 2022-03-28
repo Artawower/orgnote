@@ -324,4 +324,14 @@ Another one text
     const note = collectNote(parsedOrgDocument1);
     expect(note.id).toEqual('identifier qweqwe');
   });
+
+  it('Parser should collect images', () => {
+    const note = collectNote(parsedOrgDocument1);
+    expect(note.meta.images).toEqual(['./test.jpeg']);
+  });
+
+  it('Parser should not collect images', () => {
+    const note = collectNote(parsedOrgDocument2);
+    expect(note.meta.images).toEqual([]);
+  });
 });

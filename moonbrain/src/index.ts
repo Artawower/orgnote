@@ -5,6 +5,7 @@ import toVFile from 'to-vfile';
 import { Note, collectNote } from './parser/index';
 import { readdirSync, Dirent } from 'fs';
 import { resolve } from 'path';
+import { stringify } from 'uniorg-stringify/lib/stringify.js';
 
 const readOrgFileContent = (filePath: string): OrgData => {
   const orgFile = toVFile.readSync(filePath);
@@ -44,7 +45,7 @@ export { collectNoteFromFile, collectNotesFromDir };
 const note = collectNoteFromFile('./miscellaneous/test1.org');
 
 // console.log(stringify(note.content));
-// debugPrettyPrint(readOrgFileContent('./miscellaneous/test1.org'));
+debugPrettyPrint(readOrgFileContent('./miscellaneous/test1.org'));
 // debugPrettyPrint(readOrgFileContent('./miscellaneous/test2.org'));
 //
 // console.log(readOrgFileContent('./miscellaneous/test1.org'));
@@ -52,4 +53,4 @@ const note = collectNoteFromFile('./miscellaneous/test1.org');
 // console.log(JSON.stringify(collectNotesFromFile('./miscellaneous/test1.org'), null, 2));
 // console.log(makeOrgTreeFromFile('./miscellaneous/test1.org'));
 
-console.log('🦄: [line 63][index.ts<2>] [35mstringify: ', stringify(note.content));
+// console.log('🦄: [line 63][index.ts<2>] [35mstringify: ', stringify(note.content));
