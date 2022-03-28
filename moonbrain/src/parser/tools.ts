@@ -44,4 +44,4 @@ export const Arrayify =
 
 export const asArray = Arrayify();
 
-export const isFileImage = (path: string): boolean => /\.(gif|jpe?g|tiff?|png|webp|bmp)$/i.test(path);
+export const isFileImage = (path: string): boolean => /\.(gif|svg|jpe?g|tiff?|png|webp|bmp)$/i.test(path);

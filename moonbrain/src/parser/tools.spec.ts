@@ -1,4 +1,4 @@
-import { isTrue, normalizeStringValue, trim } from './tools';
+import { isFileImage, isTrue, normalizeStringValue, trim } from './tools';
 
 describe('Tools test', () => {
   it('Should collect true value from org string', () => {
@@ -29,5 +29,23 @@ describe('Tools test', () => {
 
   it('Should preserve empty string after normalization', () => {
     expect(normalizeStringValue('')).toEqual('');
+  });
+
+  it('Should correct determine image files', () => {
+    expect(isFileImage('file_name.jpg')).toEqual(true);
+    expect(isFileImage('myimage.some-info.webp')).toEqual(true);
+    expect(isFileImage('img.svg')).toEqual(true);
+    expect(isFileImage('./img.svg')).toEqual(true);
+    expect(isFileImage('anotherImage.bmp')).toEqual(true);
+    expect(isFileImage('_.gif')).toEqual(true);
+    expect(isFileImage('sm.jpeg')).toEqual(true);
+  });
+
+  it('Should not determine file as image', () => {
+    expect(isFileImage('jpeg.avi')).toEqual(false);
+    expect(isFileImage('another_file')).toEqual(false);
+    expect(isFileImage('not.png.ext')).toEqual(false);
+    expect(isFileImage('')).toEqual(false);
+    expect(isFileImage('./file.mp4')).toEqual(false);
   });
 });
