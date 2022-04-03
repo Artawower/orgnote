@@ -1,9 +1,11 @@
 import { Keyword } from 'orga';
-import { ElementType, GreaterElementType, Headline, Link, NodeProperty, OrgData, Text } from 'uniorg';
+import { GreaterElementType, Headline, Link, NodeProperty, OrgData, OrgNode, Text } from 'uniorg';
 import { NoteLink, Note, NoteHeading } from './models';
 import { isTrue, asArray, isFileImage } from './tools';
 
 const FILETAGS_DEVIDER = ':';
+
+export type NodeMiddleware = (orgData: OrgNode) => OrgNode;
 
 interface NoteNodeChunk {
   notes?: Note[];
@@ -18,11 +20,15 @@ interface NoteNodeChunk {
   id?: string;
 }
 
-const sectionHandler = (content: OrgData): NoteNodeChunk[] =>
-  content.children.reduce(
-    (chunks: NoteNodeChunk[], content: OrgData) => [...chunks, ...(handlers[content.type]?.(content) || [])],
-    []
-  );
+const createSelectionHandler =
+  (middleware: NodeMiddleware) =>
+  (content: OrgData): NoteNodeChunk[] => {
+    const handleOrgNode = createNodeHandlers(middleware);
+    return content.children.reduce(
+      (chunks: NoteNodeChunk[], content: OrgData) => [...chunks, ...(handleOrgNode(content.type, content) || [])],
+      []
+    );
+  };
 
 const headlineHandler = (content: Headline): NoteNodeChunk => ({
   headings: [{ text: content.rawValue, level: content.level }],
@@ -64,17 +70,22 @@ const propertiesHandlers: { [key: string]: (property: NodeProperty) => NoteNodeC
 const propertyHandler = (property: NodeProperty): NoteNodeChunk =>
   propertiesHandlers[property.key.toLocaleLowerCase()]?.(property);
 
-type HandlerType = GreaterElementType & ElementType;
-
-const handlers: { [key in HandlerType['type']]?: (data: GreaterElementType) => NoteNodeChunk[] } = {
-  section: sectionHandler,
-  headline: asArray<NoteNodeChunk>(headlineHandler),
-  keyword: asArray<NoteNodeChunk>(keywordHandler),
-  link: asArray<NoteNodeChunk>(linkHandler),
-  paragraph: sectionHandler,
-  'property-drawer': sectionHandler,
-  'node-property': asArray<NoteNodeChunk>(propertyHandler),
-};
+const createNodeHandlers =
+  (middleware?: NodeMiddleware): ((nodeType: OrgNode['type'], content: OrgData) => NoteNodeChunk[]) =>
+  (nodeType: OrgNode['type'], content: OrgData): NoteNodeChunk[] => {
+    const handlers: { [key in OrgNode['type']]?: (data: GreaterElementType) => NoteNodeChunk[] } = {
+      section: createSelectionHandler(middleware),
+      headline: asArray<NoteNodeChunk>(headlineHandler),
+      keyword: asArray<NoteNodeChunk>(keywordHandler),
+      link: asArray<NoteNodeChunk>(linkHandler),
+      paragraph: createSelectionHandler(middleware),
+      'property-drawer': createSelectionHandler(middleware),
+      'node-property': asArray<NoteNodeChunk>(propertyHandler),
+    };
+    // TODO: master return new value instead of mutate existing object!
+    middleware(content);
+    return handlers[nodeType]?.(content);
+  };
 
 const newEmptyNote = (): Partial<Note> => {
   return {
@@ -88,8 +99,17 @@ const newEmptyNote = (): Partial<Note> => {
   };
 };
 
-export const collectNote = (content: OrgData): Note => {
-  const chunks: NoteNodeChunk[] = handlers['section'](content);
+const buildMiddleware =
+  (middlewareChains: NodeMiddleware[] = []) =>
+  (orgNode: OrgNode) =>
+    middlewareChains.reduce((orgNode, currentChain) => currentChain(orgNode), orgNode);
+
+export const collectNote = (content: OrgData, middlewareChains: NodeMiddleware[] = []): Note => {
+  const middleware = buildMiddleware(middlewareChains);
+
+  const handleOrgNode = createNodeHandlers(middleware);
+  const chunks: NoteNodeChunk[] = handleOrgNode('section', content);
+
   const note = chunks
     .filter((cn: NoteNodeChunk) => !!cn)
     .reduce((acc: Note, cn: NoteNodeChunk) => {

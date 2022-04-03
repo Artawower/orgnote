@@ -1,3 +1,4 @@
+import { OrgNode } from 'uniorg';
 import { parse } from 'uniorg-parse/lib/parser.js';
 
 import { collectNote } from './index';
@@ -333,5 +334,18 @@ Another one text
   it('Parser should not collect images', () => {
     const note = collectNote(parsedOrgDocument2);
     expect(note.meta.images).toEqual([]);
+  });
+
+  it('Parser should call middleware', () => {
+    let middlewareCalled = false;
+    const middlewares = [
+      (n: OrgNode) => {
+        middlewareCalled = true;
+        return n;
+      },
+    ];
+    collectNote(parsedOrgDocument2, middlewares);
+    expect(middlewareCalled).toEqual(true);
+    // TODO: master  call middleware
   });
 });

@@ -1,3 +1,5 @@
+import { v4 as uuid } from 'uuid';
+
 /*
  * Remote extra spaces and transform value to lower case
  */
@@ -45,3 +47,11 @@ export const Arrayify =
 export const asArray = Arrayify();
 
 export const isFileImage = (path: string): boolean => /\.(gif|svg|jpe?g|tiff?|png|webp|bmp)$/i.test(path);
+
+/*
+ *  Make file name is unique
+ */
+export const uniquifyFileName = (path: string): string => {
+  const uniqueHash = uuid();
+  return `${uniqueHash}_${path}`;
+};

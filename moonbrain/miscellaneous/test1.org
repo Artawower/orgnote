@@ -18,6 +18,10 @@ Some text
  [[https://google.com][Its a link]]
 Another one text
 
+[[/Volumes/DARK SIDE/pics/screenshots/1.webp]]
+
+[[/Volumes/DARK SIDE/pics/screenshots/branch.jpg]]
+
 
  [[https://du-blog.ru][another link]]
 *Bold text* - its a bold
