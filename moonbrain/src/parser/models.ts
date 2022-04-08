@@ -1,4 +1,4 @@
-import { OrgData } from 'uniorg';
+import { OrgNode } from 'uniorg';
 
 export interface NoteHeading {
   level: number;
@@ -31,5 +31,5 @@ export interface LinkedNote {
 export interface Note {
   id: string;
   meta: NoteMeta;
-  content: OrgData;
+  content: OrgNode;
 }

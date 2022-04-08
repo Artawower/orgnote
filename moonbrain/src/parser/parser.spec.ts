@@ -348,4 +348,27 @@ Another one text
     expect(middlewareCalled).toEqual(true);
     // TODO: master  call middleware
   });
+
+  // TODO: master fix test
+  xit('Parser should extend text positions after picture name changing', () => {
+    const note = collectNote(
+      parse(`
+#+TITLE: Some note with image, and this image should be renamed by middleware and change positions of next blocks
+[[./test.jpeg][test]]
+
+* Some title
+** Nested title
+`)
+    );
+
+    const middlewares = [
+      (n: OrgNode) => {
+        if (n.type === 'link' && n.linkType === 'file' && n.path) {
+          // n.name = 'renamed';
+        }
+        return n;
+      },
+    ];
+    console.log(JSON.stringify(note.content));
+  });
 });
