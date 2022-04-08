@@ -1,3 +1,4 @@
+import { OrgNode } from 'uniorg';
 import { v4 as uuid } from 'uuid';
 
 /*
@@ -35,11 +36,13 @@ export const trim = (str: string, ch: string): string => {
 /*
  * Wrap function result as array
  */
+// TODO: master Right not this function will wrap only first argument from array as nested array
 export const Arrayify =
   () =>
-  <T>(target: Function): (() => T[]) => {
-    const wrapperFn = (...args: any[]): T[] => {
-      return [target(...args)];
+  <T>(target: Function): (() => [T[], OrgNode]) => {
+    const wrapperFn = (...args: any[]): [T[], OrgNode] => {
+      const res = target(...args);
+      return [[res[0]], res[1]];
     };
     return wrapperFn;
   };

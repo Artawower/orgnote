@@ -1,4 +1,4 @@
-import { OrgNode } from 'uniorg';
+import { Link, OrgNode, Paragraph } from 'uniorg';
 import { parse } from 'uniorg-parse/lib/parser.js';
 
 import { collectNote } from './index';
@@ -347,5 +347,35 @@ Another one text
     collectNote(parsedOrgDocument2, middlewares);
     expect(middlewareCalled).toEqual(true);
     // TODO: master  call middleware
+  });
+
+  // TODO: master fix test
+  it('Parser should update node by middleware', () => {
+    const middlewares = [
+      (n: OrgNode) => {
+        if (n.type === 'link' && n.linkType === 'file' && n.path) {
+          n.path = './new-path.jpg';
+          n.rawLink = './new-path.jpg';
+        }
+        return n;
+      },
+    ];
+
+    const note = collectNote(
+      parse(`
+#+TITLE: Some note with image, and this image should be renamed by middleware and change positions of next blocks
+[[./test.jpeg][test]]
+
+* Some title
+** Nested title
+`),
+      middlewares
+    );
+
+    const link = (note.content.children[1] as Paragraph).children[0] as Link;
+    // console.log(JSON.stringify(note, null, 2));
+    // console.log(JSON.stringify(.path, null, 2));
+    expect(link.path).toEqual('./new-path.jpg');
+    expect(link.rawLink).toEqual('./new-path.jpg');
   });
 });

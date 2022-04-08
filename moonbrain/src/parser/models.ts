@@ -1,4 +1,4 @@
-import { OrgData } from 'uniorg';
+import { OrgData, OrgNode } from 'uniorg';
 
 export interface NoteHeading {
   level: number;
