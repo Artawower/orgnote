@@ -1,6 +1,6 @@
 import { Link, OrgNode } from 'uniorg';
 import { isFileImage, isFileNameContainUuid, uniquifyFileName } from './tools';
-import { renameSync } from 'fs';
+import { existsSync, renameSync } from 'fs';
 import { join } from 'path';
 
 // TODO: master rename this builder if need a real builder
@@ -9,7 +9,13 @@ export const createLinkMiddleware =
   (orgData: Link): OrgNode => {
     const isNotLink = orgData.type !== 'link';
     const isNotFile = orgData.linkType !== 'file';
-    if (isNotLink || isNotFile || !isFileImage(orgData.path) || isFileNameContainUuid(orgData.path)) {
+    if (
+      isNotLink ||
+      isNotFile ||
+      !isFileImage(orgData.path) ||
+      isFileNameContainUuid(orgData.path) ||
+      !existsSync(join(dirPath, orgData.path))
+    ) {
       return orgData;
     }
 
