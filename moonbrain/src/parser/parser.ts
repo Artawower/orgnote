@@ -1,15 +1,4 @@
-import {
-  Headline,
-  Link,
-  NodeProperty,
-  OrgData,
-  OrgNode,
-  Section,
-  Text,
-  Keyword,
-  GreaterElementType,
-  ElementType,
-} from 'uniorg';
+import { Headline, Link, NodeProperty, OrgData, OrgNode, Section, Text, Keyword } from 'uniorg';
 import { NoteLink, Note, NoteHeading } from './models';
 import { isTrue, asArray, isFileImage } from './tools';
 
@@ -113,9 +102,6 @@ const createNodeHandlers =
     // TODO: master return new value instead of mutate existing object!
     const handler = handlers[node.type];
     const updatedNode = middleware?.(node) || node;
-    // console.log('🦄: [line 103][parser.ts] [35mupdatedNode: ', JSON.stringify(updatedNode, null, 2));
-    // console.log('-------------------------------------------------------');
-
     return handler ? handler(updatedNode) : [[], updatedNode];
   };
 
