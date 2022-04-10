@@ -2,7 +2,8 @@
 .DS_Store
 .AppleDouble
 .LSOverride
-node_modules
+node_modules/
 .pnpm-debug.log
 node_modules/*
 moonbrain/.DS_Store
+index.js
