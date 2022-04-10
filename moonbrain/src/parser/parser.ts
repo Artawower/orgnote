@@ -1,4 +1,15 @@
-import { Headline, Link, NodeProperty, OrgData, OrgNode, Section, Text, Keyword } from 'uniorg';
+import {
+  Headline,
+  Link,
+  NodeProperty,
+  OrgData,
+  OrgNode,
+  Section,
+  Text,
+  Keyword,
+  GreaterElementType,
+  ElementType,
+} from 'uniorg';
 import { NoteLink, Note, NoteHeading } from './models';
 import { isTrue, asArray, isFileImage } from './tools';
 

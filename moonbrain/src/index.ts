@@ -1,11 +1,14 @@
 import { parse } from 'uniorg-parse/lib/parser.js';
-import { OrgData, OrgNode } from 'uniorg';
+import { OrgData } from 'uniorg';
 import toVFile from 'to-vfile';
 
 import { Note, collectNote, NodeMiddleware } from './parser/index';
 import { readdirSync, Dirent } from 'fs';
-import { resolve } from 'path';
+import { join, resolve } from 'path';
 import { stringify } from 'uniorg-stringify/lib/stringify.js';
+import { createLinkMiddleware } from './parser/middleware';
+
+const __dirname = resolve();
 
 const readOrgFileContent = (filePath: string): OrgData => {
   const orgFile = toVFile.readSync(filePath);
@@ -30,17 +33,15 @@ const debugPrettyPrint = (o: { children: any[] }, level: number = 0) => {
   o.children.forEach((c) => debugPrettyPrint(c, level + 2));
 };
 
-const collectNotesFromDir = (dir: string, middlewareChains?: NodeMiddleware[]): Note[] => {
+const collectNotesFromDir = (dir: string): Note[] => {
   const files = readdirSync(dir, { withFileTypes: true });
   const notes = files.reduce((notes: Note[], dirent: Dirent) => {
     // console.log('🦄: [line 31][index.ts] [35mfile: ', dirent.name);
     // console.log('-------');
     const isDir = dirent.isDirectory();
     const fileName = resolve(dir, dirent.name);
-    return [
-      ...notes,
-      ...(isDir ? collectNotesFromDir(fileName, middlewareChains) : [collectNoteFromFile(fileName, middlewareChains)]),
-    ];
+    const middlewares = [createLinkMiddleware(dir)];
+    return [...notes, ...(isDir ? collectNotesFromDir(fileName) : [collectNoteFromFile(fileName, middlewares)])];
   }, []);
 
   return notes;
@@ -51,7 +52,7 @@ export { collectNoteFromFile, collectNotesFromDir };
 const note = collectNoteFromFile('./miscellaneous/test1.org');
 
 // console.log(stringify(note.content));
-debugPrettyPrint(readOrgFileContent('./miscellaneous/test1.org'));
+// debugPrettyPrint(readOrgFileContent('./miscellaneous/test1.org'));
 // debugPrettyPrint(readOrgFileContent('./miscellaneous/test2.org'));
 //
 // console.log(readOrgFileContent('./miscellaneous/test1.org'));
@@ -61,25 +62,5 @@ debugPrettyPrint(readOrgFileContent('./miscellaneous/test1.org'));
 
 // console.log('🦄: [line 63][index.ts<2>] [35mstringify: ', stringify(note.content));
 
-const middlewares = [
-  (n: OrgNode) => {
-    if (n.type === 'link' && n.linkType === 'file' && n.path) {
-      n.path = './new-path.jpg';
-      n.rawLink = './new-path.jpg';
-    }
-    return n;
-  },
-];
-
-const note2 = collectNote(
-  parse(`
-#+TITLE: Some note with image, and this image should be renamed by middleware and change positions of next blocks
-[[./test.jpeg][test]]
-
-* Some title
-** Nested title
-`),
-  middlewares
-);
-
-console.log(stringify(note2.content));
+const notes = collectNotesFromDir(join(__dirname, 'miscellaneous'));
+console.log(notes);

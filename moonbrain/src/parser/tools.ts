@@ -64,3 +64,9 @@ export const uniquifyFileName = (path: string): string => {
   }
   return `${path}-${uniqueHash}`;
 };
+
+export const isFileNameContainUuid = (fileName: string): boolean => {
+  const splittedFileName = fileName.split('/');
+  const onlyFileName = splittedFileName.pop();
+  return /.*[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}.*/.test(onlyFileName);
+};

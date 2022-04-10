@@ -1,5 +1,5 @@
 import { Link, OrgNode } from 'uniorg';
-import { isFileImage, uniquifyFileName } from './tools';
+import { isFileImage, isFileNameContainUuid, uniquifyFileName } from './tools';
 import { renameSync } from 'fs';
 import { join } from 'path';
 
@@ -7,13 +7,21 @@ import { join } from 'path';
 export const createLinkMiddleware =
   (dirPath: string) =>
   (orgData: Link): OrgNode => {
-    if (orgData.type !== 'link' || orgData.linkType !== 'file' || !isFileImage(orgData.path)) {
+    const isNotLink = orgData.type !== 'link';
+    const isNotFile = orgData.linkType !== 'file';
+    if (isNotLink || isNotFile || !isFileImage(orgData.path) || isFileNameContainUuid(orgData.path)) {
       return orgData;
     }
 
-    const newFileName = uniquifyFileName(orgData.path);
-    renameSync(join(dirPath, orgData.path), join(dirPath, newFileName));
-    orgData.path = newFileName;
-    orgData.rawLink = newFileName;
+    try {
+      const newFileName = uniquifyFileName(orgData.path);
+      renameSync(join(dirPath, orgData.path), join(dirPath, newFileName));
+      orgData.path = newFileName;
+      orgData.rawLink = newFileName;
+    } catch (e) {
+      if (e.code !== 'ENOENT') {
+        throw e;
+      }
+    }
     return orgData;
   };

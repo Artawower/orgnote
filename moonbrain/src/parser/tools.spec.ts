@@ -1,4 +1,5 @@
-import { isFileImage, isTrue, normalizeStringValue, trim } from './tools';
+import { isFileImage, isFileNameContainUuid, isTrue, normalizeStringValue, trim } from './tools';
+import { v4 as uuid } from 'uuid';
 
 describe('Tools test', () => {
   it('Should collect true value from org string', () => {
@@ -47,5 +48,25 @@ describe('Tools test', () => {
     expect(isFileImage('not.png.ext')).toEqual(false);
     expect(isFileImage('')).toEqual(false);
     expect(isFileImage('./file.mp4')).toEqual(false);
+  });
+});
+
+describe('File name container uuid checker', () => {
+  it('Should contain uuid4', () => {
+    expect(isFileNameContainUuid(`./my-file${uuid()}.jpg`)).toBe(true);
+    expect(isFileNameContainUuid(`./long-path/my-file${uuid()}.png`)).toBe(true);
+    expect(isFileNameContainUuid(`./long-path/my-file${uuid()}.webp`)).toBe(true);
+    expect(isFileNameContainUuid(`./long-path/my-file${uuid()}another-info.not-ext.txt`)).toBe(true);
+    expect(isFileNameContainUuid(`./long-path/longer/another.file-${uuid()}`)).toBe(true);
+  });
+
+  it('Should not contain uuid4', () => {
+    expect(isFileNameContainUuid(`./my-file.jpg`)).toBe(false);
+    expect(isFileNameContainUuid(`./long-path/my-file.png`)).toBe(false);
+    expect(isFileNameContainUuid(`./long-path/my-file.webp`)).toBe(false);
+    expect(isFileNameContainUuid(`./long-path/my-file.not-ext.txt`)).toBe(false);
+    expect(isFileNameContainUuid(`./long-path/longer/another.file`)).toBe(false);
+    expect(isFileNameContainUuid(`./${uuid()}/longer/another.jpg`)).toBe(false);
+    expect(isFileNameContainUuid(`../root/${uuid()}/another.png`)).toBe(false);
   });
 });
