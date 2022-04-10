@@ -3,12 +3,10 @@ import { OrgData } from 'uniorg';
 import toVFile from 'to-vfile';
 
 import { Note, collectNote, NodeMiddleware } from './parser/index';
-import { readdirSync, Dirent } from 'fs';
+import { readdirSync, Dirent, existsSync } from 'fs';
 import { join, resolve } from 'path';
 import { stringify } from 'uniorg-stringify/lib/stringify.js';
 import { createLinkMiddleware } from './parser/middleware';
-
-const __dirname = resolve();
 
 const readOrgFileContent = (filePath: string): OrgData => {
   const orgFile = toVFile.readSync(filePath);
@@ -17,6 +15,10 @@ const readOrgFileContent = (filePath: string): OrgData => {
 };
 
 const collectNoteFromFile = (filePath: string, middlewareChains?: NodeMiddleware[]): Note => {
+  const isFileExist = existsSync(filePath);
+  if (!isFileExist) {
+    return null;
+  }
   const orgContent = readOrgFileContent(filePath);
   const note = collectNote(orgContent, middlewareChains);
   return note;
@@ -36,12 +38,17 @@ const debugPrettyPrint = (o: { children: any[] }, level: number = 0) => {
 const collectNotesFromDir = (dir: string): Note[] => {
   const files = readdirSync(dir, { withFileTypes: true });
   const notes = files.reduce((notes: Note[], dirent: Dirent) => {
-    // console.log('🦄: [line 31][index.ts] [35mfile: ', dirent.name);
-    // console.log('-------');
     const isDir = dirent.isDirectory();
     const fileName = resolve(dir, dirent.name);
     const middlewares = [createLinkMiddleware(dir)];
-    return [...notes, ...(isDir ? collectNotesFromDir(fileName) : [collectNoteFromFile(fileName, middlewares)])];
+    if (isDir) {
+      return [...notes, ...collectNotesFromDir(fileName)];
+    }
+    const collectedNote = collectNoteFromFile(fileName, middlewares);
+    if (collectedNote) {
+      return [...notes, collectedNote];
+    }
+    return notes;
   }, []);
 
   return notes;
@@ -62,5 +69,6 @@ const note = collectNoteFromFile('./miscellaneous/test1.org');
 
 // console.log('🦄: [line 63][index.ts<2>] [35mstringify: ', stringify(note.content));
 
-const notes = collectNotesFromDir(join(__dirname, 'miscellaneous'));
+// TODO: master This logic should be moved to external npm package
+const notes = collectNotesFromDir(join(resolve(), 'miscellaneous'));
 console.log(notes);

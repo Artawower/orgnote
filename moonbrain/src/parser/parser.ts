@@ -110,7 +110,6 @@ const createNodeHandlers =
       'property-drawer': createSelectionHandler(middleware),
       'node-property': asArray<NoteNodeChunk>(propertyHandler),
     };
-    // TODO: master return new value instead of mutate existing object!
     const handler = handlers[node.type];
     const updatedNode = middleware?.(node) || node;
     return handler ? handler(updatedNode) : [[], updatedNode];
