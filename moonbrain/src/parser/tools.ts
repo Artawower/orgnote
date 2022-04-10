@@ -56,5 +56,11 @@ export const isFileImage = (path: string): boolean => /\.(gif|svg|jpe?g|tiff?|pn
  */
 export const uniquifyFileName = (path: string): string => {
   const uniqueHash = uuid();
-  return `${uniqueHash}_${path}`;
+  const splittedFileName = path.split('.');
+  if (splittedFileName.length > 1) {
+    const fileExtension = splittedFileName.pop();
+    const fullFileName = splittedFileName.join('.');
+    return `${fullFileName}-${uniqueHash}.${fileExtension}`;
+  }
+  return `${path}-${uniqueHash}`;
 };

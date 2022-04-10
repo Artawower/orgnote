@@ -373,8 +373,6 @@ Another one text
     );
 
     const link = (note.content.children[1] as Paragraph).children[0] as Link;
-    // console.log(JSON.stringify(note, null, 2));
-    // console.log(JSON.stringify(.path, null, 2));
     expect(link.path).toEqual('./new-path.jpg');
     expect(link.rawLink).toEqual('./new-path.jpg');
   });
