@@ -1,4 +1,4 @@
-import { isFileImage, isFileNameContainUuid, isTrue, normalizeStringValue, trim } from './tools';
+import { isFileImage, isFileNameContainUuid, isOrgFile, isTrue, normalizeStringValue, trim } from './tools';
 import { v4 as uuid } from 'uuid';
 
 describe('Tools test', () => {
@@ -68,5 +68,20 @@ describe('File name container uuid checker', () => {
     expect(isFileNameContainUuid(`./long-path/longer/another.file`)).toBe(false);
     expect(isFileNameContainUuid(`./${uuid()}/longer/another.jpg`)).toBe(false);
     expect(isFileNameContainUuid(`../root/${uuid()}/another.png`)).toBe(false);
+  });
+});
+
+describe('Org file checker', () => {
+  it('Should identify file name as org file', () => {
+    expect(isOrgFile('somefile.org')).toBe(true);
+    expect(isOrgFile('./lonng-path/nested/path/myFile.org')).toBe(true);
+    expect(isOrgFile('../path/myFile.org')).toBe(true);
+  });
+
+  it('Should not identify file name as org file', () => {
+    expect(isOrgFile('.DS_Store')).toBe(false);
+    expect(isOrgFile('./lonng-path/myFile.or')).toBe(false);
+    expect(isOrgFile('../path/org.test')).toBe(false);
+    expect(isOrgFile('org')).toBe(false);
   });
 });

@@ -2,7 +2,7 @@ import { parse } from 'uniorg-parse/lib/parser.js';
 import { OrgData } from 'uniorg';
 import toVFile from 'to-vfile';
 
-import { Note, collectNote, NodeMiddleware } from './parser/index';
+import { Note, collectNote, NodeMiddleware, isOrgFile } from './parser/index';
 import { readdirSync, Dirent, existsSync } from 'fs';
 import { join, resolve } from 'path';
 import { stringify } from 'uniorg-stringify/lib/stringify.js';
@@ -41,9 +41,15 @@ const collectNotesFromDir = (dir: string): Note[] => {
     const isDir = dirent.isDirectory();
     const fileName = resolve(dir, dirent.name);
     const middlewares = [createLinkMiddleware(dir)];
+
+    if (!isOrgFile(fileName)) {
+      return notes;
+    }
+
     if (isDir) {
       return [...notes, ...collectNotesFromDir(fileName)];
     }
+
     const collectedNote = collectNoteFromFile(fileName, middlewares);
     if (collectedNote) {
       return [...notes, collectedNote];
@@ -54,9 +60,9 @@ const collectNotesFromDir = (dir: string): Note[] => {
   return notes;
 };
 
-export { collectNoteFromFile, collectNotesFromDir };
+export { collectNoteFromFile, collectNotesFromDir, stringify };
 
-const note = collectNoteFromFile('./miscellaneous/test1.org');
+// const note = collectNoteFromFile('./miscellaneous/test1.org');
 
 // console.log(stringify(note.content));
 // debugPrettyPrint(readOrgFileContent('./miscellaneous/test1.org'));
@@ -70,5 +76,5 @@ const note = collectNoteFromFile('./miscellaneous/test1.org');
 // console.log('🦄: [line 63][index.ts<2>] [35mstringify: ', stringify(note.content));
 
 // TODO: master This logic should be moved to external npm package
-const notes = collectNotesFromDir(join(resolve(), 'miscellaneous'));
-console.log(notes);
+// const notes = collectNotesFromDir(join(resolve(), 'miscellaneous'));
+// console.log(notes);

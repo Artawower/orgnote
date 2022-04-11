@@ -70,3 +70,5 @@ export const isFileNameContainUuid = (fileName: string): boolean => {
   const onlyFileName = splittedFileName.pop();
   return /.*[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}.*/.test(onlyFileName);
 };
+
+export const isOrgFile = (fileName: string): boolean => /\.org$/.test(fileName);

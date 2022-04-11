@@ -1,4 +1,3 @@
-
 * A lot of
 ** Nested
 ** Fields
