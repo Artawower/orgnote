@@ -60,7 +60,12 @@ const collectNotesFromDir = (dir: string): Note[] => {
   return notes;
 };
 
-export { collectNoteFromFile, collectNotesFromDir, stringify };
+const collectActiveOrgNotes = (dir: string): Note[] => {
+  const notes = collectNotesFromDir(dir);
+  return notes.filter((n) => n.id && n.meta.active);
+};
+
+export { collectNoteFromFile, collectNotesFromDir, stringify, collectActiveOrgNotes };
 
 // const note = collectNoteFromFile('./miscellaneous/test1.org');
 

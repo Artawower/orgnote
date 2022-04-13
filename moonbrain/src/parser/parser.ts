@@ -10,7 +10,7 @@ import {
   GreaterElementType,
   ElementType,
 } from 'uniorg';
-import { NoteLink, Note, NoteHeading } from './models';
+import { NoteLink, Note, NoteHeading, NoteCategory } from './models';
 import { isTrue, asArray, isFileImage } from './tools';
 
 const FILETAGS_DEVIDER = ':';
@@ -23,6 +23,7 @@ interface NoteNodeChunk {
   title?: string;
   tags?: string[];
   description?: string;
+  category?: NoteCategory;
   active?: boolean;
   externalLinks?: NoteLink[];
   internalLinks?: NoteLink[];
@@ -89,6 +90,7 @@ const linkHandler = (link: Link): [NoteNodeChunk, OrgNode] => {
 const propertiesHandlers: { [key: string]: (property: NodeProperty) => NoteNodeChunk } = {
   active: (property: NodeProperty) => ({ active: isTrue(property.value) }),
   id: (property: NodeProperty) => ({ id: property.value }),
+  category: (property: NodeProperty) => ({ category: property.value as NoteCategory }),
 };
 
 const propertyHandler = (property: NodeProperty): [NoteNodeChunk, OrgNode] => [
@@ -149,6 +151,7 @@ export const collectNote = (content: OrgData, middlewareChains: NodeMiddleware[]
 
       acc.meta.headings = [...acc.meta.headings, ...headings];
       acc.meta.title ??= cn.title;
+      acc.meta.category ??= cn.category;
       acc.meta.description ??= cn.description;
       acc.meta.active ??= cn.active;
       acc.meta.tags = [...acc.meta.tags, ...tags];

@@ -5,6 +5,12 @@ export interface NoteHeading {
   text: string;
 }
 
+export enum NoteCategory {
+  Article = 'article',
+  Book = 'book',
+  Schedule = 'schedule',
+}
+
 export interface NoteLink {
   url: string;
   name: string;
@@ -14,6 +20,7 @@ export interface NoteMeta {
   previewImg?: string;
   title?: string;
   description?: string;
+  category?: NoteCategory;
   headings: NoteHeading[];
   linkedArticles?: NoteLink[];
   active?: boolean;
