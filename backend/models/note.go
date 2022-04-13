@@ -10,7 +10,7 @@ type Meta struct {
 	ChildrenIDs   []string `json:childrenIds`
 }
 
-type Article struct {
+type Note struct {
 	ID          string      `json:"id"`
 	Title       string      `json:"title"`
 	Description string      `json:"description"`

@@ -25,11 +25,11 @@ func main() {
 
 	app := fiber.New()
 
-	articleRepository := repositories.NewArticleRepository()
+	noteRepository := repositories.NewNoteRepository()
 
-	articleService := services.NewArticleService(articleRepository)
+	noteService := services.NewNoteService(noteRepository)
 
-	handlers.RegisterArticleHandlers(app, articleService)
+	handlers.RegisterNoteHandler(app, noteService)
 	// handlers.RegisterUserHandlers(app)
 	// handlers.RegisterTagHandlers(app)
 	log.Info().Msg("Application start debug mode: " + config.AppAddress)
