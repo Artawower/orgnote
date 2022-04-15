@@ -1,4 +1,6 @@
-#+ACTIVE: true
+:PROPERTIES:
+:PUBLISHED: true
+:END:
 * A lot of
 ** Nested
 ** Fields

@@ -23,7 +23,7 @@ export interface NoteMeta {
   category?: NoteCategory;
   headings: NoteHeading[];
   linkedArticles?: NoteLink[];
-  active?: boolean;
+  published?: boolean;
   externalLinks?: NoteLink[];
   startup?: string;
   tags?: string[];

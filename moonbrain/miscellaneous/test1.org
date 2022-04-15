@@ -1,6 +1,6 @@
 :PROPERTIES:
 :ID: identifier qweqwe
-:ACTIVE: true
+:PUBLISHED: true
 :CATEGORY: article
 :END:
 

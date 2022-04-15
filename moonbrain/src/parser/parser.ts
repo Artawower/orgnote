@@ -24,7 +24,7 @@ interface NoteNodeChunk {
   tags?: string[];
   description?: string;
   category?: NoteCategory;
-  active?: boolean;
+  published?: boolean;
   externalLinks?: NoteLink[];
   internalLinks?: NoteLink[];
   images?: string[];
@@ -88,7 +88,7 @@ const linkHandler = (link: Link): [NoteNodeChunk, OrgNode] => {
 };
 
 const propertiesHandlers: { [key: string]: (property: NodeProperty) => NoteNodeChunk } = {
-  active: (property: NodeProperty) => ({ active: isTrue(property.value) }),
+  published: (property: NodeProperty) => ({ published: isTrue(property.value) }),
   id: (property: NodeProperty) => ({ id: property.value }),
   category: (property: NodeProperty) => ({ category: property.value as NoteCategory }),
 };
@@ -153,7 +153,7 @@ export const collectNote = (content: OrgData, middlewareChains: NodeMiddleware[]
       acc.meta.title ??= cn.title;
       acc.meta.category ??= cn.category;
       acc.meta.description ??= cn.description;
-      acc.meta.active ??= cn.active;
+      acc.meta.published ??= cn.published;
       acc.meta.tags = [...acc.meta.tags, ...tags];
       acc.meta.externalLinks = [...acc.meta.externalLinks, ...externalLinks];
       acc.meta.linkedArticles = [...acc.meta.linkedArticles, ...internalLinks];

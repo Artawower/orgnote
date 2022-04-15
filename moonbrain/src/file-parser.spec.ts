@@ -1,4 +1,4 @@
-import { collectActiveOrgNotes, collectNotesFromDir } from './index';
+import { collectOrgNotes, collectNotesFromDir } from './index';
 import { join } from 'path';
 
 describe('File parser', () => {
@@ -8,8 +8,8 @@ describe('File parser', () => {
   });
 
   it('Should collect one active note with id and correct data', () => {
-    const notes = collectActiveOrgNotes(join(__dirname, '../miscellaneous'));
-    expect(notes.length).toBe(1);
+    const notes = collectOrgNotes(join(__dirname, '../miscellaneous'));
+    expect(notes.length).toBe(2);
     const [note] = notes;
     expect(note.id).toBe('identifier qweqwe');
     expect(note.meta.description).toBe('This is description!');

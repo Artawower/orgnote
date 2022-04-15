@@ -6,7 +6,7 @@ import { collectNote } from './index';
 const orgDocument1 = `
 :PROPERTIES:
 :ID: identifier qweqwe
-:ACTIVE:
+:PUBLISHED:
 :CATEGORY: article
 :END:
 
@@ -62,7 +62,7 @@ const parsedOrgDocument1 = parse(orgDocument1);
 const parsedOrgDocument2 = parse(`
 
 :PROPERTIES:
-:ACTIVE: true
+:PUBLISHED: true
 :END:
 
 * A lot of
@@ -229,49 +229,49 @@ describe('Parser tests', () => {
     expect(note.meta.description).toEqual('first description');
   });
 
-  it('Parser shound not recognize the note as active', () => {
+  it('Parser shound not recognize the note as published', () => {
     const note = collectNote(parsedOrgDocument1);
 
-    expect(note.meta.active).toEqual(false);
+    expect(note.meta.published).toEqual(false);
   });
 
-  it('Parser shound recognize the note as active', () => {
+  it('Parser shound recognize the note as published', () => {
     const note = collectNote(parsedOrgDocument2);
 
-    expect(note.meta.active).toEqual(true);
+    expect(note.meta.published).toEqual(true);
   });
 
-  it('Parser shound not recognize the note as active with random content', () => {
+  it('Parser shound not recognize the note as published with random content', () => {
     const note = collectNote(
       parse(`
 :PROPERTIES:
-:ACTIVE: blabla
+:PUBLISHED: blabla
 :END:`)
     );
 
-    expect(note.meta.active).toEqual(false);
+    expect(note.meta.published).toEqual(false);
   });
 
-  it('Parser shound not recognize the note as active with empty string', () => {
+  it('Parser shound not recognize the note as published with empty string', () => {
     const note = collectNote(
       parse(`
 :PROPERTIES:
-:ACTIVE:
+:PUBLISHED:
 :END:`)
     );
 
-    expect(note.meta.active).toEqual(false);
+    expect(note.meta.published).toEqual(false);
   });
 
-  it('Parser shound recognize the note as active with yes keyword', () => {
+  it('Parser shound recognize the note as published with yes keyword', () => {
     const note = collectNote(
       parse(`
 :PROPERTIES:
-:ACTIVE: yes
+:PUBLISHED: yes
 :END:`)
     );
 
-    expect(note.meta.active).toEqual(true);
+    expect(note.meta.published).toEqual(true);
   });
 
   it('Parser should collect all external links from document', () => {
