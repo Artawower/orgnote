@@ -23,7 +23,7 @@ func RegisterNoteHandler(app *fiber.App, noteService *services.NoteService) {
 
 		notes, err := noteService.GetNote(noteID)
 		if err != nil {
-			log.Info().Err(err).Msg("note handler > get note > get by id")
+			log.Info().Err(err).Msg("note handler: get note: get by id")
 			return c.Status(http.StatusInternalServerError).JSON(NewHttpError("Couldn't get notes, something went wrong", nil))
 		}
 		return c.Status(http.StatusOK).JSON(NewHttpReponse(notes, nil))
@@ -33,13 +33,13 @@ func RegisterNoteHandler(app *fiber.App, noteService *services.NoteService) {
 		filter := new(NoteFilter)
 
 		if err := c.BodyParser(filter); err != nil {
-			log.Info().Err(err).Msg("note handler > get notes > parse body")
+			log.Info().Err(err).Msg("note handler: get notes: parse body")
 			return c.Status(fiber.StatusInternalServerError).JSON(NewHttpError("Incorrect input query", err))
 		}
 
 		notes, err := noteService.GetNotes()
 		if err != nil {
-			log.Info().Err(err).Msg("note handler > get notes")
+			log.Info().Err(err).Msg("note handler: get notes")
 			return c.Status(http.StatusInternalServerError).JSON(NewHttpError("Couldn't get notes, something went wrong", nil))
 		}
 		return c.Status(http.StatusOK).JSON(NewHttpReponse(notes, nil))
@@ -50,15 +50,15 @@ func RegisterNoteHandler(app *fiber.App, noteService *services.NoteService) {
 		note := new(models.Note)
 
 		if err := c.BodyParser(note); err != nil {
-			log.Info().Err(err).Msg("note handler > post note > parse body")
+			log.Info().Err(err).Msg("note handler: post note: parse body")
 			return c.Status(fiber.StatusInternalServerError).JSON(NewHttpError("Can't parse body", err))
 		}
 
 		err := noteService.CreateNote(*note)
 
 		if err != nil {
-			log.Info().Err(err).Msg("note handler > post note > create")
-			return c.Status(http.StatusInternalServerError).JSON(NewHttpError("Can't create note :(", nil))
+			log.Info().Err(err).Msg("note handler: post note: create")
+			return c.Status(http.StatusInternalServerError).JSON(NewHttpError("Can't create note:(", nil))
 		}
 		return c.Status(http.StatusOK).JSON(nil)
 	})
@@ -67,15 +67,15 @@ func RegisterNoteHandler(app *fiber.App, noteService *services.NoteService) {
 		note := new(models.Note)
 
 		if err := c.BodyParser(note); err != nil {
-			log.Info().Err(err).Msg("note handler > put notes > parse body")
+			log.Info().Err(err).Msg("note handler: put notes: parse body")
 			return c.Status(fiber.StatusInternalServerError).JSON(NewHttpError("Can't parse body", err))
 		}
 
 		err := noteService.UpdateNote(*note)
 
 		if err != nil {
-			log.Info().Err(err).Msg("note handler > put notes > update note")
-			return c.Status(http.StatusInternalServerError).JSON(NewHttpError("Can't create note :(", nil))
+			log.Info().Err(err).Msg("note handler: put notes: update note")
+			return c.Status(http.StatusInternalServerError).JSON(NewHttpError("Can't create note:(", nil))
 		}
 		return c.Status(http.StatusOK).JSON(nil)
 	})

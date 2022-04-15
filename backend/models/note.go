@@ -1,25 +1,39 @@
 package models
 
-import "time"
+type NoteHeading struct {
+	Level int    `json:"level"`
+	Text  string `json:"text"`
+}
 
-type Meta struct {
-	Headings      []string `json:"headings"`
-	Startups      []string `json:"startups"`
-	ExternalLinks []string `json:"externalLinks"`
-	InternalLinks []string `json:"internalLinks"`
-	ChildrenIDs   []string `json:childrenIds`
+type NoteLink struct {
+	Url  string `json:"url"`
+	Name string `json:"name"`
+}
+
+type category string
+
+const (
+	CategoryArticle  category = "article"
+	CategoryBook     category = "book"
+	CategorySchedule category = "schedule"
+)
+
+type NoteMeta struct {
+	PreviewImg     *string        `json:"previewImg"`
+	Title          *string        `json:"title"`
+	Description    *string        `json:"description"`
+	Category       *category      `json:"category"`
+	Headings       *[]NoteHeading `json:"headings"`
+	LinkedArticles *[]NoteLink    `json:"linkedArticles"`
+	Published      bool           `json:"published"`
+	ExternalLinks  *[]NoteLink    `json:"externalLinks"`
+	Startup        *string        `json:"startup"`
+	Tags           []string       `json:"tags"`
+	Images         []string       `json:"images"`
 }
 
 type Note struct {
-	ID          string      `json:"id"`
-	Title       string      `json:"title"`
-	Description string      `json:"description"`
-	Tags        []string    `json:"tags"` // NOTE: might be a relation
-	Active      bool        `json:"active"`
-	Deleted     bool        `json:"deleted"`
-	CreatedAt   time.Time   `json:"createdAt"`
-	UpdatedAt   time.Time   `json:"updatedAt"`
-	RawContent  string      `json:"rawContent"`
-	Content     interface{} `json:"content"`
-	Meta        Meta        `json:"meta"`
+	ID      string      `json:"id"`
+	Content interface{} `json:"content"`
+	Meta    NoteMeta    `json:"meta"`
 }
