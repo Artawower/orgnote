@@ -1,0 +1,3 @@
+[submodule "second-brain-publisher"]
+	path = second-brain-publisher
+	url = git@github.com:Artawower/second-brain-publisher.git

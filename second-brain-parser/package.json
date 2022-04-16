@@ -1,20 +1,28 @@
 {
-  "name": "moonbrain",
-  "version": "0.0.1",
+  "name": "second-brain-parser",
+  "version": "0.0.11",
   "description": "Convert org mode roam notes to structure and vice versa",
   "type": "module",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
     "start": "node --loader tsm src/index.ts",
+    "build": "tsc --project tsconfig.json",
     "test": "jest",
+    "prepublish": "npm run build",
     "coverage": "jest --coverage"
   },
   "keywords": [
     "org",
     "roam",
-    "zettelkasten"
+    "zettelkasten",
+    "second brain"
   ],
-  "author": "me",
+  "author": "Artur Yaroshenko artawower@protonmail.com",
+  "types": "dist/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Artawower/second-brain"
+  },
   "license": "MIT",
   "dependencies": {
     "orga": "3.2.1",
@@ -25,7 +33,8 @@
     "uniorg-extract-keywords": "0.4.5",
     "uniorg-parse": "0.4.5",
     "uniorg-rehype": "0.4.8",
-    "uniorg-stringify": "^0.4.9",
+    "uniorg-stringify": "0.4.9",
+    "uuid": "8.3.2",
     "vfile": "5.3.0"
   },
   "devDependencies": {

@@ -7,3 +7,4 @@ node_modules/
 node_modules/*
 moonbrain/.DS_Store
 index.js
+dist/*

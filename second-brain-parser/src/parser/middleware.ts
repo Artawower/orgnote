@@ -1,5 +1,5 @@
 import { Link, OrgNode } from 'uniorg';
-import { isFileImage, isFileNameContainUuid, uniquifyFileName } from './tools';
+import { isFileImage, isFileNameContainUuid, uniquifyFileName } from './tools.js';
 import { existsSync, renameSync } from 'fs';
 import { join } from 'path';
 
