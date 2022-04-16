@@ -24,13 +24,13 @@ func main() {
 	}
 
 	app := fiber.New()
-
 	noteRepository := repositories.NewNoteRepository()
 	tagRepository := repositories.NewTagRepository()
 
 	noteService := services.NewNoteService(noteRepository)
 	tagService := services.NewTagService(tagRepository)
 
+	// TODO: master add validation
 	handlers.RegisterNoteHandler(app, noteService)
 	handlers.RegisterTagHandler(app, tagService)
 	// handlers.RegisterUserHandlers(app)
