@@ -6,7 +6,11 @@ import (
 )
 
 type TagService struct {
-	tagRepository repositories.TagRepository
+	tagRepository *repositories.TagRepository
+}
+
+func NewTagService(tagRepository *repositories.TagRepository) *TagService {
+	return &TagService{tagRepository: tagRepository}
 }
 
 func (t *TagService) GetTags() ([]string, error) {
