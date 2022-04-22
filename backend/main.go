@@ -17,13 +17,15 @@ func main() {
 
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
 	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
-	zerolog.SetGlobalLevel(zerolog.WarnLevel)
+	zerolog.SetGlobalLevel(zerolog.InfoLevel)
 
 	if config.Debug {
 		zerolog.SetGlobalLevel(zerolog.InfoLevel)
 	}
 
 	app := fiber.New()
+	api := app.Group("/api/v1")
+
 	noteRepository := repositories.NewNoteRepository()
 	tagRepository := repositories.NewTagRepository()
 
@@ -31,8 +33,8 @@ func main() {
 	tagService := services.NewTagService(tagRepository)
 
 	// TODO: master add validation
-	handlers.RegisterNoteHandler(app, noteService)
-	handlers.RegisterTagHandler(app, tagService)
+	handlers.RegisterNoteHandler(api, noteService)
+	handlers.RegisterTagHandler(api, tagService)
 	// handlers.RegisterUserHandlers(app)
 	// handlers.RegisterTagHandlers(app)
 	log.Info().Msg("Application start debug mode: " + config.AppAddress)

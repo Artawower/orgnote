@@ -10,13 +10,13 @@ import (
 )
 
 type NoteFilter struct {
-	Limit  int      `json:"limit"`
-	Offset int      `json:"offset"`
-	Search int      `json:"filter"`
-	Tags   []string `json:"tags"`
+	Limit  *int      `json:"limit"`
+	Offset *int      `json:"offset"`
+	Search *int      `json:"filter"`
+	Tags   *[]string `json:"tags"`
 }
 
-func RegisterNoteHandler(app *fiber.App, noteService *services.NoteService) {
+func RegisterNoteHandler(app fiber.Router, noteService *services.NoteService) {
 
 	app.Get("/notes/:id", func(c *fiber.Ctx) error {
 		noteID := c.Params("id")
@@ -32,7 +32,7 @@ func RegisterNoteHandler(app *fiber.App, noteService *services.NoteService) {
 	app.Get("/notes", func(c *fiber.Ctx) error {
 		filter := new(NoteFilter)
 
-		if err := c.BodyParser(filter); err != nil {
+		if err := c.QueryParser(filter); err != nil {
 			log.Info().Err(err).Msg("note handler: get notes: parse body")
 			return c.Status(fiber.StatusInternalServerError).JSON(NewHttpError("Incorrect input query", err))
 		}
@@ -63,15 +63,15 @@ func RegisterNoteHandler(app *fiber.App, noteService *services.NoteService) {
 		return c.Status(http.StatusOK).JSON(nil)
 	})
 
-	app.Put("/notes", func(c *fiber.Ctx) error {
-		note := new(models.Note)
+	app.Put("/notes/bulk-upsert", func(c *fiber.Ctx) error {
+		notes := new([]models.Note)
 
-		if err := c.BodyParser(note); err != nil {
+		if err := c.BodyParser(notes); err != nil {
 			log.Info().Err(err).Msg("note handler: put notes: parse body")
 			return c.Status(fiber.StatusInternalServerError).JSON(NewHttpError("Can't parse body", err))
 		}
 
-		err := noteService.UpdateNote(*note)
+		err := noteService.BulkCreateOrUpdate(*notes)
 
 		if err != nil {
 			log.Info().Err(err).Msg("note handler: put notes: update note")

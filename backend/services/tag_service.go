@@ -20,3 +20,11 @@ func (t *TagService) GetTags() ([]string, error) {
 	}
 	return tags, nil
 }
+
+func (t *TagService) CreateTags(tags []string) error {
+	err := t.tagRepository.CreateTags(tags)
+	if err != nil {
+		return fmt.Errorf("tag service: create tags: %s", err)
+	}
+	return nil
+}

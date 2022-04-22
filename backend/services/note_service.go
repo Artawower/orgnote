@@ -29,6 +29,16 @@ func (a *NoteService) UpdateNote(note models.Note) error {
 	return nil
 }
 
+func (a *NoteService) BulkCreateOrUpdate(notes []models.Note) error {
+	filteredNotesWithID := []models.Note{}
+	for _, note := range notes {
+		if note.ID != "" {
+			filteredNotesWithID = append(filteredNotesWithID, note)
+		}
+	}
+	return a.noteRepository.BulkUpsert(filteredNotesWithID)
+}
+
 func (a *NoteService) GetNotes() ([]models.Note, error) {
 	// TODO: real query
 	return a.noteRepository.GetNotes()

@@ -7,7 +7,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func RegisterTagHandler(app *fiber.App, tagService *services.TagService) {
+func RegisterTagHandler(app fiber.Router, tagService *services.TagService) {
 	app.Get("/tags", func(c *fiber.Ctx) error {
 		tags, err := tagService.GetTags()
 		if err != nil {

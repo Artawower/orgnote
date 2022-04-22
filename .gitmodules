@@ -1,3 +1,6 @@
 [submodule "second-brain-publisher"]
 	path = second-brain-publisher
 	url = git@github.com:Artawower/second-brain-publisher.git
+[submodule "web-roam"]
+	path = web-roam
+	url = git@github.com:Artawower/web-roam.git
