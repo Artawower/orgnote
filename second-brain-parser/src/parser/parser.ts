@@ -10,8 +10,8 @@ import {
   GreaterElementType,
   ElementType,
 } from 'uniorg';
-import { NoteLink, Note, NoteHeading, NoteCategory } from './models.js';
-import { isTrue, asArray, isFileImage } from './tools.js';
+import { NoteLink, Note, NoteHeading, NoteCategory } from './models';
+import { isTrue, asArray, isFileImage } from './tools';
 
 const FILETAGS_DEVIDER = ':';
 

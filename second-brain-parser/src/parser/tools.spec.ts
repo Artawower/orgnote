@@ -1,4 +1,4 @@
-import { isFileImage, isFileNameContainUuid, isOrgFile, isTrue, normalizeStringValue, trim } from './tools';
+import { isFileImage, isFileNameContainUuid, isOrgFile, isTrue, normalizeStringValue } from './tools';
 import { v4 as uuid } from 'uuid';
 
 describe('Tools test', () => {
@@ -32,8 +32,9 @@ describe('Tools test', () => {
     expect(normalizeStringValue('')).toEqual('');
   });
 
-  it('Should correct determine image files', () => {
+  fit('Should correct determine image files', () => {
     expect(isFileImage('file_name.jpg')).toEqual(true);
+    expect(isFileImage('../file_name.jpg')).toEqual(true);
     expect(isFileImage('myimage.some-info.webp')).toEqual(true);
     expect(isFileImage('img.svg')).toEqual(true);
     expect(isFileImage('./img.svg')).toEqual(true);

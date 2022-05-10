@@ -1,0 +1,11 @@
+import { OrgNode } from 'uniorg';
+export declare const normalizeStringValue: (val: string) => string;
+export declare const isTrue: (val: string) => boolean;
+export declare function normalizeOrgValue(val: string): string | number | boolean;
+export declare const trim: (str: string, ch: string) => string;
+export declare const Arrayify: () => <T>(target: Function) => () => [T[], OrgNode];
+export declare const asArray: <T>(target: Function) => () => [T[], OrgNode];
+export declare const isFileImage: (path: string) => boolean;
+export declare const uniquifyFileName: (path: string) => string;
+export declare const isFileNameContainUuid: (fileName: string) => boolean;
+export declare const isOrgFile: (fileName: string) => boolean;

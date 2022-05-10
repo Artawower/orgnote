@@ -328,7 +328,8 @@ Another one text
 
   it('Parser should collect images', () => {
     const note = collectNote(parsedOrgDocument1);
-    expect(note.meta.images).toEqual(['./test.jpeg']);
+    expect(note.meta.images).not.toEqual(['./test.jpeg']);
+    expect(note.meta.images.length).toEqual(1);
   });
 
   it('Parser should not collect images', () => {

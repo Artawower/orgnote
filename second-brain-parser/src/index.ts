@@ -2,11 +2,11 @@ import { parse } from 'uniorg-parse/lib/parser.js';
 import { OrgData } from 'uniorg';
 import toVFile from 'to-vfile';
 
-import { Note, collectNote, NodeMiddleware, isOrgFile } from './parser/index.js';
+import { Note, collectNote, NodeMiddleware, isOrgFile } from './parser/index';
 import { readdirSync, Dirent, existsSync } from 'fs';
 import { resolve } from 'path';
 import { stringify } from 'uniorg-stringify/lib/stringify.js';
-import { createLinkMiddleware } from './parser/middleware.js';
+import { createLinkMiddleware } from './parser/middleware';
 
 const readOrgFileContent = (filePath: string): OrgData => {
   const orgFile = toVFile.readSync(filePath);
