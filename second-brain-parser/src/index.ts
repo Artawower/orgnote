@@ -65,7 +65,7 @@ const collectOrgNotesFromDir = (dir: string): Note[] => {
   return notes.filter((n) => n.id);
 };
 
-export { collectNoteFromFile, collectNotesFromDir, stringify, collectOrgNotesFromDir };
+export { collectNoteFromFile, collectNotesFromDir, stringify, collectOrgNotesFromDir, createLinkMiddleware };
 
 // const note = collectNoteFromFile('./miscellaneous/test1.org');
 
