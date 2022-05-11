@@ -1,6 +1,6 @@
 {
   "name": "second-brain-parser",
-  "version": "0.0.14",
+  "version": "0.0.15",
   "description": "Convert org mode roam notes to structure and vice versa",
   "type": "module",
   "main": "dist/index.js",
@@ -41,6 +41,8 @@
     "@types/jest": "27.4.1",
     "@types/node": "17.0.17",
     "jest": "27.5.1",
+    "jest-resolve": "^28.1.0",
+    "jest-ts-webcompat-resolver": "^1.0.0",
     "nyc": "15.1.0",
     "prettier": "2.5.1",
     "ts-jest": "27.1.3",
