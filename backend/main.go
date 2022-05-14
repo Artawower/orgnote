@@ -29,7 +29,7 @@ func main() {
 	noteRepository := repositories.NewNoteRepository()
 	tagRepository := repositories.NewTagRepository()
 
-	noteService := services.NewNoteService(noteRepository)
+	noteService := services.NewNoteService(noteRepository, config.MediaPath)
 	tagService := services.NewTagService(tagRepository)
 
 	// TODO: master add validation

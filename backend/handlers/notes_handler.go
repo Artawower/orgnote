@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"encoding/json"
 	"moonbrain/models"
 	"moonbrain/services"
 	"net/http"
@@ -14,6 +15,30 @@ type NoteFilter struct {
 	Offset *int      `json:"offset"`
 	Search *int      `json:"filter"`
 	Tags   *[]string `json:"tags"`
+}
+
+func collectNoteFromString(stringNote string) (models.Note, error) {
+	note := models.Note{}
+	err := json.Unmarshal([]byte(stringNote), &note)
+	if err != nil {
+		return note, err
+	}
+	return note, nil
+}
+
+func collectNotesFromStrings(stringNotes []string) ([]models.Note, []string) {
+	notes := []models.Note{}
+	errors := []string{}
+	for _, strNote := range stringNotes {
+		note, err := collectNoteFromString(strNote)
+		if err != nil {
+			// TODO master: add user friendly error message
+			errors = append(errors, err.Error())
+			continue
+		}
+		notes = append(notes, note)
+	}
+	return notes, errors
 }
 
 func RegisterNoteHandler(app fiber.Router, noteService *services.NoteService) {
@@ -64,20 +89,39 @@ func RegisterNoteHandler(app fiber.Router, noteService *services.NoteService) {
 	})
 
 	app.Put("/notes/bulk-upsert", func(c *fiber.Ctx) error {
-		notes := new([]models.Note)
 
-		if err := c.BodyParser(notes); err != nil {
+		log.Info().Msgf("content type: %v", string(c.Request().Header.ContentType()))
+		if form, err := c.MultipartForm(); err == nil {
+
 			log.Info().Err(err).Msg("note handler: put notes: parse body")
-			return c.Status(fiber.StatusInternalServerError).JSON(NewHttpError("Can't parse body", err))
+			// files := form.File["files"]
+			rawNotes, ok := form.Value["notes"]
+			if !ok {
+				return c.Status(http.StatusInternalServerError).JSON(NewHttpError("Notes doesn't provided", nil))
+			}
+			notes, errors := collectNotesFromStrings(rawNotes)
+			if len(errors) > 0 {
+				// TODO: master add errors exposing to real life.
+				log.Error().Err(err).Msg("note handler: put notes: collect notes")
+			}
+			err = noteService.BulkCreateOrUpdate(notes)
+			if err != nil {
+				return c.Status(http.StatusInternalServerError).JSON(NewHttpError("Can't create notes", nil))
+			}
+			files := form.File["files"]
+			log.Info().Msgf("notes: %v", files)
+
+			err := noteService.UploadImages(files)
+			if err != nil {
+				// TODO: master error handling here
+				return c.Status(http.StatusInternalServerError).JSON(NewHttpError("Can't upload images", nil))
+			}
+
+			return c.Status(http.StatusOK).JSON(nil)
 		}
 
-		err := noteService.BulkCreateOrUpdate(*notes)
+		return c.Status(http.StatusInternalServerError).JSON(NewHttpError("Can't parse multipart form data", nil))
 
-		if err != nil {
-			log.Info().Err(err).Msg("note handler: put notes: update note")
-			return c.Status(http.StatusInternalServerError).JSON(NewHttpError("Can't create note:(", nil))
-		}
-		return c.Status(http.StatusOK).JSON(nil)
 	})
 
 }

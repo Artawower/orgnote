@@ -1,6 +1,8 @@
 package repositories
 
-import "moonbrain/models"
+import (
+	"moonbrain/models"
+)
 
 type NoteRepository struct {
 	fakeDb map[string]models.Note
@@ -11,17 +13,17 @@ func NewNoteRepository() *NoteRepository {
 }
 
 func (a *NoteRepository) GetNotes() ([]models.Note, error) {
-	articles := []models.Note{}
+	notes := []models.Note{}
 
-	for _, article := range a.fakeDb {
-		articles = append(articles, article)
+	for _, note := range a.fakeDb {
+		notes = append(notes, note)
 	}
 
-	return articles, nil
+	return notes, nil
 }
 
-func (a *NoteRepository) AddNote(article models.Note) error {
-	a.fakeDb[article.ID] = article
+func (a *NoteRepository) AddNote(note models.Note) error {
+	a.fakeDb[note.ID] = note
 	return nil
 }
 

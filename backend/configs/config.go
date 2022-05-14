@@ -6,6 +6,7 @@ type Config struct {
 	AppAddress string
 	MongoURI   string
 	Debug      bool
+	MediaPath  string
 }
 
 func NewConfig() Config {
@@ -25,5 +26,6 @@ func NewConfig() Config {
 		AppAddress: appAddress,
 		MongoURI:   mongoURI,
 		Debug:      debug,
+		MediaPath:  "./media",
 	}
 }
