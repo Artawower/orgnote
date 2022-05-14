@@ -1,4 +1,4 @@
-import { isTrue, asArray, isFileImage } from './tools';
+import { isTrue, asArray, isFileImage } from './tools.js';
 const FILETAGS_DEVIDER = ':';
 const createSelectionHandler = (middleware) => (content) => {
     const handleOrgNode = createNodeHandlers(middleware);
@@ -62,6 +62,8 @@ const createNodeHandlers = (middleware) => (node) => {
         paragraph: createSelectionHandler(middleware),
         'property-drawer': createSelectionHandler(middleware),
         'node-property': asArray(propertyHandler),
+        'list-item': createSelectionHandler(middleware),
+        'plain-list': createSelectionHandler(middleware),
     };
     const handler = handlers[node.type];
     const updatedNode = middleware?.(node) || node;
@@ -104,6 +106,6 @@ export const collectNote = (content, middlewareChains = []) => {
         return acc;
     }, newEmptyNote());
     note.content = patchedOrgNode;
-    return note;
+    return [note, patchedOrgNode];
 };
 //# sourceMappingURL=parser.js.map

@@ -14,7 +14,7 @@ specifiers:
   ts-jest: 27.1.3
   ts-node: 10.5.0
   tsm: 2.2.1
-  typescript: ^4.5.5
+  typescript: 4.5.5
   unified: 9.2.2
   uniorg: 0.4.0
   uniorg-extract-keywords: 0.4.5

@@ -4,3 +4,6 @@
 [submodule "web-roam"]
 	path = web-roam
 	url = git@github.com:Artawower/web-roam.git
+[submodule "second-brain-parser"]
+	path = secon-brain-parser
+	url = git@github.com:Artawower/second-brain-parser.git

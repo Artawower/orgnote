@@ -1,7 +1,7 @@
-import { Link, OrgNode, Paragraph } from 'uniorg';
-import { parse } from 'uniorg-parse/lib/parser.js';
+import { Link, OrgNode, Paragraph } from "uniorg";
+import { parse } from "uniorg-parse/lib/parser.js";
 
-import { collectNote } from './index';
+import { collectNote } from "./index";
 
 const orgDocument1 = `
 :PROPERTIES:
@@ -79,50 +79,50 @@ const parsedOrgDocumentWithoutHeading = parse(`
 *Hello its me*
 /and its a italic text/ and normal text and [[link][https://google.com]]`);
 
-describe('Parser tests', () => {
-  it('Parser should collect headings', () => {
-    const note = collectNote(parsedOrgDocument1);
+describe("Parser tests", () => {
+  it("Parser should collect headings", () => {
+    const [note, _] = collectNote(parsedOrgDocument1);
 
     expect(note.meta.headings).toEqual([
-      { text: 'Headline 1', level: 1 },
-      { text: 'Headline 2', level: 2 },
+      { text: "Headline 1", level: 1 },
+      { text: "Headline 2", level: 2 },
     ]);
   });
 
-  it('Parser should collect nested headings', () => {
-    const note = collectNote(parsedOrgDocument2);
+  it("Parser should collect nested headings", () => {
+    const [note, _] = collectNote(parsedOrgDocument2);
 
     expect(note.meta.headings).toEqual([
-      { text: 'A lot of', level: 1 },
-      { text: 'Nested', level: 2 },
-      { text: 'Fields', level: 2 },
-      { text: '3', level: 3 },
-      { text: '4 level', level: 4 },
-      { text: '5 level', level: 5 },
-      { text: 'Second level 1', level: 1 },
+      { text: "A lot of", level: 1 },
+      { text: "Nested", level: 2 },
+      { text: "Fields", level: 2 },
+      { text: "3", level: 3 },
+      { text: "4 level", level: 4 },
+      { text: "5 level", level: 5 },
+      { text: "Second level 1", level: 1 },
     ]);
   });
 
-  it('Parser without heading should return empty list', () => {
-    const note = collectNote(parsedOrgDocumentWithoutHeading);
+  it("Parser without heading should return empty list", () => {
+    const [note, _] = collectNote(parsedOrgDocumentWithoutHeading);
 
     expect(note.meta.headings).toEqual([]);
   });
 
-  it('Parser should extract correct title', () => {
-    const note = collectNote(parsedOrgDocument1);
+  it("Parser should extract correct title", () => {
+    const [note, _] = collectNote(parsedOrgDocument1);
 
-    expect(note.meta.title).toEqual('Test article');
+    expect(note.meta.title).toEqual("Test article");
   });
 
-  it('Parser should not collect title from document without title', () => {
-    const note = collectNote(parsedOrgDocument2);
+  it("Parser should not collect title from document without title", () => {
+    const [note, _] = collectNote(parsedOrgDocument2);
 
     expect(note.meta.title).toBeUndefined();
   });
 
-  it('Parser should collect only first title as the meta info', () => {
-    const note = collectNote(
+  it("Parser should collect only first title as the meta info", () => {
+    const [note, _] = collectNote(
       parse(`
 #+TITLE: Hey
 #+DESCRIPTION: 123
@@ -134,11 +134,11 @@ describe('Parser tests', () => {
 `)
     );
 
-    expect(note.meta.title).toEqual('Hey');
+    expect(note.meta.title).toEqual("Hey");
   });
 
-  it('Parser should collect title that placed not at start of the document', () => {
-    const note = collectNote(
+  it("Parser should collect title that placed not at start of the document", () => {
+    const [note, _] = collectNote(
       parse(`
       * Hello
       /I am a roam note/
@@ -150,23 +150,23 @@ describe('Parser tests', () => {
   `)
     );
 
-    expect(note.meta.title).toEqual('MY NOTE 1.');
+    expect(note.meta.title).toEqual("MY NOTE 1.");
   });
 
-  it('Parser should collect title that consist only from numbers', () => {
-    const note = collectNote(parse(`#+TITLE: 123`));
+  it("Parser should collect title that consist only from numbers", () => {
+    const [note, _] = collectNote(parse(`#+TITLE: 123`));
 
-    expect(note.meta.title).toEqual('123');
+    expect(note.meta.title).toEqual("123");
   });
 
-  it('Parser should collect tags', () => {
-    const note = collectNote(parsedOrgDocument1);
+  it("Parser should collect tags", () => {
+    const [note, _] = collectNote(parsedOrgDocument1);
 
-    expect(note.meta.tags).toEqual(['tag1', 'tag2', 'tag3']);
+    expect(note.meta.tags).toEqual(["tag1", "tag2", "tag3"]);
   });
 
-  it('Parser should merge tags from different placements', () => {
-    const note = collectNote(
+  it("Parser should merge tags from different placements", () => {
+    const [note, _] = collectNote(
       parse(`
 #+FILETAGS: :tag1:tag2:
 #+TITLE: Hellow
@@ -176,46 +176,48 @@ describe('Parser tests', () => {
 #+FILETAGS: :tag3:tag4:`)
     );
 
-    expect(note.meta.tags).toEqual(['tag1', 'tag2', 'tag3', 'tag4']);
+    expect(note.meta.tags).toEqual(["tag1", "tag2", "tag3", "tag4"]);
   });
 
-  it('Parser should collect tags with spaces', () => {
-    const note = collectNote(parse('#+FILETAGS: :tag 1:tag 2 and spaces:tag 3:'));
+  it("Parser should collect tags with spaces", () => {
+    const [note, _] = collectNote(
+      parse("#+FILETAGS: :tag 1:tag 2 and spaces:tag 3:")
+    );
 
-    expect(note.meta.tags).toEqual(['tag 1', 'tag 2 and spaces', 'tag 3']);
+    expect(note.meta.tags).toEqual(["tag 1", "tag 2 and spaces", "tag 3"]);
   });
 
   // TODO: master  add test for merge tags from multiline
 
-  it('Parser should not collect tag in note without tags', () => {
-    const note = collectNote(parsedOrgDocument2);
+  it("Parser should not collect tag in note without tags", () => {
+    const [note, _] = collectNote(parsedOrgDocument2);
 
     expect(note.meta.tags).toEqual([]);
   });
 
-  it('Parser should collect description', () => {
-    const note = collectNote(parsedOrgDocument1);
+  it("Parser should collect description", () => {
+    const [note, _] = collectNote(parsedOrgDocument1);
 
-    expect(note.meta.description).toEqual('This is description!');
+    expect(note.meta.description).toEqual("This is description!");
   });
 
-  it('Parser should collect description', () => {
-    const note = collectNote(parsedOrgDocument2);
+  it("Parser should collect description", () => {
+    const [note, _] = collectNote(parsedOrgDocument2);
 
     expect(note.meta.description).toBeUndefined();
   });
 
-  it('Parser should collect empty description field', () => {
-    const note = collectNote(parse(`#+DESCRIPTION:`));
+  it("Parser should collect empty description field", () => {
+    const [note, _] = collectNote(parse(`#+DESCRIPTION:`));
 
-    expect(note.meta.description).toEqual('');
+    expect(note.meta.description).toEqual("");
 
-    const note2 = collectNote(parse(`#+DESCRIPTION:`));
-    expect(note2.meta.description).toEqual('');
+    const [note2, _1] = collectNote(parse(`#+DESCRIPTION:`));
+    expect(note2.meta.description).toEqual("");
   });
 
-  it('Parser should collect only first description as meta', () => {
-    const note = collectNote(
+  it("Parser should collect only first description as meta", () => {
+    const [note, _] = collectNote(
       parse(`
 #+TITLE: Hello world
 #+DESCRIPTION: first description
@@ -226,23 +228,23 @@ describe('Parser tests', () => {
 `)
     );
 
-    expect(note.meta.description).toEqual('first description');
+    expect(note.meta.description).toEqual("first description");
   });
 
-  it('Parser shound not recognize the note as published', () => {
-    const note = collectNote(parsedOrgDocument1);
+  it("Parser shound not recognize the note as published", () => {
+    const [note, _] = collectNote(parsedOrgDocument1);
 
     expect(note.meta.published).toEqual(false);
   });
 
-  it('Parser shound recognize the note as published', () => {
-    const note = collectNote(parsedOrgDocument2);
+  it("Parser shound recognize the note as published", () => {
+    const [note, _] = collectNote(parsedOrgDocument2);
 
     expect(note.meta.published).toEqual(true);
   });
 
-  it('Parser shound not recognize the note as published with random content', () => {
-    const note = collectNote(
+  it("Parser shound not recognize the note as published with random content", () => {
+    const [note, _] = collectNote(
       parse(`
 :PROPERTIES:
 :PUBLISHED: blabla
@@ -252,8 +254,8 @@ describe('Parser tests', () => {
     expect(note.meta.published).toEqual(false);
   });
 
-  it('Parser shound not recognize the note as published with empty string', () => {
-    const note = collectNote(
+  it("Parser shound not recognize the note as published with empty string", () => {
+    const [note, _] = collectNote(
       parse(`
 :PROPERTIES:
 :PUBLISHED:
@@ -263,8 +265,8 @@ describe('Parser tests', () => {
     expect(note.meta.published).toEqual(false);
   });
 
-  it('Parser shound recognize the note as published with yes keyword', () => {
-    const note = collectNote(
+  it("Parser shound recognize the note as published with yes keyword", () => {
+    const [note, _] = collectNote(
       parse(`
 :PROPERTIES:
 :PUBLISHED: yes
@@ -274,16 +276,16 @@ describe('Parser tests', () => {
     expect(note.meta.published).toEqual(true);
   });
 
-  it('Parser should collect all external links from document', () => {
-    const note = collectNote(parsedOrgDocument1);
+  it("Parser should collect all external links from document", () => {
+    const [note, _] = collectNote(parsedOrgDocument1);
     expect(note.meta.externalLinks).toEqual([
-      { name: 'Its a link', url: 'https://google.com' },
-      { name: 'another link', url: 'https://du-blog.ru' },
+      { name: "Its a link", url: "https://google.com" },
+      { name: "another link", url: "https://du-blog.ru" },
     ]);
   });
 
-  it('Parser should not collect internal link', () => {
-    const note = collectNote(
+  it("Parser should not collect internal link", () => {
+    const [note, _] = collectNote(
       parse(`
  [[https://google.com][Its a link]]
 Another one text
@@ -294,13 +296,13 @@ Another one text
     );
 
     expect(note.meta.externalLinks).toEqual([
-      { name: 'Its a link', url: 'https://google.com' },
-      { name: 'another link', url: 'https://du-blog.ru' },
+      { name: "Its a link", url: "https://google.com" },
+      { name: "another link", url: "https://du-blog.ru" },
     ]);
   });
 
-  it('Parser should collect only internal link', () => {
-    const note = collectNote(
+  it("Parser should collect only internal link", () => {
+    const [note, _] = collectNote(
       parse(`
  [[https://google.com][Its a link]]
 Another one text
@@ -312,32 +314,34 @@ Another one text
 `)
     );
 
-    expect(note.meta.linkedArticles).toEqual([{ name: 'Elisp', url: 'id:elisp' }]);
+    expect(note.meta.linkedArticles).toEqual([
+      { name: "Elisp", url: "id:elisp" },
+    ]);
   });
 
-  it('Parser should container empty links lists', () => {
-    const note = collectNote(parsedOrgDocument2);
+  it("Parser should container empty links lists", () => {
+    const [note, _] = collectNote(parsedOrgDocument2);
 
     expect(note.meta.linkedArticles).toEqual([]);
   });
 
-  it('Parser should collect id', () => {
-    const note = collectNote(parsedOrgDocument1);
-    expect(note.id).toEqual('identifier qweqwe');
+  it("Parser should collect id", () => {
+    const [note, _] = collectNote(parsedOrgDocument1);
+    expect(note.id).toEqual("identifier qweqwe");
   });
 
-  it('Parser should collect images', () => {
-    const note = collectNote(parsedOrgDocument1);
-    expect(note.meta.images).toEqual(['./test.jpeg']);
+  it("Parser should collect correct images", () => {
+    const [note, _] = collectNote(parsedOrgDocument1);
+    expect(note.meta.images).toEqual(["test.jpeg"]);
     expect(note.meta.images.length).toEqual(1);
   });
 
-  it('Parser should not collect images', () => {
-    const note = collectNote(parsedOrgDocument2);
+  it("Parser should not collect images", () => {
+    const [note, _] = collectNote(parsedOrgDocument2);
     expect(note.meta.images).toEqual([]);
   });
 
-  it('Parser should call middleware', () => {
+  it("Parser should call middleware", () => {
     let middlewareCalled = false;
     const middlewares = [
       (n: OrgNode) => {
@@ -351,18 +355,18 @@ Another one text
   });
 
   // TODO: master fix test
-  it('Parser should update node by middleware', () => {
+  it("Parser should update node by middleware", () => {
     const middlewares = [
       (n: OrgNode) => {
-        if (n.type === 'link' && n.linkType === 'file' && n.path) {
-          n.path = './new-path.jpg';
-          n.rawLink = './new-path.jpg';
+        if (n.type === "link" && n.linkType === "file" && n.path) {
+          n.path = "./new-path.jpg";
+          n.rawLink = "./new-path.jpg";
         }
         return n;
       },
     ];
 
-    const note = collectNote(
+    const [note, _] = collectNote(
       parse(`
 #+TITLE: Some note with image, and this image should be renamed by middleware and change positions of next blocks
 [[./test.jpeg][test]]
@@ -374,7 +378,7 @@ Another one text
     );
 
     const link = (note.content.children[1] as Paragraph).children[0] as Link;
-    expect(link.path).toEqual('./new-path.jpg');
-    expect(link.rawLink).toEqual('./new-path.jpg');
+    expect(link.path).toEqual("./new-path.jpg");
+    expect(link.rawLink).toEqual("./new-path.jpg");
   });
 });

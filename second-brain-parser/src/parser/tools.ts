@@ -1,19 +1,21 @@
-import { OrgNode } from 'uniorg';
-import { v4 as uuid } from 'uuid';
+import { OrgNode } from "uniorg";
+import { v4 as uuid } from "uuid";
 
 /*
  * Remote extra spaces and transform value to lower case
  */
-export const normalizeStringValue = (val: string): string => val.toLowerCase().trim();
+export const normalizeStringValue = (val: string): string =>
+  val.toLowerCase().trim();
 
 /*
  * Determine, could the string interpretation of the org value to be a true
  */
-export const isTrue = (val: string): boolean => !!['true', 'yes'].find((v) => v === normalizeStringValue(val));
+export const isTrue = (val: string): boolean =>
+  !!["true", "yes"].find((v) => v === normalizeStringValue(val));
 
 export function normalizeOrgValue(val: string): string | number | boolean {
   const normalizedLiteral = val.toLowerCase().trim();
-  if (['true', 'false'].find((v) => v === normalizedLiteral)) {
+  if (["true", "false"].find((v) => v === normalizedLiteral)) {
     return JSON.parse(normalizedLiteral);
   }
   if (val && !isNaN(val as any)) {
@@ -49,26 +51,29 @@ export const Arrayify =
 
 export const asArray = Arrayify();
 
-export const isFileImage = (path: string): boolean => /\.(gif|svg|jpe?g|tiff?|png|webp|bmp)$/i.test(path);
+export const isFileImage = (path: string): boolean =>
+  /\.(gif|svg|jpe?g|tiff?|png|webp|bmp)$/i.test(path);
 
 /*
  *  Make file name is unique
  */
 export const uniquifyFileName = (path: string): string => {
   const uniqueHash = uuid();
-  const splittedFileName = path.split('.');
+  const splittedFileName = path.split(".");
   if (splittedFileName.length > 1) {
     const fileExtension = splittedFileName.pop();
-    const fullFileName = splittedFileName.join('.');
+    const fullFileName = splittedFileName.join(".");
     return `${fullFileName}-${uniqueHash}.${fileExtension}`;
   }
   return `${path}-${uniqueHash}`;
 };
 
 export const isFileNameContainUuid = (fileName: string): boolean => {
-  const splittedFileName = fileName.split('/');
+  const splittedFileName = fileName.split("/");
   const onlyFileName = splittedFileName.pop();
-  return /.*[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}.*/.test(onlyFileName);
+  return /.*[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}.*/.test(
+    onlyFileName
+  );
 };
 
 export const isOrgFile = (fileName: string): boolean => /\.org$/.test(fileName);

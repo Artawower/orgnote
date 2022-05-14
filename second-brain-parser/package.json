@@ -1,9 +1,9 @@
 {
   "name": "second-brain-parser",
-  "version": "0.0.15",
+  "version": "0.0.20",
   "description": "Convert org mode roam notes to structure and vice versa",
-  "type": "module",
   "main": "dist/index.js",
+  "type": "module",
   "scripts": {
     "start": "node --loader tsm src/index.ts",
     "build": "tsc --project tsconfig.json",
@@ -48,6 +48,6 @@
     "ts-jest": "27.1.3",
     "ts-node": "10.5.0",
     "tsm": "2.2.1",
-    "typescript": "^4.5.5"
+    "typescript": "4.5.5"
   }
 }

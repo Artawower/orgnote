@@ -1,22 +1,31 @@
 {
-  "compilerOptions": {
-    "target": "es2021",
-    "rootDir": "./src",
-    "baseUrl": "./src",
-    "module": "es2022",
-    "outDir": "dist",
-    "removeComments": true,
-    "declaration": true,
-    "moduleResolution": "node",
-    "resolveJsonModule": true,
-    "emitDecoratorMetadata": true,
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
-    "experimentalDecorators": true,
-    "sourceMap": true,
-    "skipLibCheck": true,
-    "types": ["node", "jest", "uniorg"]
-  },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules", "**/*.spec.ts"]
+    "compilerOptions": {
+        "target": "es2021",
+        "rootDir": "./src",
+        "baseUrl": "./src",
+        "module": "es2022",
+        "outDir": "dist",
+        "removeComments": true,
+        "declaration": true,
+        "moduleResolution": "node",
+        "resolveJsonModule": true,
+        "emitDecoratorMetadata": true,
+        "esModuleInterop": true,
+        "allowSyntheticDefaultImports": true,
+        "experimentalDecorators": true,
+        "sourceMap": true,
+        "skipLibCheck": true,
+        "types": [
+            "node",
+            "jest",
+            "uniorg"
+        ]
+    },
+    "include": [
+        "src/**/*"
+    ],
+    "exclude": [
+        "node_modules",
+        "**/*.spec.ts"
+    ]
 }

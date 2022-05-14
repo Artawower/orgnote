@@ -1,13 +1,10 @@
 :PROPERTIES:
 :ID: test-note
 :END:
-
 #+TITLE: 3 note
 #+DESCRIPTION: Some description
 #+FILETAGS: :tag1:tag2:
 #+STARTUP: show2levels
 #+ID: test-article
 #+ACTIVE:
-
-
 * Hi

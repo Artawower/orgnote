@@ -9,11 +9,12 @@ import {
   Keyword,
   GreaterElementType,
   ElementType,
-} from 'uniorg';
-import { NoteLink, Note, NoteHeading, NoteCategory } from './models';
-import { isTrue, asArray, isFileImage } from './tools';
+} from "uniorg";
+import { NoteLink, Note, NoteHeading, NoteCategory } from "./models.js";
+import { isTrue, asArray, isFileImage } from "./tools.js";
+import { basename } from "path";
 
-const FILETAGS_DEVIDER = ':';
+const FILETAGS_DEVIDER = ":";
 
 export type NodeMiddleware = (orgData: OrgNode) => OrgNode;
 
@@ -35,12 +36,23 @@ const createSelectionHandler =
   (middleware: NodeMiddleware) =>
   (content: Section): [NoteNodeChunk[], OrgNode] => {
     const handleOrgNode = createNodeHandlers(middleware);
-    const [chunks, nodes] = content.children.reduce<[NoteNodeChunk[], Array<GreaterElementType | ElementType>]>(
-      ([chunks, previousNodes]: [NoteNodeChunk[], Array<GreaterElementType | ElementType>], content: OrgNode) => {
+    const [chunks, nodes] = content.children.reduce<
+      [NoteNodeChunk[], Array<GreaterElementType | ElementType>]
+    >(
+      (
+        [chunks, previousNodes]: [
+          NoteNodeChunk[],
+          Array<GreaterElementType | ElementType>
+        ],
+        content: OrgNode
+      ) => {
         const val = handleOrgNode(content);
         const [handledChunks, orgNode] = val;
         const newChunks = [...chunks, ...(handledChunks || [])];
-        const newNodes = [...previousNodes, ...(orgNode ? [orgNode] : [])] as Array<GreaterElementType | ElementType>;
+        const newNodes = [
+          ...previousNodes,
+          ...(orgNode ? [orgNode] : []),
+        ] as Array<GreaterElementType | ElementType>;
         return [newChunks, newNodes];
       },
       [[], []]
@@ -57,7 +69,9 @@ const headlineHandler = (content: Headline): [NoteNodeChunk, OrgNode] => [
 
 const keywordHandlers: { [key: string]: (data: Keyword) => NoteNodeChunk } = {
   title: (content: Keyword) => ({ title: content.value }),
-  filetags: (content: Keyword) => ({ tags: content.value.split(FILETAGS_DEVIDER).filter((v: string) => v) }),
+  filetags: (content: Keyword) => ({
+    tags: content.value.split(FILETAGS_DEVIDER).filter((v: string) => v),
+  }),
   description: (content: Keyword) => ({ description: content.value }),
 };
 
@@ -67,30 +81,52 @@ const keywordHandler = (content: Keyword): [NoteNodeChunk, OrgNode] => [
 ];
 
 const combineRawTextFromChildren = (children: Text[]) =>
-  children.reduce((entireRawText, currentChildren) => `${entireRawText}${currentChildren.value}`, '');
+  children.reduce(
+    (entireRawText, currentChildren) =>
+      `${entireRawText}${currentChildren.value}`,
+    ""
+  );
 
-const linkTypeCategory: { [key: string]: 'internalLinks' | 'externalLinks' | 'file' } = {
-  id: 'internalLinks',
-  https: 'externalLinks',
-  http: 'externalLinks',
-  file: 'file',
+const linkTypeCategory: {
+  [key: string]: "internalLinks" | "externalLinks" | "file";
+} = {
+  id: "internalLinks",
+  https: "externalLinks",
+  http: "externalLinks",
+  file: "file",
 };
 
 const linkHandler = (link: Link): [NoteNodeChunk, OrgNode] => {
   const linkType = linkTypeCategory[link.linkType];
-  if (linkType === 'file' && isFileImage(link.path)) {
-    return [{ images: [link.path] }, link];
+  if (linkType === "file" && isFileImage(link.path)) {
+    return [{ images: [basename(link.path)] }, link];
   }
   if (linkType) {
-    return [{ [linkType]: [{ name: combineRawTextFromChildren(link.children as Text[]), url: link.rawLink }] }, link];
+    return [
+      {
+        [linkType]: [
+          {
+            name: combineRawTextFromChildren(link.children as Text[]),
+            url: link.rawLink,
+          },
+        ],
+      },
+      link,
+    ];
   }
   return [null, link];
 };
 
-const propertiesHandlers: { [key: string]: (property: NodeProperty) => NoteNodeChunk } = {
-  published: (property: NodeProperty) => ({ published: isTrue(property.value) }),
+const propertiesHandlers: {
+  [key: string]: (property: NodeProperty) => NoteNodeChunk;
+} = {
+  published: (property: NodeProperty) => ({
+    published: isTrue(property.value),
+  }),
   id: (property: NodeProperty) => ({ id: property.value }),
-  category: (property: NodeProperty) => ({ category: property.value as NoteCategory }),
+  category: (property: NodeProperty) => ({
+    category: property.value as NoteCategory,
+  }),
 };
 
 const propertyHandler = (property: NodeProperty): [NoteNodeChunk, OrgNode] => [
@@ -99,18 +135,24 @@ const propertyHandler = (property: NodeProperty): [NoteNodeChunk, OrgNode] => [
 ];
 
 const createNodeHandlers =
-  (middleware?: NodeMiddleware): ((node: OrgNode) => [NoteNodeChunk[], OrgNode]) =>
+  (
+    middleware?: NodeMiddleware
+  ): ((node: OrgNode) => [NoteNodeChunk[], OrgNode]) =>
   (node: OrgNode): [NoteNodeChunk[], OrgNode] => {
     // TODO: master doesn't see real type of returned function, change asArray method, or delete it
-    const handlers: { [key in OrgNode['type']]?: (data: OrgNode) => [NoteNodeChunk[], OrgNode] } = {
+    const handlers: {
+      [key in OrgNode["type"]]?: (data: OrgNode) => [NoteNodeChunk[], OrgNode];
+    } = {
       section: createSelectionHandler(middleware),
-      'org-data': createSelectionHandler(middleware),
+      "org-data": createSelectionHandler(middleware),
       headline: asArray<NoteNodeChunk>(headlineHandler),
       keyword: asArray<NoteNodeChunk>(keywordHandler),
       link: asArray<NoteNodeChunk>(linkHandler),
       paragraph: createSelectionHandler(middleware),
-      'property-drawer': createSelectionHandler(middleware),
-      'node-property': asArray<NoteNodeChunk>(propertyHandler),
+      "property-drawer": createSelectionHandler(middleware),
+      "node-property": asArray<NoteNodeChunk>(propertyHandler),
+      "list-item": createSelectionHandler(middleware),
+      "plain-list": createSelectionHandler(middleware),
     };
     const handler = handlers[node.type];
     const updatedNode = middleware?.(node) || node;
@@ -132,9 +174,15 @@ const newEmptyNote = (): Partial<Note> => {
 const buildMiddleware =
   (middlewareChains: NodeMiddleware[] = []) =>
   (orgNode: OrgNode) =>
-    middlewareChains.reduce((orgNode, currentChain) => currentChain(orgNode), orgNode);
+    middlewareChains.reduce(
+      (orgNode, currentChain) => currentChain(orgNode),
+      orgNode
+    );
 
-export const collectNote = (content: OrgData, middlewareChains: NodeMiddleware[] = []): Note => {
+export const collectNote = (
+  content: OrgData,
+  middlewareChains: NodeMiddleware[] = []
+): [Note, OrgData] => {
   const middleware = buildMiddleware(middlewareChains);
 
   const handleOrgNode = createNodeHandlers(middleware);
@@ -164,5 +212,5 @@ export const collectNote = (content: OrgData, middlewareChains: NodeMiddleware[]
     }, newEmptyNote()) as Note;
 
   note.content = patchedOrgNode as OrgData;
-  return note;
+  return [note, patchedOrgNode as OrgData];
 };
