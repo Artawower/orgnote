@@ -1,0 +1,27 @@
+version: "3.8"
+
+services:
+  sb_mongo:
+    container_name: sb_mongo
+    image: mongo:5.0.9
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
+      # MONGODB_APPLICATION_DATABASE: second-brain
+      # MONGODB_APPLICATION_USER: ${MONGO_USERNAME}
+      # MONGODB_APPLICATION_PASS: ${MONGO_PASSWORD}
+    ports:
+      - 27017:27017
+    volumes:
+      - mongodb_data_container:/data/db
+    networks:
+      - sb_network
+    command: [--auth]
+
+
+volumes:
+  mongodb_data_container:
+
+networks:
+  sb_network:
+    driver: bridge

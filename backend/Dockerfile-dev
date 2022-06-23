@@ -1,0 +1,10 @@
+FROM golang:1.17.0-stretch
+
+RUN apt update && apt upgrade -y && \
+    apt install -y git \
+    make openssh-client
+WORKDIR /app
+
+RUN go get -u github.com/cosmtrek/air
+
+ENTRYPOINT ["air"]

@@ -13,11 +13,12 @@ import (
 
 type NoteService struct {
 	noteRepository *repositories.NoteRepository
+	tagRepository  *repositories.TagRepository
 	imageDir       string
 }
 
-func NewNoteService(repositoriesRepository *repositories.NoteRepository, imageDir string) *NoteService {
-	return &NoteService{noteRepository: repositoriesRepository, imageDir: imageDir}
+func NewNoteService(repositoriesRepository *repositories.NoteRepository, tagRepository *repositories.TagRepository, imageDir string) *NoteService {
+	return &NoteService{noteRepository: repositoriesRepository, tagRepository: tagRepository, imageDir: imageDir}
 }
 
 func (a *NoteService) CreateNote(note models.Note) error {
@@ -38,20 +39,31 @@ func (a *NoteService) UpdateNote(note models.Note) error {
 
 func (a *NoteService) BulkCreateOrUpdate(notes []models.Note) error {
 	filteredNotesWithID := []models.Note{}
+	tags := []string{}
 	for _, note := range notes {
 		if note.ID != "" {
 			filteredNotesWithID = append(filteredNotesWithID, note)
+			tags = append(tags, note.Meta.Tags...)
 		}
 	}
-	return a.noteRepository.BulkUpsert(filteredNotesWithID)
+	// TODO: master add transaction here
+	err := a.noteRepository.BulkUpsert(filteredNotesWithID)
+	if err != nil {
+		return fmt.Errorf("note service: bulk create or update: could not bulk upsert notes: %v", err)
+	}
+	err = a.tagRepository.BulkUpsert(tags)
+	if err != nil {
+		return fmt.Errorf("note service: bulk create or update: could not bulk upsert tags: %v", err)
+	}
+
+	return nil
 }
 
 func (a *NoteService) GetNotes() ([]models.Note, error) {
-	// TODO: real query
 	return a.noteRepository.GetNotes()
 }
 
-func (a *NoteService) GetNote(id string) (models.Note, error) {
+func (a *NoteService) GetNote(id string) (*models.Note, error) {
 	return a.noteRepository.GetNote(id)
 }
 

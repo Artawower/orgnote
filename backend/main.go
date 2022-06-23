@@ -1,15 +1,19 @@
 package main
 
 import (
+	"context"
 	"moonbrain/configs"
 	"moonbrain/handlers"
 	"moonbrain/repositories"
 	"moonbrain/services"
 	"os"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 func main() {
@@ -23,13 +27,34 @@ func main() {
 		zerolog.SetGlobalLevel(zerolog.InfoLevel)
 	}
 
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+
+	defer cancel()
+	mongoClient, err := mongo.Connect(ctx, options.Client().ApplyURI(config.MongoURI))
+	if err != nil {
+		log.Fatal().Err(err).Msg("failed to connect to mongo")
+		return
+	}
+	err = mongoClient.Ping(ctx, nil)
+	if err != nil {
+		log.Fatal().Err(err).Msgf("failed to ping mongo: %v", err)
+		return
+	}
+	defer func() {
+		if err = mongoClient.Disconnect(ctx); err != nil {
+			panic(err)
+		}
+	}()
+
+	database := mongoClient.Database("second-brain")
+
 	app := fiber.New()
 	api := app.Group("/api/v1")
 
-	noteRepository := repositories.NewNoteRepository()
-	tagRepository := repositories.NewTagRepository()
+	noteRepository := repositories.NewNoteRepository(database)
+	tagRepository := repositories.NewTagRepository(database)
 
-	noteService := services.NewNoteService(noteRepository, config.MediaPath)
+	noteService := services.NewNoteService(noteRepository, tagRepository, config.MediaPath)
 	tagService := services.NewTagService(tagRepository)
 
 	// TODO: master add validation
@@ -37,6 +62,7 @@ func main() {
 	handlers.RegisterTagHandler(api, tagService)
 	// handlers.RegisterUserHandlers(app)
 	// handlers.RegisterTagHandlers(app)
+	app.Static("media", config.MediaPath)
 	log.Info().Msg("Application start debug mode: " + config.AppAddress)
 	app.Listen(config.AppAddress)
 

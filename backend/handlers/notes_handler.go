@@ -85,6 +85,7 @@ func RegisterNoteHandler(app fiber.Router, noteService *services.NoteService) {
 			log.Info().Err(err).Msg("note handler: post note: create")
 			return c.Status(http.StatusInternalServerError).JSON(NewHttpError("Can't create note:(", nil))
 		}
+
 		return c.Status(http.StatusOK).JSON(nil)
 	})
 
@@ -117,6 +118,13 @@ func RegisterNoteHandler(app fiber.Router, noteService *services.NoteService) {
 				return c.Status(http.StatusInternalServerError).JSON(NewHttpError("Can't upload images", nil))
 			}
 
+			err = noteService.BulkCreateOrUpdate(notes)
+
+			if err != nil {
+				return c.Status(http.StatusInternalServerError).JSON(NewHttpError("Can't save notes", nil))
+			}
+
+			log.Info().Msg("Okay, notes should be saved...")
 			return c.Status(http.StatusOK).JSON(nil)
 		}
 

@@ -9,3 +9,4 @@ moonbrain/.DS_Store
 index.js
 dist/*
 second-brian-parser/dist
+.env

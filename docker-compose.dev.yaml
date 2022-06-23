@@ -1,0 +1,48 @@
+version: "3.8"
+services:
+  sb_backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile-dev
+    container_name: sb_backend
+    ports:
+      - 8000:8000
+    depends_on:
+      - sb_mongo
+    links:
+      - sb_mongo
+    expose:
+      - 8000
+    volumes:
+      - ./backend:/app
+    environment:
+      - APP_ADDRESS=0.0.0.0:8000
+      - GOROOT=/usr/local/go
+      - MONGO_URL=sb_mongo
+      - MONGO_PORT=27017
+      - MONGO_USERNAME=${MONGO_USERNAME}
+      - MONGO_PASSWORD=${MONGO_PASSWORD}
+    networks:
+      - sb_network
+
+  # sb_ui:
+  #   container_name: sb_ui
+  #   build:
+  #     context: ./frontend
+  #     dockerfile: Dockerfile
+  #   working_dir: /app
+  #   links:
+  #     - sb_backend
+  #   expose:
+  #     - 3000
+  #   ports:
+  #     - 3000:3000
+  #   volumes:
+  #     - /app/node_modules
+  #     - ./frontend:/app
+  #   command: /bin/sh -c "yarn dev"
+  #   environment:
+  #     - API_URL=http://sb_backend:8000
+  #     - HOST=0.0.0.0
+  #   networks:
+  #     - sb_network

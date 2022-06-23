@@ -1,6 +1,10 @@
 package configs
 
-import "os"
+import (
+	"os"
+
+	"github.com/rs/zerolog/log"
+)
 
 type Config struct {
 	AppAddress string
@@ -16,9 +20,14 @@ func NewConfig() Config {
 	}
 
 	mongoURI := "mongodb://127.0.0.1:27017"
-	if envMongoURI := os.Getenv("MONGO_URI"); envMongoURI != "" {
-		mongoURI = envMongoURI
+	// TODO: master check correct enviroment variable
+	if envMongoURL := os.Getenv("MONGO_URL"); envMongoURL != "" {
+		mongoUser := os.Getenv("MONGO_USERNAME")
+		mongoPassword := os.Getenv("MONGO_PASSWORD")
+		mongoPort := os.Getenv("MONGO_PORT")
+		mongoURI = "mongodb://" + mongoUser + ":" + mongoPassword + "@" + envMongoURL + ":" + mongoPort
 	}
+	log.Info().Msgf("Mongo URI: %s", mongoURI)
 
 	debug := os.Getenv("MODE") == "DEBUG"
 

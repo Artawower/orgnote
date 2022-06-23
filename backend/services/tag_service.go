@@ -3,6 +3,8 @@ package services
 import (
 	"fmt"
 	"moonbrain/repositories"
+
+	"github.com/rs/zerolog/log"
 )
 
 type TagService struct {
@@ -22,7 +24,8 @@ func (t *TagService) GetTags() ([]string, error) {
 }
 
 func (t *TagService) CreateTags(tags []string) error {
-	err := t.tagRepository.CreateTags(tags)
+	log.Info().Msgf("tag service: create tags: %v", tags)
+	err := t.tagRepository.BulkUpsert(tags)
 	if err != nil {
 		return fmt.Errorf("tag service: create tags: %s", err)
 	}

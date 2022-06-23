@@ -1,21 +1,43 @@
 package repositories
 
 import (
+	"context"
+	"errors"
+	"fmt"
 	"moonbrain/models"
+	"reflect"
+	"time"
+
+	"github.com/rs/zerolog/log"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type NoteRepository struct {
-	fakeDb map[string]models.Note
+	db         *mongo.Database
+	collection *mongo.Collection
 }
 
-func NewNoteRepository() *NoteRepository {
-	return &NoteRepository{fakeDb: make(map[string]models.Note)}
+func NewNoteRepository(db *mongo.Database) *NoteRepository {
+	return &NoteRepository{db: db, collection: db.Collection("notes")}
 }
 
 func (a *NoteRepository) GetNotes() ([]models.Note, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
 	notes := []models.Note{}
 
-	for _, note := range a.fakeDb {
+	cur, err := a.collection.Find(ctx, bson.M{})
+	if err != nil {
+		return nil, fmt.Errorf("note repository: failed to get notes: %v", err)
+	}
+
+	for cur.Next(ctx) {
+		var note models.Note
+		err := cur.Decode(&note)
+		if err != nil {
+			return nil, fmt.Errorf("note repository: failed to decode note: %v", err)
+		}
 		notes = append(notes, note)
 	}
 
@@ -23,24 +45,44 @@ func (a *NoteRepository) GetNotes() ([]models.Note, error) {
 }
 
 func (a *NoteRepository) AddNote(note models.Note) error {
-	a.fakeDb[note.ID] = note
-	return nil
+	return errors.New("not implemented")
 }
 
 func (a *NoteRepository) UpdateNote(article models.Note) error {
-	a.fakeDb[article.ID] = article
-	return nil
+	return errors.New("not implemented")
 }
 
 func (a *NoteRepository) BulkUpsert(notes []models.Note) error {
-	for _, note := range notes {
-		a.fakeDb[note.ID] = note
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	notesModels := make([]mongo.WriteModel, len(notes))
+	for i, note := range notes {
+		notesModels[i] = mongo.NewUpdateOneModel().SetFilter(bson.M{"_id": note.ID}).SetUpdate(bson.M{"$set": note}).SetUpsert(true)
+	}
+
+	_, err := a.collection.BulkWrite(ctx, notesModels)
+	if err != nil {
+		return fmt.Errorf("note repository: failed to bulk upsert notes: %v", err)
 	}
 	return nil
 }
 
-func (a *NoteRepository) GetNote(id string) (models.Note, error) {
-	article, _ := a.fakeDb[id]
+func (a *NoteRepository) GetNote(id string) (*models.Note, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
 
-	return article, nil
+	res := a.collection.FindOne(ctx, bson.M{"_id": id})
+	if err := res.Err(); err != nil {
+		return nil, fmt.Errorf("note repository: failed to get note: %v", err)
+	}
+
+	var note models.Note
+	err := res.Decode(&note)
+	if err != nil {
+		return nil, fmt.Errorf("note repository: failed to decode note: %v", err)
+	}
+	log.Info().Msgf("note repository: got note: %v", reflect.TypeOf(note.Content).Name())
+
+	return &note, nil
 }

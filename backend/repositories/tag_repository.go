@@ -1,20 +1,70 @@
 package repositories
 
+import (
+	"context"
+	"fmt"
+	"time"
+
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
+)
+
 type TagRepository struct {
-	fakeDb []string
+	db         *mongo.Database
+	collection *mongo.Collection
 }
 
-func NewTagRepository() *TagRepository {
+func NewTagRepository(db *mongo.Database) *TagRepository {
 	return &TagRepository{
-		fakeDb: []string{},
+		db:         db,
+		collection: db.Collection("tags"),
 	}
 }
 
 func (t *TagRepository) GetAll() ([]string, error) {
-	return t.fakeDb, nil
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*2)
+	defer cancel()
+
+	cur, err := t.collection.Find(ctx, bson.D{{}})
+	if err != nil {
+		return nil, fmt.Errorf("tag repository: failed to get all tags: %v", err)
+	}
+
+	tags := []string{}
+
+	for cur.Next(context.Background()) {
+		var tag string
+		err := cur.Decode(&tag)
+		if err != nil {
+			return nil, fmt.Errorf("tag repository: failed to decode tag: %v", err)
+		}
+		tags = append(tags, tag)
+	}
+	return tags, nil
 }
 
-func (t *TagRepository) CreateTags(tags []string) error {
-	t.fakeDb = append(t.fakeDb, tags...)
+type TagModel struct {
+	ID  primitive.ObjectID `bson:"_id"`
+	Tag string             `bson:"tag"`
+}
+
+func (t *TagRepository) BulkUpsert(tags []string) error {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*60)
+	defer cancel()
+
+	tagsModels := make([]mongo.WriteModel, len(tags))
+	for i, tag := range tags {
+		tagsModels[i] = mongo.
+			NewUpdateOneModel().
+			SetFilter(bson.M{"tag": tag}).
+			SetUpdate(bson.M{"$set": TagModel{ID: primitive.NewObjectID(), Tag: tag}}).
+			SetUpsert(true)
+	}
+
+	if _, err := t.collection.BulkWrite(ctx, tagsModels); err != nil {
+		return fmt.Errorf("tag repository: failed to create tags: %w", err)
+	}
+
 	return nil
 }
