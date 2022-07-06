@@ -40,6 +40,7 @@ func main() {
 		log.Fatal().Err(err).Msgf("failed to ping mongo: %v", err)
 		return
 	}
+
 	defer func() {
 		if err = mongoClient.Disconnect(ctx); err != nil {
 			panic(err)

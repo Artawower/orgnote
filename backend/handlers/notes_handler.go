@@ -82,7 +82,7 @@ func RegisterNoteHandler(app fiber.Router, noteService *services.NoteService) {
 		err := noteService.CreateNote(*note)
 
 		if err != nil {
-			log.Info().Err(err).Msg("note handler: post note: create")
+			log.Info().Err(err).Msgf("note handler: post note: create %v", err)
 			return c.Status(http.StatusInternalServerError).JSON(NewHttpError("Can't create note:(", nil))
 		}
 
@@ -107,6 +107,7 @@ func RegisterNoteHandler(app fiber.Router, noteService *services.NoteService) {
 			}
 			err = noteService.BulkCreateOrUpdate(notes)
 			if err != nil {
+				log.Warn().Msgf("note handlers: save notes: %v", err)
 				return c.Status(http.StatusInternalServerError).JSON(NewHttpError("Can't create notes", nil))
 			}
 			files := form.File["files"]

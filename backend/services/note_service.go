@@ -51,6 +51,9 @@ func (a *NoteService) BulkCreateOrUpdate(notes []models.Note) error {
 	if err != nil {
 		return fmt.Errorf("note service: bulk create or update: could not bulk upsert notes: %v", err)
 	}
+	if len(tags) == 0 {
+		return nil
+	}
 	err = a.tagRepository.BulkUpsert(tags)
 	if err != nil {
 		return fmt.Errorf("note service: bulk create or update: could not bulk upsert tags: %v", err)

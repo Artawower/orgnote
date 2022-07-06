@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -45,8 +44,8 @@ func (t *TagRepository) GetAll() ([]string, error) {
 }
 
 type TagModel struct {
-	ID  primitive.ObjectID `bson:"_id"`
-	Tag string             `bson:"tag"`
+	ID  string `bson:"_id"`
+	Tag string `bson:"tag"`
 }
 
 func (t *TagRepository) BulkUpsert(tags []string) error {
@@ -57,8 +56,8 @@ func (t *TagRepository) BulkUpsert(tags []string) error {
 	for i, tag := range tags {
 		tagsModels[i] = mongo.
 			NewUpdateOneModel().
-			SetFilter(bson.M{"tag": tag}).
-			SetUpdate(bson.M{"$set": TagModel{ID: primitive.NewObjectID(), Tag: tag}}).
+			SetFilter(bson.M{"_id": tag}).
+			SetUpdate(bson.M{"$set": TagModel{ID: tag, Tag: tag}}).
 			SetUpsert(true)
 	}
 
