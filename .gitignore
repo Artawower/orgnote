@@ -10,3 +10,5 @@ index.js
 dist/*
 second-brian-parser/dist
 .env
+
+backend/media/*
