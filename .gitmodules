@@ -7,6 +7,6 @@
 [submodule "second-brain-parser"]
 	path = secon-brain-parser
 	url = git@github.com:Artawower/second-brain-parser.git
-[sobmodule "frontend"]
-	path = frontend
+[submodule "second-brain-client"]
+	path = second-brain-client
 	url = git@github.com:Artawower/second-brain-client.git
