@@ -1,0 +1,20 @@
+upstream backend_server {
+    server sb_backend:3000;
+}
+
+server {
+    listen 80;
+    server_name 65.108.90.95;
+
+    location /media/ {
+        alias /opt/services/backend/media/;
+    }
+    location /api/ {
+        proxy_pass http://backend_server/;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header Host $host;
+        proxy_redirect off;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+    }
+}

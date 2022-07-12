@@ -17,5 +17,7 @@ jobs:
             eval $(ssh-agent -s)
             ssh-add ~/.ssh/github
             cd second-brain
-            git pull
-            docker-compose up --build -d
+            git fetch --all
+            git reset --hard origin/master
+            git submodule update --recursive --remote
+            docker-compose -f docker-compose.yaml -f docker-compose.prod.yaml up --build -d

@@ -24,4 +24,3 @@ volumes:
 
 networks:
   sb_network:
-    driver: bridge

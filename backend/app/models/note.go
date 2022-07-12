@@ -1,0 +1,41 @@
+package models
+
+import "go.mongodb.org/mongo-driver/bson"
+
+type NoteHeading struct {
+	Level int    `json:"level"`
+	Text  string `json:"text"`
+}
+
+type NoteLink struct {
+	Url  string `json:"url"`
+	Name string `json:"name"`
+}
+
+type category string
+
+const (
+	CategoryArticle  category = "article"
+	CategoryBook     category = "book"
+	CategorySchedule category = "schedule"
+)
+
+type NoteMeta struct {
+	PreviewImg     *string        `json:"previewImg" bson:"previewImg"`
+	Title          *string        `json:"title" bson:"title"`
+	Description    *string        `json:"description" bson:"description"`
+	Category       *category      `json:"category" bson:"category"`
+	Headings       *[]NoteHeading `json:"headings" bson:"headings"`
+	LinkedArticles *[]NoteLink    `json:"linkedArticles" bson:"linkedArticles"`
+	Published      bool           `json:"published" bson:"published"`
+	ExternalLinks  *[]NoteLink    `json:"externalLinks" bson:"externalLinks"`
+	Startup        *string        `json:"startup" bson:"startup"`
+	Tags           []string       `json:"tags" bson:"tags"`
+	Images         []string       `json:"images" bson:"images"`
+}
+
+type Note struct {
+	ID      string   `json:"id" bson:"_id"`
+	Content bson.M   `json:"content" bson:"content"`
+	Meta    NoteMeta `json:"meta" bson:"meta"`
+}

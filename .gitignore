@@ -11,4 +11,4 @@ dist/*
 second-brian-parser/dist
 .env
 
-backend/media/*
+backend/app/media/*
