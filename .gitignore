@@ -12,3 +12,5 @@ second-brian-parser/dist
 .env
 
 backend/app/media/*
+# Frontend build directory
+frontend/*

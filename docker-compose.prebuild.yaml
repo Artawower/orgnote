@@ -1,0 +1,10 @@
+version: "3.8"
+
+services:
+  sb_frontend:
+    build:
+      context: ./second-brain-client
+      dockerfile: Dockerfile-prod
+
+    volumes:
+      - ./frontend:/app/dist/spa:rw

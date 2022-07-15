@@ -17,18 +17,26 @@ services:
       - MONGO_URL=sb_mongo
       - MONGO_PASSWORD=${MONGO_PASSWORD}
       - MONGO_PORT=27017
+      - APP_ADDRESS=0.0.0.0:3000
 
   sb_nginx:
     container_name: sb_nginx
-    image: nginx:latest
+    image: nginx:stable
     ports:
       - 80:80
+    expose:
+      - 80
     volumes:
+      - ./frontend:/opt/services/frontend:rw
       - ./config/nginx/conf.d:/etc/nginx/conf.d:rw
-      # - ./backend/app/media:/opt/services/backend/media:rw
+    depends_on:
+      - sb_backend
+    links:
+      - sb_backend
     networks:
       - sb_network
     command: ["/usr/sbin/nginx", "-g", "daemon off;"]
 
 networks:
   sb_network:
+    driver: bridge
