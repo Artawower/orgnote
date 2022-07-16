@@ -4,6 +4,8 @@ services:
   sb_mongo:
     container_name: sb_mongo
     image: mongo:5.0.9
+    logging:
+      driver: none
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}

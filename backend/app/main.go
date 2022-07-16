@@ -50,7 +50,7 @@ func main() {
 	database := mongoClient.Database("second-brain")
 
 	app := fiber.New()
-	api := app.Group("/api/v1")
+	api := app.Group("/v1")
 
 	noteRepository := repositories.NewNoteRepository(database)
 	tagRepository := repositories.NewTagRepository(database)

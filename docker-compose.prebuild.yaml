@@ -8,3 +8,6 @@ services:
 
     volumes:
       - ./frontend:/app/dist/spa:rw
+
+    environment:
+      - API_URL=${API_URL}
