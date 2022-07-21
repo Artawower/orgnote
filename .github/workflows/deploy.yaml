@@ -1,9 +1,8 @@
 name: remote ssh command
 on: [push]
 jobs:
-
   build:
-    name: Build
+    name: Deploy
     runs-on: ubuntu-latest
     steps:
       - name: ls -a via ssh
