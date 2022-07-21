@@ -18,6 +18,7 @@ services:
       - MONGO_PASSWORD=${MONGO_PASSWORD}
       - MONGO_PORT=27017
       - APP_ADDRESS=0.0.0.0:3000
+      - BACKEND_HOST=${BACKEND_HOST}
 
   sb_nginx:
     container_name: sb_nginx

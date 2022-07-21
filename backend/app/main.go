@@ -54,13 +54,16 @@ func main() {
 
 	noteRepository := repositories.NewNoteRepository(database)
 	tagRepository := repositories.NewTagRepository(database)
+	userRepository := repositories.NewUserRepository(database)
 
 	noteService := services.NewNoteService(noteRepository, tagRepository, config.MediaPath)
 	tagService := services.NewTagService(tagRepository)
+	userService := services.NewUserService(userRepository)
 
 	// TODO: master add validation
 	handlers.RegisterNoteHandler(api, noteService)
 	handlers.RegisterTagHandler(api, tagService)
+	handlers.RegisterAuthHandler(api, userService, config)
 	// handlers.RegisterUserHandlers(app)
 	// handlers.RegisterTagHandlers(app)
 	app.Static("media", config.MediaPath)

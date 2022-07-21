@@ -7,6 +7,8 @@ services:
     container_name: sb_backend
     ports:
       - 8000:8000
+    expose:
+      - 8000
     depends_on:
       - sb_mongo
     links:
@@ -17,11 +19,15 @@ services:
       - ./backend:/app
     environment:
       - APP_ADDRESS=0.0.0.0:8000
+      - CLIENT_ADDRESS=http://localhost:3000
       - GOROOT=/usr/local/go
       - MONGO_URL=sb_mongo
       - MONGO_PORT=27017
       - MONGO_USERNAME=${MONGO_USERNAME}
       - MONGO_PASSWORD=${MONGO_PASSWORD}
+      - GITHUB_ID=${GITHUB_ID}
+      - GITHUB_SECRET=${GITHUB_SECRET}
+      - BACKEND_HOST=${BACKEND_HOST}
     networks:
       - sb_network
 

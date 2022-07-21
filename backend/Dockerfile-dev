@@ -1,10 +1,13 @@
-FROM golang:1.17.0-stretch
+FROM golang:1.18.4-alpine
 
-RUN apt update && apt upgrade -y && \
-    apt install -y git \
+RUN apk update && apk upgrade && \
+    apk add git curl \
     make openssh-client
+
 WORKDIR /app
+COPY go.mod go.sum ./
+RUN go mod download && go mod verify
 
-RUN go get -u github.com/cosmtrek/air
+RUN curl -sSfL https://raw.githubusercontent.com/cosmtrek/air/master/install.sh | sh -s -- -b $(go env GOPATH)/bin
 
-ENTRYPOINT ["air"]
+CMD ["air"]

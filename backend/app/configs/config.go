@@ -7,12 +7,17 @@ import (
 )
 
 type Config struct {
-	AppAddress string
-	MongoURI   string
-	Debug      bool
-	MediaPath  string
+	AppAddress    string
+	MongoURI      string
+	Debug         bool
+	MediaPath     string
+	GithubID      string
+	GithubSecret  string
+	BackendHost   string
+	ClientAddress string
 }
 
+// TODO: master split into several functions
 func NewConfig() Config {
 	appAddress := "127.0.0.1:3000"
 	if envAddr := os.Getenv("APP_ADDRESS"); envAddr != "" {
@@ -27,14 +32,34 @@ func NewConfig() Config {
 		mongoPort := os.Getenv("MONGO_PORT")
 		mongoURI = "mongodb://" + mongoUser + ":" + mongoPassword + "@" + envMongoURL + ":" + mongoPort
 	}
-	log.Info().Msgf("Mongo URI: %s", mongoURI)
+
+	envGithubID := os.Getenv("GITHUB_ID")
+	envGithubSecret := os.Getenv("GITHUB_SECRET")
+
+	if envGithubID == "" || envGithubSecret == "" {
+		log.Warn().Msg("Github OAuth is not configured")
+	}
 
 	debug := os.Getenv("MODE") == "DEBUG"
 
-	return Config{
-		AppAddress: appAddress,
-		MongoURI:   mongoURI,
-		Debug:      debug,
-		MediaPath:  "./media",
+	clientAddress := appAddress
+	if envClientAddress := os.Getenv("CLIENT_ADDRESS"); envClientAddress != "" {
+		clientAddress = envClientAddress
 	}
+
+	backendHost := os.Getenv("BACKEND_HOST")
+
+	config := Config{
+		AppAddress:    appAddress,
+		MongoURI:      mongoURI,
+		Debug:         debug,
+		MediaPath:     "./media",
+		GithubID:      envGithubID,
+		GithubSecret:  envGithubSecret,
+		ClientAddress: clientAddress,
+		BackendHost:   backendHost,
+	}
+	log.Info().Msgf("Config: %+v", config)
+
+	return config
 }
