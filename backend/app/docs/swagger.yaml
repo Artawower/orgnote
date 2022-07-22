@@ -1,0 +1,51 @@
+basePath: /
+definitions:
+  handlers.NoteResponse:
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: artawower@protonmail.com
+    name: API Support
+  description: List of methods for work with second brain.
+  license:
+    name: GPL 3.0
+    url: https://www.gnu.org/licenses/gpl-3.0.html
+  termsOfService: http://swagger.io/terms/
+  title: Second Brain API
+  version: 0.0.1
+paths:
+  /notes/{id}:
+    get:
+      consumes:
+      - application/json
+      description: get note by id
+      parameters:
+      - description: Account ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.NoteResponse'
+        "400":
+          description: Bad Request
+          schema:
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            type: object
+      summary: Get note
+      tags:
+      - notes
+swagger: "2.0"

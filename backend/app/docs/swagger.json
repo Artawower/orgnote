@@ -1,0 +1,76 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "List of methods for work with second brain.",
+        "title": "Second Brain API",
+        "termsOfService": "http://swagger.io/terms/",
+        "contact": {
+            "name": "API Support",
+            "email": "artawower@protonmail.com"
+        },
+        "license": {
+            "name": "GPL 3.0",
+            "url": "https://www.gnu.org/licenses/gpl-3.0.html"
+        },
+        "version": "0.0.1"
+    },
+    "host": "localhost:8080",
+    "basePath": "/",
+    "paths": {
+        "/notes/{id}": {
+            "get": {
+                "description": "get note by id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "notes"
+                ],
+                "summary": "Get note",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Account ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.NoteResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "handlers.NoteResponse": {
+            "type": "object"
+        }
+    }
+}

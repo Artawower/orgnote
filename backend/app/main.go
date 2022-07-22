@@ -16,6 +16,16 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
+// @title Second Brain API
+// @version 0.0.1
+// @description List of methods for work with second brain.
+// @termsOfService http://swagger.io/terms/
+// @contact.name API Support
+// @contact.email artawower@protonmail.com
+// @license.name GPL 3.0
+// @license.url https://www.gnu.org/licenses/gpl-3.0.html
+// @host localhost:8080
+// @BasePath /
 func main() {
 	config := configs.NewConfig()
 
@@ -61,6 +71,7 @@ func main() {
 	userService := services.NewUserService(userRepository)
 
 	// TODO: master add validation
+	handlers.RegisterSwagger(api)
 	handlers.RegisterNoteHandler(api, noteService)
 	handlers.RegisterTagHandler(api, tagService)
 	handlers.RegisterAuthHandler(api, userService, config)

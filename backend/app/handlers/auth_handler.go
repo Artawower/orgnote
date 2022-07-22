@@ -48,11 +48,9 @@ func RegisterAuthHandler(app fiber.Router, userService *services.UserService, co
 			return c.Status(fiber.StatusBadRequest).SendString(err.Error())
 		}
 		// return c.Redirect(url, fiber.StatusTemporaryRedirect)
-		data := Response[OAuthRedirectData]{
-			Data: OAuthRedirectData{
-				RedirectURL: url,
-			},
-		}
+		data := NewHttpReponse[OAuthRedirectData, any](OAuthRedirectData{
+			RedirectURL: url,
+		}, nil)
 		return c.JSON(data)
 	})
 

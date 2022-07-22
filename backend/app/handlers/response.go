@@ -1,24 +1,24 @@
 package handlers
 
-type HttpError struct {
-	Message string      `json:"message"`
-	Data    interface{} `json:"data"`
+type HttpError[T any] struct {
+	Message string `json:"message"`
+	Data    T      `json:"data"`
 }
 
-func NewHttpError(message string, data interface{}) HttpError {
-	return HttpError{
+func NewHttpError[T any](message string, data T) HttpError[T] {
+	return HttpError[T]{
 		Message: message,
 		Data:    data,
 	}
 }
 
-type HttpReponse struct {
-	Data interface{} `json:"data"`
-	Meta interface{} `json:"meta"`
+type HttpResponse[T any, T2 any] struct {
+	Data T  `json:"data"`
+	Meta T2 `json:"meta"`
 }
 
-func NewHttpReponse(data interface{}, meta interface{}) HttpReponse {
-	return HttpReponse{
+func NewHttpReponse[T any, T2 any](data T, meta T2) HttpResponse[T, T2] {
+	return HttpResponse[T, T2]{
 		Data: data,
 		Meta: meta,
 	}
