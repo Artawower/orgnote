@@ -66,18 +66,24 @@ func main() {
 	tagRepository := repositories.NewTagRepository(database)
 	userRepository := repositories.NewUserRepository(database)
 
+	authMiddleware := handlers.NewAuthMiddleware(handlers.Config{
+		GetUser: userRepository.FindUserByToken,
+	})
+
 	noteService := services.NewNoteService(noteRepository, tagRepository, config.MediaPath)
 	tagService := services.NewTagService(tagRepository)
 	userService := services.NewUserService(userRepository)
 
+	// api.Use(handlers.NewAuthMiddleware())
 	// TODO: master add validation
 	handlers.RegisterSwagger(api)
-	handlers.RegisterNoteHandler(api, noteService)
+	handlers.RegisterNoteHandler(api, noteService, authMiddleware)
 	handlers.RegisterTagHandler(api, tagService)
-	handlers.RegisterAuthHandler(api, userService, config)
+	handlers.RegisterAuthHandler(api, userService, config, authMiddleware)
 	// handlers.RegisterUserHandlers(app)
 	// handlers.RegisterTagHandlers(app)
 	app.Static("media", config.MediaPath)
+
 	log.Info().Msg("Application start debug mode: " + config.AppAddress)
 	app.Listen(config.AppAddress)
 }

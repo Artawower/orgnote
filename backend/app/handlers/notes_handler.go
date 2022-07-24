@@ -149,14 +149,14 @@ func (h *NoteHandlers) UpsertNotes(c *fiber.Ctx) error {
 
 }
 
-func RegisterNoteHandler(app fiber.Router, noteService *services.NoteService) {
+func RegisterNoteHandler(app fiber.Router, noteService *services.NoteService, authMiddleware func(*fiber.Ctx) error) {
 	noteHandlers := &NoteHandlers{
 		noteService: noteService,
 	}
 
-	app.Get("/notes/:id", noteHandlers.GetNote)
+	app.Get("/notes/:id", authMiddleware, noteHandlers.GetNote).Name(PublicRouteGetNote)
 	app.Get("/notes", noteHandlers.GetNotes)
-	app.Post("/notes", noteHandlers.CreateNote)
-	app.Put("/notes/bulk-upsert", noteHandlers.UpsertNotes)
+	app.Post("/notes", authMiddleware, noteHandlers.CreateNote)
+	app.Put("/notes/bulk-upsert", authMiddleware, noteHandlers.UpsertNotes)
 
 }
