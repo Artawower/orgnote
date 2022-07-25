@@ -1,6 +1,8 @@
 package tools
 
-import "github.com/gofiber/fiber/v2"
+import (
+	"github.com/gofiber/fiber/v2"
+)
 
 func ExtractBearerToken(authHeader string) string {
 	if authHeader == "" || len(authHeader) <= 7 {

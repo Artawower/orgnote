@@ -57,11 +57,16 @@ func (a *NoteRepository) BulkUpsert(notes []models.Note) error {
 	defer cancel()
 
 	notesModels := make([]mongo.WriteModel, len(notes))
+
 	for i, note := range notes {
-		notesModels[i] = mongo.NewUpdateOneModel().SetFilter(bson.M{"_id": note.ID}).SetUpdate(bson.M{"$set": note}).SetUpsert(true)
+		notesModels[i] = mongo.NewUpdateOneModel().
+			SetFilter(bson.M{"_id": note.ID}).
+			SetUpdate(bson.M{"$set": note}).
+			SetUpsert(true)
 	}
 
-	_, err := a.collection.BulkWrite(ctx, notesModels)
+	d, err := a.collection.BulkWrite(ctx, notesModels)
+	log.Info().Msgf("note repository: bulk upserted %v", d)
 	if err != nil {
 		return fmt.Errorf("note repository: failed to bulk upsert notes: %v", err)
 	}

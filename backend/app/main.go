@@ -70,7 +70,7 @@ func main() {
 		GetUser: userRepository.FindUserByToken,
 	})
 
-	noteService := services.NewNoteService(noteRepository, tagRepository, config.MediaPath)
+	noteService := services.NewNoteService(noteRepository, userRepository, tagRepository, config.MediaPath)
 	tagService := services.NewTagService(tagRepository)
 	userService := services.NewUserService(userRepository)
 

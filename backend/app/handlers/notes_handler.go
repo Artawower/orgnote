@@ -69,7 +69,7 @@ func (h *NoteHandlers) GetNote(c *fiber.Ctx) error {
 		log.Info().Err(err).Msg("note handler: get note: get by id")
 		return c.Status(http.StatusInternalServerError).JSON(NewHttpError[any]("Couldn't get notes, something went wrong", nil))
 	}
-	return c.Status(http.StatusOK).JSON(NewHttpReponse[*models.Note, any](notes, nil))
+	return c.Status(http.StatusOK).JSON(NewHttpReponse[*models.PublicNote, any](notes, nil))
 }
 
 func (h *NoteHandlers) GetNotes(c *fiber.Ctx) error {
@@ -85,7 +85,7 @@ func (h *NoteHandlers) GetNotes(c *fiber.Ctx) error {
 		log.Info().Err(err).Msg("note handler: get notes")
 		return c.Status(http.StatusInternalServerError).JSON(NewHttpError[any]("Couldn't get notes, something went wrong", nil))
 	}
-	return c.Status(http.StatusOK).JSON(NewHttpReponse[[]models.Note, any](notes, nil))
+	return c.Status(http.StatusOK).JSON(NewHttpReponse[[]models.PublicNote, any](notes, nil))
 }
 
 func (h *NoteHandlers) CreateNote(c *fiber.Ctx) error {
@@ -121,7 +121,8 @@ func (h *NoteHandlers) UpsertNotes(c *fiber.Ctx) error {
 			// TODO: master add errors exposing to real life.
 			log.Error().Err(err).Msg("note handler: put notes: collect notes")
 		}
-		err = h.noteService.BulkCreateOrUpdate(notes)
+		user := c.Locals("user").(*models.User)
+		err = h.noteService.BulkCreateOrUpdate(user.ID.Hex(), notes)
 		if err != nil {
 			log.Warn().Msgf("note handlers: save notes: %v", err)
 			return c.Status(http.StatusInternalServerError).JSON(NewHttpError[any]("Can't create notes", nil))
@@ -134,14 +135,6 @@ func (h *NoteHandlers) UpsertNotes(c *fiber.Ctx) error {
 			// TODO: master error handling here
 			return c.Status(http.StatusInternalServerError).JSON(NewHttpError[any]("Can't upload images", nil))
 		}
-
-		err = h.noteService.BulkCreateOrUpdate(notes)
-
-		if err != nil {
-			return c.Status(http.StatusInternalServerError).JSON(NewHttpError[any]("Can't save notes", nil))
-		}
-
-		log.Info().Msg("Okay, notes should be saved...")
 		return c.Status(http.StatusOK).JSON(nil)
 	}
 
@@ -154,7 +147,7 @@ func RegisterNoteHandler(app fiber.Router, noteService *services.NoteService, au
 		noteService: noteService,
 	}
 
-	app.Get("/notes/:id", authMiddleware, noteHandlers.GetNote).Name(PublicRouteGetNote)
+	app.Get("/notes/:id", noteHandlers.GetNote)
 	app.Get("/notes", noteHandlers.GetNotes)
 	app.Post("/notes", authMiddleware, noteHandlers.CreateNote)
 	app.Put("/notes/bulk-upsert", authMiddleware, noteHandlers.UpsertNotes)

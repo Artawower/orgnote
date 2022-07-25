@@ -14,6 +14,7 @@ import (
 	"github.com/markbates/goth/providers/github"
 	"github.com/rs/zerolog/log"
 	"github.com/shareed2k/goth_fiber"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type OAuthRedirectData struct {
@@ -22,6 +23,7 @@ type OAuthRedirectData struct {
 
 func mapToUser(user goth.User) *models.User {
 	return &models.User{
+		ID:                  primitive.NewObjectID(),
 		Provider:            user.Provider,
 		Email:               user.Email,
 		Name:                user.Name,
@@ -34,26 +36,7 @@ func mapToUser(user goth.User) *models.User {
 		RefreshToken:        &user.RefreshToken,
 		TokenExpirationDate: user.ExpiresAt,
 		ProfileURL:          user.RawData["html_url"].(string),
-	}
-}
-
-type publicUser struct {
-	ID         string `json:"id"`
-	Name       string `json:"name"`
-	Nickname   string `json:"nickname"`
-	AvatarURL  string `json:"avatarUrl"`
-	Email      string `json:"email"`
-	ProfileURL string `json:"profileUrl"`
-}
-
-func mapToPublicUserInfo(user *models.User) *publicUser {
-	return &publicUser{
-		ID:         user.ExternalID,
-		Name:       user.Name,
-		Nickname:   user.NickName,
-		AvatarURL:  user.AvatarURL,
-		Email:      user.Email,
-		ProfileURL: user.ProfileURL,
+		Notes:               []models.Note{},
 	}
 }
 
@@ -160,7 +143,7 @@ func RegisterAuthHandler(app fiber.Router, userService *services.UserService, co
 			log.Info().Err(err).Msgf("auth handlers: github auth handler: find user")
 			return c.Status(fiber.StatusBadRequest).SendString(ErrInvalidToken)
 		}
-		return c.Status(200).JSON(NewHttpReponse[*publicUser, any](mapToPublicUserInfo(user), nil))
+		return c.Status(200).JSON(NewHttpReponse[*models.PublicUser, any](user, nil))
 	})
 
 }

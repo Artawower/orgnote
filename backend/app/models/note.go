@@ -35,7 +35,15 @@ type NoteMeta struct {
 }
 
 type Note struct {
-	ID      string   `json:"id" bson:"_id"`
-	Content bson.M   `json:"content" bson:"content"`
-	Meta    NoteMeta `json:"meta" bson:"meta"`
+	ID       string   `json:"id" bson:"_id"`
+	AuthorID string   `json:"authorId" bson:"authorId"`
+	Content  bson.M   `json:"content" bson:"content"`
+	Meta     NoteMeta `json:"meta" bson:"meta"`
+}
+
+type PublicNote struct {
+	ID      string     `json:"id" bson:"_id"`
+	Author  PublicUser `json:"author" bson:"author"`
+	Content bson.M     `json:"content" bson:"content"`
+	Meta    NoteMeta   `json:"meta" bson:"meta"`
 }

@@ -49,11 +49,58 @@ func (u *UserRepository) GetUser(user *models.User) (*models.User, error) {
 	return user, nil
 }
 
+func (u *UserRepository) GetByID(id string) (*models.User, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	objID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return nil, fmt.Errorf("user repository: get by id: convert id: %v", err)
+	}
+	filter := bson.M{"_id": objID}
+	user := models.User{}
+	err = u.collection.FindOne(ctx, filter).Decode(&user)
+	if err != nil {
+		return nil, fmt.Errorf("user repository: find user by id: find one user: %v", err)
+	}
+	return &user, nil
+}
+
+func (u *UserRepository) GetUsersByIDs(userIDs []string) ([]models.User, error) {
+	objectUserIDs := make([]primitive.ObjectID, len(userIDs))
+	for i, id := range userIDs {
+		objID, err := primitive.ObjectIDFromHex(id)
+		if err != nil {
+			return nil, fmt.Errorf("user repository: get users by ids: convert id: %v", err)
+		}
+		objectUserIDs[i] = objID
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	filter := bson.M{"_id": bson.M{"$in": objectUserIDs}}
+	users := []models.User{}
+	cur, err := u.collection.Find(ctx, filter)
+	if err != nil {
+		return nil, fmt.Errorf("user repository: get users by ids: find users: %v", err)
+	}
+	defer cur.Close(ctx)
+	for cur.Next(ctx) {
+		var user models.User
+		err := cur.Decode(&user)
+		if err != nil {
+			return nil, fmt.Errorf("user repository: get users by ids: decode user: %v", err)
+		}
+		users = append(users, user)
+	}
+	return users, nil
+}
+
 func (u *UserRepository) FindUserByToken(token string) (*models.User, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	log.Info().Msgf("token: %s", token)
-	filter := bson.M{"token": token}
+	filter := bson.M{"$or": bson.A{
+		bson.M{"token": token},
+		bson.M{"apiTokens": bson.M{"$elemMatch": bson.M{"token": token}}},
+	}}
 	user := models.User{}
 	err := u.collection.FindOne(ctx, filter).Decode(&user)
 	if err != nil {

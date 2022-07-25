@@ -13,12 +13,23 @@ import (
 
 type NoteService struct {
 	noteRepository *repositories.NoteRepository
+	userRepository *repositories.UserRepository
 	tagRepository  *repositories.TagRepository
 	imageDir       string
 }
 
-func NewNoteService(repositoriesRepository *repositories.NoteRepository, tagRepository *repositories.TagRepository, imageDir string) *NoteService {
-	return &NoteService{noteRepository: repositoriesRepository, tagRepository: tagRepository, imageDir: imageDir}
+func NewNoteService(
+	repositoriesRepository *repositories.NoteRepository,
+	userRepository *repositories.UserRepository,
+	tagRepository *repositories.TagRepository,
+	imageDir string,
+) *NoteService {
+	return &NoteService{
+		noteRepository: repositoriesRepository,
+		tagRepository:  tagRepository,
+		userRepository: userRepository,
+		imageDir:       imageDir,
+	}
 }
 
 func (a *NoteService) CreateNote(note models.Note) error {
@@ -37,11 +48,12 @@ func (a *NoteService) UpdateNote(note models.Note) error {
 	return nil
 }
 
-func (a *NoteService) BulkCreateOrUpdate(notes []models.Note) error {
+func (a *NoteService) BulkCreateOrUpdate(userId string, notes []models.Note) error {
 	filteredNotesWithID := []models.Note{}
 	tags := []string{}
 	for _, note := range notes {
 		if note.ID != "" {
+			note.AuthorID = userId
 			filteredNotesWithID = append(filteredNotesWithID, note)
 			tags = append(tags, note.Meta.Tags...)
 		}
@@ -62,12 +74,92 @@ func (a *NoteService) BulkCreateOrUpdate(notes []models.Note) error {
 	return nil
 }
 
-func (a *NoteService) GetNotes() ([]models.Note, error) {
-	return a.noteRepository.GetNotes()
+// type GetNotesParams struct {
+// 	User string
+// }
+
+func (a *NoteService) GetNotes() ([]models.PublicNote, error) {
+	notes, err := a.noteRepository.GetNotes()
+	if err != nil {
+		return nil, fmt.Errorf("note service: get notes: could not get notes: %v", err)
+	}
+
+	publicNotes := []models.PublicNote{}
+
+	usersMap, err := a.getNotesUsers(notes)
+	if err != nil {
+		return nil, fmt.Errorf("note service: get notes: could not get users: %v", err)
+	}
+
+	for _, note := range notes {
+		u := usersMap[note.AuthorID]
+		publicNote := &models.PublicNote{
+			ID:      note.ID,
+			Content: note.Content,
+			Meta:    note.Meta,
+			Author:  *mapToPublicUserInfo(&u),
+		}
+		publicNotes = append(publicNotes, *publicNote)
+	}
+
+	return publicNotes, nil
 }
 
-func (a *NoteService) GetNote(id string) (*models.Note, error) {
-	return a.noteRepository.GetNote(id)
+func (a *NoteService) getNotesUsers(notes []models.Note) (map[string]models.User, error) {
+	userIDSet := make(map[string]struct{})
+
+	for _, note := range notes {
+		userIDSet[note.AuthorID] = struct{}{}
+	}
+
+	userIDs := []string{}
+	for k := range userIDSet {
+		userIDs = append(userIDs, k)
+	}
+
+	users, err := a.userRepository.GetUsersByIDs(userIDs)
+	log.Err(err).Msgf("note service: get notes users: could not get users!!!!: %v", err)
+
+	if err != nil {
+		return nil, fmt.Errorf("note service: get notes users: could not get users: %v", err)
+	}
+
+	usersMap := make(map[string]models.User)
+
+	for _, u := range users {
+		usersMap[u.ID.Hex()] = u
+	}
+
+	return usersMap, nil
+}
+
+// users := []models.User{}
+// for _, note := range notes {
+// 	user, err := a.userRepository.GetByID(note.AuthorID)
+// 	if err != nil {
+// 		return nil, fmt.Errorf("note service: get notes users: could not get user: %v", err)
+// 	}
+// 	users = append(users, note.Author)
+// }
+// return users
+
+func (a *NoteService) GetNote(id string) (*models.PublicNote, error) {
+	note, err := a.noteRepository.GetNote(id)
+	if err != nil {
+		return nil, fmt.Errorf("note service: get note: could not get note: %v", err)
+	}
+	user, err := a.userRepository.GetByID(note.AuthorID)
+	if err != nil {
+		return nil, fmt.Errorf("note service: get note: could not get user: %v", err)
+	}
+	u := mapToPublicUserInfo(user)
+	// TODO: master add mapper function
+	return &models.PublicNote{
+		ID:      note.ID,
+		Content: note.Content,
+		Meta:    note.Meta,
+		Author:  *u,
+	}, nil
 }
 
 func (a *NoteService) UploadImages(fileHeaders []*multipart.FileHeader) error {

@@ -22,12 +22,12 @@ func (u *UserService) Login(user models.User) (*models.User, error) {
 	return createdUser, nil
 }
 
-func (u *UserService) FindUser(token string) (*models.User, error) {
+func (u *UserService) FindUser(token string) (*models.PublicUser, error) {
 	user, err := u.userRepository.FindUserByToken(token)
 	if err != nil {
 		return nil, fmt.Errorf("user service: find user: %v", err)
 	}
-	return user, nil
+	return mapToPublicUserInfo(user), nil
 }
 
 func (u *UserService) CreateToken(user *models.User) (*models.AccessToken, error) {

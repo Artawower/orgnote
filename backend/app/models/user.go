@@ -27,4 +27,14 @@ type User struct {
 	TokenExpirationDate time.Time          `json:"tokenExpiration" bson:"tokenExpiration"`
 	ProfileURL          string             `json:"profileUrl" bson:"profileUrl"`
 	AccessTokens        []AccessToken      `json:"accessTokens" bson:"accessTokens"`
+	Notes               []Note             `json:"notes" bson:"notes"`
+}
+
+type PublicUser struct {
+	ID         string `json:"id"`
+	Name       string `json:"name"`
+	NickName   string `json:"nickName"`
+	AvatarURL  string `json:"avatarUrl"`
+	Email      string `json:"email"`
+	ProfileURL string `json:"profileUrl"`
 }
