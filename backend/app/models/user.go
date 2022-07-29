@@ -6,14 +6,14 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-type AccessToken struct {
+type APIToken struct {
 	ID          primitive.ObjectID `bson:"_id" json:"id"`
 	Permissions string             `json:"permission" bson:"permission"`
 	Token       string             `json:"token" bson:"token"`
 }
 
 type User struct {
-	ID                  primitive.ObjectID `json:"id" bson:"_id"`
+	ID                  primitive.ObjectID `json:"id" bson:"_id,omitempty"`
 	Provider            string             `json:"provider" bson:"provider"`
 	Email               string             `json:"email" bson:"email"`
 	Name                string             `json:"name" bson:"name"`
@@ -26,7 +26,7 @@ type User struct {
 	RefreshToken        *string            `json:"refreshToken" bson:"refreshToken"`
 	TokenExpirationDate time.Time          `json:"tokenExpiration" bson:"tokenExpiration"`
 	ProfileURL          string             `json:"profileUrl" bson:"profileUrl"`
-	AccessTokens        []AccessToken      `json:"accessTokens" bson:"accessTokens"`
+	APITokens           []APIToken         `json:"apiTokens" bson:"apiTokens"`
 	Notes               []Note             `json:"notes" bson:"notes"`
 }
 

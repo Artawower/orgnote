@@ -8,12 +8,6 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-type Config struct {
-	Filter       func(c *fiber.Ctx) bool
-	Unauthorized fiber.Handler
-	GetUser      func(token string) (*models.User, error)
-}
-
 var ConfigDefault = Config{
 	Filter: nil,
 }
@@ -31,7 +25,24 @@ func configDefault(config ...Config) Config {
 	return cfg
 }
 
-func NewAuthMiddleware(config ...Config) func(*fiber.Ctx) error {
+// TODO: master add config for common arrangements
+func NewAuthMiddleware() func(*fiber.Ctx) error {
+	return func(c *fiber.Ctx) error {
+		rawUser := c.Locals("user")
+		if rawUser == nil {
+			return c.Status(fiber.StatusUnauthorized).JSON(NewHttpError[any](ErrInvalidToken, nil))
+		}
+		return c.Next()
+	}
+}
+
+type Config struct {
+	Filter       func(c *fiber.Ctx) bool
+	Unauthorized fiber.Handler
+	GetUser      func(token string) (*models.User, error)
+}
+
+func NewUserInjectMiddleware(config ...Config) func(*fiber.Ctx) error {
 	cfg := configDefault(config...)
 	if cfg.GetUser == nil {
 		log.Fatal().Msg("auth middleware: init new auth middleware: GetUser function is required")
@@ -43,15 +54,14 @@ func NewAuthMiddleware(config ...Config) func(*fiber.Ctx) error {
 		}
 
 		token := tools.ExtractBearerTokenFromCtx(c)
-		if token == "" {
-			return c.Status(fiber.StatusUnauthorized).JSON(NewHttpError[any](ErrTokenNotProvided, nil))
+		if token != "" {
+			user, err := cfg.GetUser(token)
+			if err != nil {
+				log.Info().Msgf("auth middleware: GetUser: %s", err)
+			}
+			c.Locals("user", user)
 		}
-		user, err := cfg.GetUser(token)
-		if err != nil {
-			log.Info().Msgf("auth middleware: GetUser: %s", err)
-			return c.Status(fiber.StatusUnauthorized).JSON(NewHttpError[any](ErrInvalidToken, nil))
-		}
-		c.Locals("user", user)
 		return c.Next()
 	}
+
 }

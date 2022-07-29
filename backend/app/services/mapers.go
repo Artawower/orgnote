@@ -4,7 +4,7 @@ import "moonbrain/app/models"
 
 func mapToPublicUserInfo(user *models.User) *models.PublicUser {
 	return &models.PublicUser{
-		ID:         user.ExternalID,
+		ID:         user.ID.Hex(),
 		Name:       user.Name,
 		NickName:   user.NickName,
 		AvatarURL:  user.AvatarURL,

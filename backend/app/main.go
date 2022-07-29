@@ -66,9 +66,11 @@ func main() {
 	tagRepository := repositories.NewTagRepository(database)
 	userRepository := repositories.NewUserRepository(database)
 
-	authMiddleware := handlers.NewAuthMiddleware(handlers.Config{
+	app.Use(handlers.NewUserInjectMiddleware(handlers.Config{
 		GetUser: userRepository.FindUserByToken,
-	})
+	}))
+
+	authMiddleware := handlers.NewAuthMiddleware()
 
 	noteService := services.NewNoteService(noteRepository, userRepository, tagRepository, config.MediaPath)
 	tagService := services.NewTagService(tagRepository)

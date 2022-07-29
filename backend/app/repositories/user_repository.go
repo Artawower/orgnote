@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"moonbrain/app/models"
 	"time"
@@ -70,7 +71,7 @@ func (u *UserRepository) GetUsersByIDs(userIDs []string) ([]models.User, error) 
 	for i, id := range userIDs {
 		objID, err := primitive.ObjectIDFromHex(id)
 		if err != nil {
-			return nil, fmt.Errorf("user repository: get users by ids: convert id: %v", err)
+			return nil, fmt.Errorf("user repository: get users by ids: convert id - %s: %v", id, err)
 		}
 		objectUserIDs[i] = objID
 	}
@@ -109,12 +110,32 @@ func (u *UserRepository) FindUserByToken(token string) (*models.User, error) {
 	return &user, nil
 }
 
-func (u *UserRepository) CreateAPIToken(user *models.User) (*models.AccessToken, error) {
+func (u *UserRepository) GetAPITokens(userID string) ([]models.APIToken, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	userObjID, err := primitive.ObjectIDFromHex(userID)
+	if err != nil {
+		return nil, fmt.Errorf("user repository: get api tokens: convert user id: %v", err)
+	}
+
+	filter := bson.M{"_id": userObjID}
+	user := models.User{}
+	err = u.collection.FindOne(ctx, filter).Decode(&user)
+	if errors.Is(err, mongo.ErrNoDocuments) {
+		return []models.APIToken{}, nil
+	}
+	if err != nil {
+		return nil, fmt.Errorf("user repository: get api tokens: find one user: %v", err)
+	}
+	return user.APITokens, nil
+}
+
+func (u *UserRepository) CreateAPIToken(user *models.User) (*models.APIToken, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	filter := bson.M{"_id": user.ID}
 	token := uuid.New()
-	accessToken := models.AccessToken{
+	accessToken := models.APIToken{
 		ID:          primitive.NewObjectID(),
 		Permissions: "w",
 		Token:       token.String(),

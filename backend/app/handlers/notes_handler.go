@@ -12,13 +12,6 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-type NoteFilter struct {
-	Limit  *int      `json:"limit"`
-	Offset *int      `json:"offset"`
-	Search *int      `json:"filter"`
-	Tags   *[]string `json:"tags"`
-}
-
 func collectNoteFromString(stringNote string) (models.Note, error) {
 	note := models.Note{}
 	err := json.Unmarshal([]byte(stringNote), &note)
@@ -63,26 +56,41 @@ type NoteHandlers struct {
 // @Router       /notes/{id}  [get]
 func (h *NoteHandlers) GetNote(c *fiber.Ctx) error {
 	noteID := c.Params("id")
+	ctxUser := c.Locals("user").(*models.User)
 
-	notes, err := h.noteService.GetNote(noteID)
+	notes, err := h.noteService.GetNote(noteID, ctxUser.ID.Hex())
 	if err != nil {
 		log.Info().Err(err).Msg("note handler: get note: get by id")
-		return c.Status(http.StatusInternalServerError).JSON(NewHttpError[any]("Couldn't get notes, something went wrong", nil))
+		return c.Status(http.StatusInternalServerError).JSON(NewHttpError[any]("Couldn't get note, something went wrong", nil))
+	}
+	if notes == nil {
+		return c.Status(http.StatusNotFound).JSON(NewHttpReponse[any, any](nil, nil))
 	}
 	return c.Status(http.StatusOK).JSON(NewHttpReponse[*models.PublicNote, any](notes, nil))
 }
 
+type GetNotesParams struct {
+	UserID *string   `json:"userId"`
+	Query  *string   `json:"query"`
+	Limit  *int      `json:"limit"`
+	Offset *int      `json:"offset"`
+	Search *int      `json:"filter"`
+	Tags   *[]string `json:"tags"`
+}
+
 func (h *NoteHandlers) GetNotes(c *fiber.Ctx) error {
-	filter := new(NoteFilter)
+	filter := new(GetNotesParams)
 
 	if err := c.QueryParser(filter); err != nil {
-		log.Info().Err(err).Msg("note handler: get notes: parse body")
 		return c.Status(fiber.StatusInternalServerError).JSON(NewHttpError("Incorrect input query", err))
 	}
 
-	notes, err := h.noteService.GetNotes()
+	ctxUser := c.Locals("user").(*models.User)
+
+	includePrivateNotes := filter.UserID != nil && ctxUser != nil && ctxUser.ID.Hex() == *filter.UserID
+	notes, err := h.noteService.GetNotes(includePrivateNotes, filter.UserID)
 	if err != nil {
-		log.Info().Err(err).Msg("note handler: get notes")
+		log.Info().Err(err).Msgf("note handler: get notes: get %v", err)
 		return c.Status(http.StatusInternalServerError).JSON(NewHttpError[any]("Couldn't get notes, something went wrong", nil))
 	}
 	return c.Status(http.StatusOK).JSON(NewHttpReponse[[]models.PublicNote, any](notes, nil))

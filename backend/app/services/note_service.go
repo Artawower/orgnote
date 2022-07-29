@@ -48,18 +48,18 @@ func (a *NoteService) UpdateNote(note models.Note) error {
 	return nil
 }
 
-func (a *NoteService) BulkCreateOrUpdate(userId string, notes []models.Note) error {
+func (a *NoteService) BulkCreateOrUpdate(userID string, notes []models.Note) error {
 	filteredNotesWithID := []models.Note{}
 	tags := []string{}
 	for _, note := range notes {
 		if note.ID != "" {
-			note.AuthorID = userId
+			note.AuthorID = userID
 			filteredNotesWithID = append(filteredNotesWithID, note)
 			tags = append(tags, note.Meta.Tags...)
 		}
 	}
 	// TODO: master add transaction here
-	err := a.noteRepository.BulkUpsert(filteredNotesWithID)
+	err := a.noteRepository.BulkUpsert(userID, filteredNotesWithID)
 	if err != nil {
 		return fmt.Errorf("note service: bulk create or update: could not bulk upsert notes: %v", err)
 	}
@@ -74,12 +74,8 @@ func (a *NoteService) BulkCreateOrUpdate(userId string, notes []models.Note) err
 	return nil
 }
 
-// type GetNotesParams struct {
-// 	User string
-// }
-
-func (a *NoteService) GetNotes() ([]models.PublicNote, error) {
-	notes, err := a.noteRepository.GetNotes()
+func (a *NoteService) GetNotes(includePrivate bool, userID *string) ([]models.PublicNote, error) {
+	notes, err := a.noteRepository.GetNotes(includePrivate, userID)
 	if err != nil {
 		return nil, fmt.Errorf("note service: get notes: could not get notes: %v", err)
 	}
@@ -106,6 +102,9 @@ func (a *NoteService) GetNotes() ([]models.PublicNote, error) {
 }
 
 func (a *NoteService) getNotesUsers(notes []models.Note) (map[string]models.User, error) {
+	if len(notes) == 0 {
+		return map[string]models.User{}, nil
+	}
 	userIDSet := make(map[string]struct{})
 
 	for _, note := range notes {
@@ -118,7 +117,6 @@ func (a *NoteService) getNotesUsers(notes []models.Note) (map[string]models.User
 	}
 
 	users, err := a.userRepository.GetUsersByIDs(userIDs)
-	log.Err(err).Msgf("note service: get notes users: could not get users!!!!: %v", err)
 
 	if err != nil {
 		return nil, fmt.Errorf("note service: get notes users: could not get users: %v", err)
@@ -133,20 +131,13 @@ func (a *NoteService) getNotesUsers(notes []models.Note) (map[string]models.User
 	return usersMap, nil
 }
 
-// users := []models.User{}
-// for _, note := range notes {
-// 	user, err := a.userRepository.GetByID(note.AuthorID)
-// 	if err != nil {
-// 		return nil, fmt.Errorf("note service: get notes users: could not get user: %v", err)
-// 	}
-// 	users = append(users, note.Author)
-// }
-// return users
-
-func (a *NoteService) GetNote(id string) (*models.PublicNote, error) {
-	note, err := a.noteRepository.GetNote(id)
+func (a *NoteService) GetNote(id string, userID string) (*models.PublicNote, error) {
+	note, err := a.noteRepository.GetNote(id, userID)
 	if err != nil {
 		return nil, fmt.Errorf("note service: get note: could not get note: %v", err)
+	}
+	if note == nil {
+		return nil, nil
 	}
 	user, err := a.userRepository.GetByID(note.AuthorID)
 	if err != nil {

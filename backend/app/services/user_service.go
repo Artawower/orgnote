@@ -22,6 +22,14 @@ func (u *UserService) Login(user models.User) (*models.User, error) {
 	return createdUser, nil
 }
 
+func (u *UserService) GetAPITokens(userID string) ([]models.APIToken, error) {
+	tokens, err := u.userRepository.GetAPITokens(userID)
+	if err != nil {
+		return nil, fmt.Errorf("user service: get: %v", err)
+	}
+	return tokens, nil
+}
+
 func (u *UserService) FindUser(token string) (*models.PublicUser, error) {
 	user, err := u.userRepository.FindUserByToken(token)
 	if err != nil {
@@ -30,7 +38,7 @@ func (u *UserService) FindUser(token string) (*models.PublicUser, error) {
 	return mapToPublicUserInfo(user), nil
 }
 
-func (u *UserService) CreateToken(user *models.User) (*models.AccessToken, error) {
+func (u *UserService) CreateToken(user *models.User) (*models.APIToken, error) {
 	token, err := u.userRepository.CreateAPIToken(user)
 	if err != nil {
 		return nil, fmt.Errorf("user service: create token: %v", err)
