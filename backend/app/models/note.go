@@ -47,3 +47,8 @@ type PublicNote struct {
 	Content bson.M     `json:"content" bson:"content"`
 	Meta    NoteMeta   `json:"meta" bson:"meta"`
 }
+
+type NoteFilter struct {
+	UserID     *string `json:"userId"`
+	SearchText *string `json:"searchText"`
+}

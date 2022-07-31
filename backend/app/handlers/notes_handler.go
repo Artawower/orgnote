@@ -69,17 +69,8 @@ func (h *NoteHandlers) GetNote(c *fiber.Ctx) error {
 	return c.Status(http.StatusOK).JSON(NewHttpReponse[*models.PublicNote, any](notes, nil))
 }
 
-type GetNotesParams struct {
-	UserID *string   `json:"userId"`
-	Query  *string   `json:"query"`
-	Limit  *int      `json:"limit"`
-	Offset *int      `json:"offset"`
-	Search *int      `json:"filter"`
-	Tags   *[]string `json:"tags"`
-}
-
 func (h *NoteHandlers) GetNotes(c *fiber.Ctx) error {
-	filter := new(GetNotesParams)
+	filter := new(models.NoteFilter)
 
 	if err := c.QueryParser(filter); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(NewHttpError("Incorrect input query", err))
@@ -88,7 +79,7 @@ func (h *NoteHandlers) GetNotes(c *fiber.Ctx) error {
 	ctxUser := c.Locals("user").(*models.User)
 
 	includePrivateNotes := filter.UserID != nil && ctxUser != nil && ctxUser.ID.Hex() == *filter.UserID
-	notes, err := h.noteService.GetNotes(includePrivateNotes, filter.UserID)
+	notes, err := h.noteService.GetNotes(includePrivateNotes, *filter)
 	if err != nil {
 		log.Info().Err(err).Msgf("note handler: get notes: get %v", err)
 		return c.Status(http.StatusInternalServerError).JSON(NewHttpError[any]("Couldn't get notes, something went wrong", nil))

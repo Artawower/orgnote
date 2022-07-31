@@ -74,8 +74,8 @@ func (a *NoteService) BulkCreateOrUpdate(userID string, notes []models.Note) err
 	return nil
 }
 
-func (a *NoteService) GetNotes(includePrivate bool, userID *string) ([]models.PublicNote, error) {
-	notes, err := a.noteRepository.GetNotes(includePrivate, userID)
+func (a *NoteService) GetNotes(includePrivate bool, filter models.NoteFilter) ([]models.PublicNote, error) {
+	notes, err := a.noteRepository.GetNotes(includePrivate, filter)
 	if err != nil {
 		return nil, fmt.Errorf("note service: get notes: could not get notes: %v", err)
 	}

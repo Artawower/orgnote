@@ -19,10 +19,33 @@ type NoteRepository struct {
 }
 
 func NewNoteRepository(db *mongo.Database) *NoteRepository {
-	return &NoteRepository{db: db, collection: db.Collection("notes")}
+	noteRepo := &NoteRepository{db: db, collection: db.Collection("notes")}
+	noteRepo.initIndexes()
+	return noteRepo
 }
 
-func (a *NoteRepository) GetNotes(includePrivate bool, userID *string) ([]models.Note, error) {
+func (a *NoteRepository) initIndexes() {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	_, err := a.collection.Indexes().DropAll(ctx)
+	if err != nil {
+		log.Error().Msgf("note repository: failed to drop indexes: %v", err)
+	}
+	model := []mongo.IndexModel{
+		{Keys: bson.D{
+			bson.E{Key: "meta.title", Value: "text"},
+			bson.E{Key: "meta.description", Value: "text"},
+			bson.E{Key: "meta.tags", Value: "text"},
+		}}}
+
+	name, err := a.collection.Indexes().CreateMany(context.TODO(), model)
+	if err != nil {
+		panic(err)
+	}
+	log.Info().Msgf("note repository: created indexes: %v", name)
+}
+
+func (a *NoteRepository) GetNotes(includePrivate bool, f models.NoteFilter) ([]models.Note, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	notes := []models.Note{}
@@ -31,9 +54,14 @@ func (a *NoteRepository) GetNotes(includePrivate bool, userID *string) ([]models
 	if includePrivate == false {
 		filter["meta.published"] = true
 	}
-	if userID != nil {
-		filter["authorId"] = *userID
+	if f.UserID != nil {
+		filter["authorId"] = *f.UserID
 	}
+
+	if f.SearchText != nil && *f.SearchText != "" {
+		filter["$text"] = bson.D{bson.E{Key: "$search", Value: *f.SearchText}}
+	}
+	log.Info().Msgf("note repository: filter: %v", filter)
 
 	cur, err := a.collection.Find(ctx, filter)
 	if err != nil {
