@@ -11,6 +11,7 @@ import (
 	"github.com/rs/zerolog/log"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type NoteRepository struct {
@@ -63,7 +64,10 @@ func (a *NoteRepository) GetNotes(includePrivate bool, f models.NoteFilter) ([]m
 	}
 	log.Info().Msgf("note repository: filter: %v", filter)
 
-	cur, err := a.collection.Find(ctx, filter)
+	findOptions := options.FindOptions{}
+	findOptions.SetSort(bson.D{{"createdAt", -1}})
+
+	cur, err := a.collection.Find(ctx, filter, &findOptions)
 	if err != nil {
 		return nil, fmt.Errorf("note repository: failed to get notes: %v", err)
 	}
@@ -105,7 +109,7 @@ func (a *NoteRepository) BulkUpsert(userID string, notes []models.Note) error {
 			SetUpsert(true)
 	}
 
-	d, err := a.collection.BulkWrite(ctx, notesModels)
+	_, err := a.collection.BulkWrite(ctx, notesModels)
 	if err != nil {
 		return fmt.Errorf("note repository: failed to bulk upsert notes: %v", err)
 	}
