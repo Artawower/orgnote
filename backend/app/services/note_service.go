@@ -7,6 +7,7 @@ import (
 	"moonbrain/app/models"
 	"moonbrain/app/repositories"
 	"path"
+	"time"
 
 	"github.com/rs/zerolog/log"
 )
@@ -54,7 +55,16 @@ func (a *NoteService) BulkCreateOrUpdate(userID string, notes []models.Note) err
 	for _, note := range notes {
 		if note.ID != "" {
 			note.AuthorID = userID
-			filteredNotesWithID = append(filteredNotesWithID, note)
+			filteredNotesWithID = append(filteredNotesWithID, models.Note{
+				ID:        note.ID,
+				AuthorID:  userID,
+				Content:   note.Content,
+				Meta:      note.Meta,
+				CreatedAt: time.Now(),
+				UpdatedAt: time.Now(),
+				Views:     0,
+				Likes:     0,
+			})
 			tags = append(tags, note.Meta.Tags...)
 		}
 	}

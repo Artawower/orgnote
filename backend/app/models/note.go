@@ -1,6 +1,10 @@
 package models
 
-import "go.mongodb.org/mongo-driver/bson"
+import (
+	"time"
+
+	"go.mongodb.org/mongo-driver/bson"
+)
 
 type NoteHeading struct {
 	Level int    `json:"level"`
@@ -35,10 +39,14 @@ type NoteMeta struct {
 }
 
 type Note struct {
-	ID       string   `json:"id" bson:"_id"`
-	AuthorID string   `json:"authorId" bson:"authorId"`
-	Content  bson.M   `json:"content" bson:"content"`
-	Meta     NoteMeta `json:"meta" bson:"meta"`
+	ID        string    `json:"id" bson:"_id"`
+	AuthorID  string    `json:"authorId" bson:"authorId"`
+	Content   bson.M    `json:"content" bson:"content"`
+	Meta      NoteMeta  `json:"meta" bson:"meta"`
+	CreatedAt time.Time `json:"createdAt" bson:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt" bson:"updatedAt"`
+	Views     int       `json:"views" bson:"views"`
+	Likes     int       `json:"likes" bson:"likes"`
 }
 
 type PublicNote struct {

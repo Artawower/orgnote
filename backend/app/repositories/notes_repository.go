@@ -98,16 +98,32 @@ func (a *NoteRepository) BulkUpsert(userID string, notes []models.Note) error {
 		// TODO: master id should be unique for each user
 		notesModels[i] = mongo.NewUpdateOneModel().
 			SetFilter(bson.M{"_id": note.ID}).
-			SetUpdate(bson.M{"$set": note}).
+			SetUpdate(bson.M{
+				"$set":         a.getUpdateNote(note),
+				"$setOnInsert": bson.M{"createdAt": note.CreatedAt},
+			}).
 			SetUpsert(true)
 	}
 
 	d, err := a.collection.BulkWrite(ctx, notesModels)
-	log.Info().Msgf("note repository: bulk upserted %v", d)
 	if err != nil {
 		return fmt.Errorf("note repository: failed to bulk upsert notes: %v", err)
 	}
 	return nil
+}
+
+func (a *NoteRepository) getUpdateNote(note models.Note) bson.M {
+	update := bson.M{
+		"_id":       note.ID,
+		"authorId":  note.AuthorID,
+		"content":   note.Content,
+		"meta":      note.Meta,
+		"updatedAt": note.CreatedAt,
+		"views":     note.Views,
+		"likes":     note.Likes,
+	}
+
+	return update
 }
 
 func (a *NoteRepository) GetNote(id string, authorID string) (*models.Note, error) {
