@@ -84,10 +84,16 @@ func (a *NoteService) BulkCreateOrUpdate(userID string, notes []models.Note) err
 	return nil
 }
 
-func (a *NoteService) GetNotes(includePrivate bool, filter models.NoteFilter) ([]models.PublicNote, error) {
+// TODO: master
+func (a *NoteService) GetNotes(includePrivate bool, filter models.NoteFilter) (*models.Paginated[models.PublicNote], error) {
 	notes, err := a.noteRepository.GetNotes(includePrivate, filter)
 	if err != nil {
 		return nil, fmt.Errorf("note service: get notes: could not get notes: %v", err)
+	}
+
+	count, err := a.noteRepository.NotesCount(includePrivate, filter)
+	if err != nil {
+		return nil, fmt.Errorf("note service: upload images: could not upload image: %v", err)
 	}
 
 	publicNotes := []models.PublicNote{}
@@ -108,7 +114,12 @@ func (a *NoteService) GetNotes(includePrivate bool, filter models.NoteFilter) ([
 		publicNotes = append(publicNotes, *publicNote)
 	}
 
-	return publicNotes, nil
+	return &models.Paginated[models.PublicNote]{
+		Limit:  *filter.Limit,
+		Offset: *filter.Offset,
+		Total:  count,
+		Data:   publicNotes,
+	}, nil
 }
 
 func (a *NoteService) getNotesUsers(notes []models.Note) (map[string]models.User, error) {

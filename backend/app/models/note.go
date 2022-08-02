@@ -59,4 +59,6 @@ type PublicNote struct {
 type NoteFilter struct {
 	UserID     *string `json:"userId"`
 	SearchText *string `json:"searchText"`
+	Limit      *int64  `json:"limit"`
+	Offset     *int64  `json:"offset"`
 }

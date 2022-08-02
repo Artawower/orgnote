@@ -50,22 +50,15 @@ func (a *NoteRepository) GetNotes(includePrivate bool, f models.NoteFilter) ([]m
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	notes := []models.Note{}
-	filter := bson.M{}
+	filter := a.getNotesFilter(includePrivate, f)
 
-	if includePrivate == false {
-		filter["meta.published"] = true
-	}
-	if f.UserID != nil {
-		filter["authorId"] = *f.UserID
+	limit, offset := a.getLimitOffset(f)
+	findOptions := options.FindOptions{
+		Skip:  &offset,
+		Limit: &limit,
 	}
 
-	if f.SearchText != nil && *f.SearchText != "" {
-		filter["$text"] = bson.D{bson.E{Key: "$search", Value: *f.SearchText}}
-	}
-	log.Info().Msgf("note repository: filter: %v", filter)
-
-	findOptions := options.FindOptions{}
-	findOptions.SetSort(bson.D{{"createdAt", -1}})
+	findOptions.SetSort(bson.D{bson.E{Key: "createdAt", Value: -1}})
 
 	cur, err := a.collection.Find(ctx, filter, &findOptions)
 	if err != nil {
@@ -82,6 +75,46 @@ func (a *NoteRepository) GetNotes(includePrivate bool, f models.NoteFilter) ([]m
 	}
 
 	return notes, nil
+}
+
+func (a *NoteRepository) getNotesFilter(includePrivate bool, f models.NoteFilter) bson.M {
+	filter := bson.M{}
+	if includePrivate == false {
+		filter["meta.published"] = true
+	}
+	if f.UserID != nil {
+		filter["authorId"] = *f.UserID
+	}
+
+	if f.SearchText != nil && *f.SearchText != "" {
+		filter["$text"] = bson.D{bson.E{Key: "$search", Value: *f.SearchText}}
+	}
+	return filter
+}
+
+func (a *NoteRepository) NotesCount(includePrivate bool, f models.NoteFilter) (int64, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	filters := a.getNotesFilter(includePrivate, f)
+	count, err := a.collection.CountDocuments(ctx, filters)
+	if err != nil {
+		return 0, fmt.Errorf("note repository: failed to get notes count: %v", err)
+	}
+	return count, nil
+}
+
+func (a *NoteRepository) getLimitOffset(noteFilter models.NoteFilter) (int64, int64) {
+	limit := int64(10)
+	offset := int64(0)
+
+	if noteFilter.Limit != nil {
+		limit = *noteFilter.Limit
+	}
+	if noteFilter.Offset != nil {
+		offset = *noteFilter.Offset
+	}
+	return limit, offset
 }
 
 func (a *NoteRepository) AddNote(note models.Note) error {

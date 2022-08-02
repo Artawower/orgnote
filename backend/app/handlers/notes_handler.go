@@ -70,6 +70,9 @@ func (h *NoteHandlers) GetNote(c *fiber.Ctx) error {
 }
 
 func (h *NoteHandlers) GetNotes(c *fiber.Ctx) error {
+	defaultLimit := int64(10)
+	defaultOffset := int64(0)
+
 	filter := new(models.NoteFilter)
 
 	if err := c.QueryParser(filter); err != nil {
@@ -79,12 +82,26 @@ func (h *NoteHandlers) GetNotes(c *fiber.Ctx) error {
 	ctxUser := c.Locals("user").(*models.User)
 
 	includePrivateNotes := filter.UserID != nil && ctxUser != nil && ctxUser.ID.Hex() == *filter.UserID
-	notes, err := h.noteService.GetNotes(includePrivateNotes, *filter)
+
+	if filter.Limit == nil {
+		filter.Limit = &defaultLimit
+	}
+
+	if filter.Offset == nil {
+		filter.Offset = &defaultOffset
+	}
+
+	paginatedNotes, err := h.noteService.GetNotes(includePrivateNotes, *filter)
 	if err != nil {
 		log.Info().Err(err).Msgf("note handler: get notes: get %v", err)
 		return c.Status(http.StatusInternalServerError).JSON(NewHttpError[any]("Couldn't get notes, something went wrong", nil))
 	}
-	return c.Status(http.StatusOK).JSON(NewHttpReponse[[]models.PublicNote, any](notes, nil))
+	return c.Status(http.StatusOK).JSON(
+		NewHttpReponse(paginatedNotes.Data, models.Pagination{
+			Limit:  paginatedNotes.Limit,
+			Offset: paginatedNotes.Offset,
+			Total:  paginatedNotes.Total,
+		}))
 }
 
 func (h *NoteHandlers) CreateNote(c *fiber.Ctx) error {
