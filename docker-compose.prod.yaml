@@ -18,7 +18,10 @@ services:
       - MONGO_PASSWORD=${MONGO_PASSWORD}
       - MONGO_PORT=27017
       - APP_ADDRESS=0.0.0.0:3000
+      - GITHUB_ID=${GITHUB_ID}
+      - GITHUB_SECRET=${GITHUB_SECRET}
       - BACKEND_HOST=${BACKEND_HOST}
+      - CLIENT_ADDRESS=${CLIENT_ADDRESS}
 
   sb_nginx:
     container_name: sb_nginx
