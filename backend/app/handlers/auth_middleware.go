@@ -58,6 +58,7 @@ func NewUserInjectMiddleware(config ...Config) func(*fiber.Ctx) error {
 			user, err := cfg.GetUser(token)
 			if err != nil {
 				log.Info().Msgf("auth middleware: GetUser: %s", err)
+				return c.Next()
 			}
 			c.Locals("user", user)
 		}

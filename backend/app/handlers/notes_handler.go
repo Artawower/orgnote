@@ -79,9 +79,9 @@ func (h *NoteHandlers) GetNotes(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).JSON(NewHttpError("Incorrect input query", err))
 	}
 
-	ctxUser := c.Locals("user").(*models.User)
+	ctxUser := c.Locals("user")
 
-	includePrivateNotes := filter.UserID != nil && ctxUser != nil && ctxUser.ID.Hex() == *filter.UserID
+	includePrivateNotes := filter.UserID != nil && ctxUser != nil && ctxUser.(*models.User).ID.Hex() == *filter.UserID
 
 	if filter.Limit == nil {
 		filter.Limit = &defaultLimit
