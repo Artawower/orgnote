@@ -19,7 +19,7 @@ jobs:
             git fetch --all
             git reset --hard origin/master
             git submodule update --force --recursive --init --remote
-            docker-compose down
+            docker-compose -f docker-compose.yaml -f docker-compose.prod.yaml down
             docker system prune -f
             docker-compose -f docker-compose.prebuild.yaml up --build
             docker-compose -f docker-compose.yaml -f docker-compose.prod.yaml up --build -d

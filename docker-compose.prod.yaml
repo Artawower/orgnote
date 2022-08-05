@@ -2,6 +2,7 @@ version: "3.8"
 
 services:
   sb_backend:
+    restart: always
     container_name: sb_backend
     build:
       context: ./backend
@@ -24,6 +25,7 @@ services:
       - CLIENT_ADDRESS=${CLIENT_ADDRESS}
 
   sb_nginx:
+    restart: always
     container_name: sb_nginx
     image: nginx:stable
     ports:

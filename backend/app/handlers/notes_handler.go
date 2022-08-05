@@ -56,9 +56,16 @@ type NoteHandlers struct {
 // @Router       /notes/{id}  [get]
 func (h *NoteHandlers) GetNote(c *fiber.Ctx) error {
 	noteID := c.Params("id")
-	ctxUser := c.Locals("user").(*models.User)
 
-	notes, err := h.noteService.GetNote(noteID, ctxUser.ID.Hex())
+	ctxUser := c.Locals("user")
+
+	var userID string
+
+	if ctxUser != nil {
+		userID = ctxUser.(*models.User).ID.Hex()
+	}
+
+	notes, err := h.noteService.GetNote(noteID, userID)
 	if err != nil {
 		log.Info().Err(err).Msg("note handler: get note: get by id")
 		return c.Status(http.StatusInternalServerError).JSON(NewHttpError[any]("Couldn't get note, something went wrong", nil))
