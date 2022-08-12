@@ -13,6 +13,8 @@ services:
       - sb_network
     depends_on:
       - sb_mongo
+    volumes:
+      - ./media:/app/media
     environment:
       - MONGO_USERNAME=${MONGO_USERNAME}
       - MONGO_URL=sb_mongo

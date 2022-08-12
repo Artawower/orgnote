@@ -17,6 +17,7 @@ services:
       - 8000
     volumes:
       - ./backend:/app
+      - ./media:/app/media
     environment:
       - APP_ADDRESS=0.0.0.0:8000
       - CLIENT_ADDRESS=http://localhost:3000
