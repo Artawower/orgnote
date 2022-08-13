@@ -14,7 +14,7 @@ services:
     depends_on:
       - sb_mongo
     volumes:
-      - ./media:/app/media
+      - ./media:/workspace/media
     environment:
       - MONGO_USERNAME=${MONGO_USERNAME}
       - MONGO_URL=sb_mongo
@@ -37,6 +37,8 @@ services:
     volumes:
       - ./frontend:/opt/services/frontend:rw
       - ./config/nginx/conf.d:/etc/nginx/conf.d:rw
+      - ./media:/opt/services/backend/media:rw
+
     depends_on:
       - sb_backend
     links:
