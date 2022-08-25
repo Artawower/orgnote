@@ -12,6 +12,7 @@ type APIToken struct {
 	Token       string             `json:"token" bson:"token"`
 }
 
+// TODO: master add migrations
 type User struct {
 	ID                  primitive.ObjectID `json:"id" bson:"_id,omitempty"`
 	Provider            string             `json:"provider" bson:"provider"`
@@ -28,6 +29,7 @@ type User struct {
 	ProfileURL          string             `json:"profileUrl" bson:"profileUrl"`
 	APITokens           []APIToken         `json:"apiTokens" bson:"apiTokens"`
 	Notes               []Note             `json:"notes" bson:"notes"`
+	NoteGraph           NoteGraph          `json:"noteGraph" bson:"noteGraph"`
 }
 
 type PublicUser struct {

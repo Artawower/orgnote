@@ -162,17 +162,31 @@ func (h *NoteHandlers) UpsertNotes(c *fiber.Ctx) error {
 	}
 
 	return c.Status(http.StatusInternalServerError).JSON(NewHttpError[any]("Can't parse multipart form data", nil))
+}
 
+// Return user graph of notes
+func (h *NoteHandlers) GetNoteGraph(c *fiber.Ctx) error {
+	ctxUser := c.Locals("user")
+
+	if ctxUser == nil {
+		return c.Status(http.StatusNotFound).Send(nil)
+	}
+
+	graph, err := h.noteService.GetNoteGraph(ctxUser.(*models.User).ID.Hex())
+	if err != nil {
+		return c.Status(http.StatusInternalServerError).JSON(NewHttpError[any]("Couldn't get note graph", nil))
+	}
+
+	return c.Status(http.StatusOK).JSON(NewHttpReponse[*models.NoteGraph, any](graph, nil))
 }
 
 func RegisterNoteHandler(app fiber.Router, noteService *services.NoteService, authMiddleware func(*fiber.Ctx) error) {
 	noteHandlers := &NoteHandlers{
 		noteService: noteService,
 	}
-
+	app.Get("/notes/graph", authMiddleware, noteHandlers.GetNoteGraph)
 	app.Get("/notes/:id", noteHandlers.GetNote)
 	app.Get("/notes", noteHandlers.GetNotes)
 	app.Post("/notes", authMiddleware, noteHandlers.CreateNote)
 	app.Put("/notes/bulk-upsert", authMiddleware, noteHandlers.UpsertNotes)
-
 }

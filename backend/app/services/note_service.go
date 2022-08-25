@@ -6,6 +6,7 @@ import (
 	"mime/multipart"
 	"moonbrain/app/models"
 	"moonbrain/app/repositories"
+	"moonbrain/app/tools"
 	"path"
 	"time"
 
@@ -20,13 +21,13 @@ type NoteService struct {
 }
 
 func NewNoteService(
-	repositoriesRepository *repositories.NoteRepository,
+	noteRepository *repositories.NoteRepository,
 	userRepository *repositories.UserRepository,
 	tagRepository *repositories.TagRepository,
 	imageDir string,
 ) *NoteService {
 	return &NoteService{
-		noteRepository: repositoriesRepository,
+		noteRepository: noteRepository,
 		tagRepository:  tagRepository,
 		userRepository: userRepository,
 		imageDir:       imageDir,
@@ -53,20 +54,22 @@ func (a *NoteService) BulkCreateOrUpdate(userID string, notes []models.Note) err
 	filteredNotesWithID := []models.Note{}
 	tags := []string{}
 	for _, note := range notes {
-		if note.ID != "" {
-			note.AuthorID = userID
-			filteredNotesWithID = append(filteredNotesWithID, models.Note{
-				ID:        note.ID,
-				AuthorID:  userID,
-				Content:   note.Content,
-				Meta:      note.Meta,
-				CreatedAt: time.Now(),
-				UpdatedAt: time.Now(),
-				Views:     0,
-				Likes:     0,
-			})
-			tags = append(tags, note.Meta.Tags...)
+		if note.ID == "" {
+			continue
 		}
+		note.AuthorID = userID
+		filteredNotesWithID = append(filteredNotesWithID, models.Note{
+			ID:        note.ID,
+			AuthorID:  userID,
+			Content:   note.Content,
+			Meta:      note.Meta,
+			CreatedAt: time.Now(),
+			UpdatedAt: time.Now(),
+			Views:     0,
+			Likes:     0,
+		})
+		tags = append(tags, note.Meta.Tags...)
+		go a.udpateNoteGraph(userID, note)
 	}
 	// TODO: master add transaction here
 	err := a.noteRepository.BulkUpsert(userID, filteredNotesWithID)
@@ -202,4 +205,67 @@ func (a *NoteService) UploadImage(fileHeader *multipart.FileHeader) error {
 		return fmt.Errorf("note service: upload image: could not write file: %v", err)
 	}
 	return nil
+}
+
+func (a *NoteService) GetNoteGraph(userID string) (*models.NoteGraph, error) {
+	graph, err := a.userRepository.GetNoteGraph(userID)
+	if err != nil {
+		return nil, fmt.Errorf("note service: get note graph: could not get note graph: %v", err)
+	}
+	return graph, nil
+}
+
+func (a *NoteService) udpateNoteGraph(userID string, note models.Note) error {
+
+	currentNoteNode := a.getGraphNoteNode(note)
+	relatedLinks := a.getRelatedLinks(note)
+
+	graphNoteLinks := repositories.GraphNoteLinks{
+		Node:  currentNoteNode,
+		Links: relatedLinks,
+	}
+	err := a.userRepository.UpsertGraphNode(userID, graphNoteLinks)
+	if err != nil {
+		// TODO: add this job to queue and log error
+		return fmt.Errorf("note service: update note graph: upser graph node: %v", err)
+	}
+	return nil
+}
+
+func (a *NoteService) getGraphNoteNode(note models.Note) models.GraphNoteNode {
+	weight := 0
+	if note.Meta.LinkedArticles != nil {
+		weight = len(*note.Meta.LinkedArticles)
+	}
+
+	title := ""
+	if note.Meta.Title != nil {
+		title = *note.Meta.Title
+	}
+
+	return models.GraphNoteNode{
+		ID:     note.ID,
+		Title:  title,
+		Weight: weight,
+	}
+}
+
+func (a *NoteService) getRelatedLinks(note models.Note) (graphNoteLinks []models.GraphNoteLink) {
+	graphNoteLinks = []models.GraphNoteLink{}
+	if note.Meta.ExternalLinks == nil {
+		return
+	}
+	for _, relation := range *note.Meta.LinkedArticles {
+
+		realID, ok := tools.ExportLinkID(relation.Url)
+		if !ok {
+			continue
+		}
+		graphNoteLinks = append(graphNoteLinks, models.GraphNoteLink{
+			Source: note.ID,
+			Target: realID,
+		})
+	}
+
+	return
 }

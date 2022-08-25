@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/rs/zerolog/log"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -159,10 +158,109 @@ func (u *UserRepository) DeleteAPIToken(user *models.User, tokenID string) error
 		return fmt.Errorf("user repository: delete api token: convert token id: %v", err)
 	}
 	update := bson.M{"$pull": bson.M{"apiTokens": bson.M{"_id": id}}}
-	res, err := u.collection.UpdateOne(ctx, filter, update)
+
+	_, err = u.collection.UpdateOne(ctx, filter, update)
 	if err != nil {
 		return fmt.Errorf("user repository: delete api token: update one user: %v", err)
 	}
-	log.Info().Msgf("user repository: delete api token: update one user: %v", res)
+
 	return nil
 }
+
+func (u *UserRepository) GetNoteGraph(userID string) (*models.NoteGraph, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	userObjID, err := primitive.ObjectIDFromHex(userID)
+
+	if err != nil {
+		return nil, fmt.Errorf("user repository: get note graph: convert user id: %v", err)
+	}
+
+	filter := bson.M{"_id": userObjID}
+	user := models.User{}
+	err = u.collection.FindOne(ctx, filter).Decode(&user)
+	if errors.Is(err, mongo.ErrNoDocuments) {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, fmt.Errorf("user repository: get note graph: find one user: %v", err)
+	}
+	return &user.NoteGraph, nil
+}
+
+type GraphNoteLinks struct {
+	Node  models.GraphNoteNode
+	Links []models.GraphNoteLink
+}
+
+func (u *UserRepository) UpsertGraphNode(userID string, nodeLinks GraphNoteLinks) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	user, err := u.GetByID(userID)
+
+	if err != nil {
+		return fmt.Errorf("user repository: upsert graph node: can't get user: %v", err)
+	}
+	filter := bson.M{"_id": user.ID}
+
+	// TODO: master make this operation as single aggregation update pipeline
+
+	mergedLinks := u.makeUniqueNodeLinks(user.NoteGraph.Links, nodeLinks.Links)
+
+	update := bson.M{
+		"$addToSet": bson.M{"noteGraph.nodes": nodeLinks.Node},
+		"$set":      bson.M{"noteGraph.links": mergedLinks},
+	}
+
+	// u.collection.Aggregate(ctx,, pipeline interface{}, opts ...*options.AggregateOptions)
+
+	_, err = u.collection.UpdateOne(ctx, filter, update)
+	if err != nil {
+		return fmt.Errorf("user repository: add or update graph node: upsert graph node: %v", err)
+	}
+
+	return nil
+}
+
+func (u *UserRepository) makeUniqueNodeLinks(source []models.GraphNoteLink, target []models.GraphNoteLink) (res []models.GraphNoteLink) {
+	if len(source) == 0 {
+		return target
+	}
+
+	if len(target) == 0 {
+		return source
+	}
+	res = source
+
+	for _, targetNode := range target {
+		exist := false
+
+		for _, srcNode := range source {
+			exist = targetNode.Target == srcNode.Target && targetNode.Source == srcNode.Source
+			if exist {
+				break
+			}
+		}
+		if exist {
+			continue
+		}
+		res = append(res, targetNode)
+
+	}
+	return
+}
+
+// ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+// defer cancel()
+// userObjID, err := primitive.ObjectIDFromHex(userID)
+// if err != nil {
+// 	return fmt.Errorf("user repository: add node: convert user id: %v", err)
+// }
+// filter := bson.M{"_id": userObjID}
+// update := bson.M{"$push": bson.M{"noteGraph.nodes": node}}
+// _, err = u.collection.UpdateOne(ctx, filter, update)
+// if err != nil {
+// 	return fmt.Errorf("user repository: add node: update one user: %v", err)
+// }
+// return nil
