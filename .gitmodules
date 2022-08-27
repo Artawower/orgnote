@@ -10,3 +10,6 @@
 [submodule "second-brain-client"]
 	path = second-brain-client
 	url = git@github.com:Artawower/second-brain-client.git
+[submodule "second-brain-backend"]
+	path = second-brain-backend
+	url = git@github.com:Artawower/second-brain-backend.git
