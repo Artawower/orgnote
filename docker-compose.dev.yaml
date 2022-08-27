@@ -2,7 +2,7 @@ version: "3.8"
 services:
   sb_backend:
     build:
-      context: ./backend
+      context: ./second-brain-backend
       dockerfile: Dockerfile-dev
     container_name: sb_backend
     ports:
@@ -16,7 +16,7 @@ services:
     expose:
       - 8000
     volumes:
-      - ./backend:/app
+      - ./second-brain-backend:/app
       - ./media:/app/media
     environment:
       - APP_ADDRESS=0.0.0.0:8000

@@ -5,7 +5,7 @@ services:
     restart: always
     container_name: sb_backend
     build:
-      context: ./backend
+      context: ./second-brain-backend
       dockerfile: Dockerfile
     ports:
       - 3000:3000
