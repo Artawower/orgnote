@@ -13,6 +13,6 @@ jobs:
       - name: Install dependencies
         run: |
           go version
-          cd ./backend/ && go mod download
+          cd ./second-brain-backend/ && go mod download
       - name: Build
         run: cd backend && go build ./app/main.go

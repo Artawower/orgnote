@@ -20,7 +20,7 @@ services:
       - ./media:/app/media
     environment:
       - APP_ADDRESS=0.0.0.0:8000
-      - CLIENT_ADDRESS=http://localhost:3000
+      - CLIENT_ADDRESS=${CLIENT_ADDRESS}
       - GOROOT=/usr/local/go
       - MONGO_URL=sb_mongo
       - MONGO_PORT=27017
@@ -28,7 +28,10 @@ services:
       - MONGO_PASSWORD=${MONGO_PASSWORD}
       - GITHUB_ID=${GITHUB_ID}
       - GITHUB_SECRET=${GITHUB_SECRET}
-      - BACKEND_HOST=${BACKEND_HOST}
+      - BACKEND_DOMAIN=${BACKEND_DOMAIN}
+      - BACKEND_SCHEMA=${BACKEND_SCHEMA}
+      - BACKEND_PORT=${BACKEND_PORT}
+
     networks:
       - sb_network
 

@@ -12,3 +12,8 @@ Create =.env= file inside root folder
 MONGO_USERNAME=dev
 MONGO_PASSWORD=dev
 #+END_SRC
+** Run with specific environment configuraiton
+#+BEGIN_SRC bash :async :results output
+docker-compose -f docker-compose.yaml -f docker-compose.dev.yaml --env-file ./.env.external up
+#+END_SRC
+

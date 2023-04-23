@@ -15,6 +15,8 @@ services:
       - sb_mongo
     volumes:
       - ./media:/workspace/media
+    env_file:
+      - .env
     environment:
       - MONGO_USERNAME=${MONGO_USERNAME}
       - MONGO_URL=sb_mongo
@@ -23,7 +25,9 @@ services:
       - APP_ADDRESS=0.0.0.0:3000
       - GITHUB_ID=${GITHUB_ID}
       - GITHUB_SECRET=${GITHUB_SECRET}
-      - BACKEND_HOST=${BACKEND_HOST}
+      - BACKEND_DOMAIN=${BACKEND_DOMAIN}
+      - BACKEND_SCHEMA=${BACKEND_SCHEMA}
+      - BACKEND_PORT=${BACKEND_PORT}
       - CLIENT_ADDRESS=${CLIENT_ADDRESS}
 
   sb_nginx:
