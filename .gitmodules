@@ -1,15 +1,16 @@
 [submodule "second-brain-publisher"]
 	path = second-brain-publisher
 	url = git@github.com:Artawower/second-brain-publisher.git
+  branch = master
 [submodule "web-roam"]
 	path = web-roam
 	url = git@github.com:Artawower/web-roam.git
-[submodule "second-brain-parser"]
-	path = second-brain-parser
-	url = git@github.com:Artawower/second-brain-parser.git
+  branch = master
 [submodule "second-brain-client"]
 	path = second-brain-client
 	url = git@github.com:Artawower/second-brain-client.git
+  branch = master
 [submodule "second-brain-backend"]
 	path = second-brain-backend
 	url = git@github.com:Artawower/second-brain-backend.git
+  branch = master
