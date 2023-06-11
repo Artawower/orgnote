@@ -21,9 +21,7 @@
 
 
 * 🌱 Introduction
-Great host, smooth check-in. We booked this place just before check-in due to force majeure and the host responded very quickly. The place is close to all necessary infrastructure: train station, grocery shops, restaurants. The place is clean and has everything you need for everyday living.
 
-We stayed with a friend for 2 weeks. We were very satisfied.
 * 🍻 Connected links
 - [[https://github.com/Artawower/second-brain-backend][Second brain bakend]] 
 - [[https://github.com/Artawower/second-brain-client][Second brain frontend]] 
