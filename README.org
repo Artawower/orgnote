@@ -4,7 +4,6 @@
 
 #+html: <div align='center'>
 #+html: <img src='./images/image.png' width='256px' height='256px'>
-
 #+html: </div>
 
 #+TITLE: ✨ Second brain. Note taking application.
@@ -22,9 +21,15 @@
 
 * 🌱 Introduction
 
+What is this project for and who is it for? It's just a system of notes. There's another one. I've tried note-taking in various apps like evernote, notion, obsidian, etc. for quite some time.
+Most of them, however, soon enough came to a state of littering. At this point, I simply gave up taking notes of any kind.
+After a while, when I got familiar with emacs and discovered org-roam, I discovered that note taking can be done comfortably and easily, without much of a problem with structure.
+This project is based on the Zettelkasten approach, and borrows a lot of ideas from emacs + org-roam, allowing you to store notes in the cloud and emacs seamlessly.
+
 * 🍻 Connected links
 - [[https://github.com/Artawower/second-brain-backend][Second brain bakend]] 
-- [[https://github.com/Artawower/second-brain-client][Second brain frontend]] 
+- [[https://github.com/Artawower/second-brain-client][Second brain frontend]]
+- [[https://github.com/Artawower/second-brain-publisher][NPM binary package for note syncing]]
 - [[https://github.com/Artawower/second-brain-publisher][Emacs package for note publishing.]] 
 - [[https://github.com/Artawower/org-mode-ast][Typescript abstract syntax tree for org mode.]] 
 - [[https://en.wikipedia.org/wiki/Zettelkasten][About Zettelkasten approach]] 
