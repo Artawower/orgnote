@@ -26,6 +26,8 @@ Most of them, however, soon enough came to a state of littering. At this point, 
 After a while, when I got familiar with emacs and discovered org-roam, I discovered that note taking can be done comfortably and easily, without much of a problem with structure.
 This project is based on the Zettelkasten approach, and borrows a lot of ideas from emacs + org-roam, allowing you to store notes in the cloud and emacs seamlessly.
 
+[[http://65.108.90.95/][Web version for alpha testing]]
+
 * 🍻 Connected links
 - [[https://github.com/Artawower/second-brain-backend][Second brain bakend]] 
 - [[https://github.com/Artawower/second-brain-client][Second brain frontend]]
