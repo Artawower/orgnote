@@ -41,3 +41,6 @@ Any contribution is very much appreciated! Please read the [[./CONTRIBUTE.org][s
 Also, the project exists solely on donations. I would appreciate it if you would join my patreon.
 
 ** How to update version of the application.
+#+BEGIN_SRC bash
+./update-version.sh
+#+END_SRC
