@@ -39,3 +39,5 @@ This project is based on the Zettelkasten approach, and borrows a lot of ideas f
 * 🍩 Contribute guide
 Any contribution is very much appreciated! Please read the [[./CONTRIBUTE.org][style guide]] before contributing to avoid misunderstandings!
 Also, the project exists solely on donations. I would appreciate it if you would join my patreon.
+
+** How to update version of the application.
