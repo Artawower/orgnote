@@ -38,6 +38,7 @@ curr_dir=$(pwd)
 for file in "${commit_files[@]}"; do
   cd "$curr_dir"
   cd "$file"
+  pwd
   git add .
   git commit -m "Update version to $semver"
   git tag -a "$semver" -m "Update version to $semver"
