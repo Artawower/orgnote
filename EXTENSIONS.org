@@ -1,0 +1,15 @@
+:PROPERTIES:
+:ID: list-of-extensions
+:END:
+
+#+TITLE: List of extensions.
+#+ID: list-of-extensions
+
+
+There is currently no API for creating extensions. But there is a wish list of the most important future extensions that will be made in the first place
+
+* Links
+- [[./README.org][Back to readme]] 
+* List
+** Editor Autoscroll
+Automatically scroll the editor to the current line of the org-mode file while editing.

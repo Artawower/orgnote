@@ -31,6 +31,7 @@ This project is based on the Zettelkasten approach, and borrows a lot of ideas f
 * 🍻 Connected links
 - [[https://github.com/Artawower/second-brain-backend][Second brain bakend]] 
 - [[https://github.com/Artawower/second-brain-client][Second brain frontend]]
+- [[./EXTENSIONS.org][List of extensions]] 
 - [[https://github.com/Artawower/second-brain-publisher][NPM binary package for note syncing]]
 - [[https://github.com/Artawower/second-brain-publisher][Emacs package for note publishing.]] 
 - [[https://github.com/Artawower/org-mode-ast][Typescript abstract syntax tree for org mode.]] 
