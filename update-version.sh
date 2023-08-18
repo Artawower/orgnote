@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# TODO: master ADD MANUAL
 # Variables
 emacs_package_version_file=./web-roam/web-roam.el
 frontend_package_version_file=./second-brain-client/package.json
@@ -20,15 +21,9 @@ if ! [[ $ver =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
 fi
 semver="v$ver"
 
-
-new_version=";; Version: $semver"
-modified_content=$(awk -v new_version="$new_version" '{sub(";; Version: [0-9]+\\.[0-9]+\\.[0-9]+", new_version)}1' "$emacs_package_version_file")
-echo -e "$modified_content" > "$emacs_package_version_file"
-
 function has_param() {
     local terms="$1"
     shift
-
     for term in $terms; do
         for arg; do
             if [[ $arg == "$term" ]]; then
@@ -37,6 +32,21 @@ function has_param() {
         done
     done
 }
+
+skip_commits=$(has_param "-s --skip-commits" "$@")
+only_parser_dependencies=$(has_param "-o --only-parser" "$@")
+
+echo "Start update version and preparing release:"
+echo "    Skip commits: $skip_commits"
+echo "    Only parser dependencies: $only_parser_dependencies"
+
+
+function update_emacs_version() {
+    new_version=";; Version: $semver"
+    modified_content=$(awk -v new_version="$new_version" '{sub(";; Version: [0-9]+\\.[0-9]+\\.[0-9]+", new_version)}1' "$emacs_package_version_file")
+    echo -e "$modified_content" > "$emacs_package_version_file"
+}
+
 set_package_json_version() {
     filePath=$1
     version=$2
@@ -46,8 +56,12 @@ set_package_json_version() {
     echo -e "$modified_content" > "$filePath"
 }
 
-set_package_json_version "$frontend_package_version_file" "$ver"
-set_package_json_version "$publisher_package_version_file" "$ver"
+if [[ ! -z $only_parser_dependencies ]]; then
+    update_emacs_version
+    set_package_json_version "$frontend_package_version_file" "$ver"
+    set_package_json_version "$publisher_package_version_file" "$ver"
+fi
+
 set_package_json_version "$org_mode_ast_version_file" "$ver"
 
 update_dependency_version() {
@@ -60,8 +74,9 @@ update_dependency_version() {
 
 
 # Update second-brain client and publisher version
-update_dependency_version "$frontend_package_version_file" "$semver"
-update_dependency_version "$publisher_package_version_file" "$semver"
+update_dependency_version "$frontend_package_version_file" "$ver"
+update_dependency_version "$publisher_package_version_file" "$ver"
+
 
 
 # Create commits and tags over commit_files and push them into remote
@@ -87,8 +102,6 @@ push_changes() {
 
 
 curr_dir=$(pwd)
-skip_commits=$(has_param "-s --skip-commits" "$@")
-
 push_changes "$semver" org-mode-ast "$skip_commits"
 
 
@@ -101,7 +114,10 @@ while true; do
     sleep 5
 done
 
-echo "skip_commits $skip_commits"
+if [[ $only_parser_dependencies ]]; then
+    echo "Only parser dependencies updated. Exiting..."
+    exit 0
+fi
 
 for dir in "${dirs_to_commit[@]}"; do
   cd $curr_dir
