@@ -1,12 +1,12 @@
-[submodule "second-brain-publisher"]
-	path = second-brain-publisher
-	url = git@github.com:Artawower/second-brain-publisher.git
+[submodule "orgnote-cli"]
+	path = orgnote-clie
+	url = git@github.com:Artawower/orgnote-cli.git
 [submodule "web-roam"]
 	path = web-roam
 	url = git@github.com:Artawower/web-roam.git
-[submodule "second-brain-client"]
-	path = second-brain-client
-	url = git@github.com:Artawower/second-brain-client.git
+[submodule "orgnote-client"]
+	path = orgnote-client
+	url = git@github.com:Artawower/orgnote-client.git
 [submodule "second-brain-backend"]
 	path = second-brain-backend
 	url = git@github.com:Artawower/second-brain-backend.git

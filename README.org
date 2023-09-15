@@ -1,12 +1,12 @@
 :PROPERTIES:
-:ID: second-brain
+:ID: orgnote
 :END:
 
 #+html: <div align='center'>
 #+html: <img src='./images/image.png' width='256px' height='256px'>
 #+html: </div>
 
-#+TITLE: ✨ Second brain. Note taking application.
+#+TITLE: ✨ Org Note. Note taking application.
 
 #+html: <div align='center'>
 #+html: <span class='badge-buymeacoffee'>
@@ -15,11 +15,11 @@
 #+html: <span class='badge-patreon'>
 #+html: <a href='https://patreon.com/artawower' target='_blank' title='Donate to this project using Patreon'><img src='https://img.shields.io/badge/patreon-donate-orange.svg' alt='Patreon donate button' /></a>
 #+html: </span>
-#+html: <a href='https://wakatime.com/badge/github/Artawower/second-brain'><img src='https://wakatime.com/badge/github/Artawower/second-brain.svg' alt='wakatime'></a>
+#+html: <a href='https://wakatime.com/badge/github/Artawower/orgnote'><img src='https://wakatime.com/badge/github/Artawower/orgnote.svg' alt='wakatime'></a>
 #+html: </div>
 
 
-* 🌱 Introduction
+* Introduction
 
 What is this project for and who is it for? It's just a system of notes. There's another one. I've tried note-taking in various apps like evernote, notion, obsidian, etc. for quite some time.
 Most of them, however, soon enough came to a state of littering. At this point, I simply gave up taking notes of any kind.
@@ -28,18 +28,20 @@ This project is based on the Zettelkasten approach, and borrows a lot of ideas f
 
 [[http://65.108.90.95/][Web version for alpha testing]]
 
-* 🍻 Connected links
-- [[https://github.com/Artawower/second-brain-backend][Second brain bakend]] 
-- [[https://github.com/Artawower/second-brain-client][Second brain frontend]]
+* Connected links
+- [[https://github.com/Artawower/orgnote-backend][Org Note bakend]] 
+- [[https://github.com/Artawower/orgnote-client][Org Note frontend]]
 - [[./EXTENSIONS.org][List of extensions]] 
-- [[https://github.com/Artawower/second-brain-publisher][NPM binary package for note syncing]]
-- [[https://github.com/Artawower/second-brain-publisher][Emacs package for note publishing.]] 
+- [[https://github.com/Artawower/orgnote-publisher][NPM binary package for note syncing]]
+- [[https://github.com/Artawower/orgnote-publisher][Emacs package for note publishing.]] 
 - [[https://github.com/Artawower/org-mode-ast][Typescript abstract syntax tree for org mode.]] 
 - [[https://en.wikipedia.org/wiki/Zettelkasten][About Zettelkasten approach]] 
 
-* 🍩 Contribute guide
+* Contribute guide
 Any contribution is very much appreciated! Please read the [[./CONTRIBUTE.org][style guide]] before contributing to avoid misunderstandings!
-Also, the project exists solely on donations. I would appreciate it if you would join my patreon.
+
+I would also appreciate it if you would join my patreon.
+
 
 ** How to update version of the application.
 #+BEGIN_SRC bash

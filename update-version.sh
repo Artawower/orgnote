@@ -3,12 +3,12 @@
 # TODO: master ADD MANUAL
 # Variables
 emacs_package_version_file=./web-roam/web-roam.el
-frontend_package_version_file=./second-brain-client/package.json
-publisher_package_version_file=./second-brain-publisher/package.json
+frontend_package_version_file=./orgnote-client/package.json
+publisher_package_version_file=./orgnote-publisher/package.json
 org_mode_ast_version_file=./org-mode-ast/package.json
 
 commit_files=("$emacs_package_version_file" "$frontend_package_version_file" "$publisher_package_version_file")
-dirs_to_commit=("web-roam" "second-brain-client" "second-brain-publisher")
+dirs_to_commit=("web-roam" "orgnote-client" "orgnote-publisher")
 
 # Input semver
 read -p "Enter semver: " ver
@@ -54,6 +54,7 @@ set_package_json_version() {
     modified_content=$(awk -v version="$version" '{sub("\"version\": \"[0-9]+\\.[0-9]+\\.[0-9]+\"", "\"version\": \""version"\"") }1' "$filePath")
     echo "Content modified"
     echo -e "$modified_content" > "$filePath"
+    yarn
 }
 
 if [[ ! -z $only_parser_dependencies ]]; then
@@ -70,10 +71,11 @@ update_dependency_version() {
 
     modified_content=$(awk -v version="$version" '/"org-mode-ast"/ { sub(/"[0-9]+\.[0-9]+\.[0-9]+"/, "\"" version "\"") }1'  "$filePath")
     echo -e "$modified_content" > "$filePath"
+    yarn
  }
 
 
-# Update second-brain client and publisher version
+# Update orgnote client and publisher version
 update_dependency_version "$frontend_package_version_file" "$ver"
 update_dependency_version "$publisher_package_version_file" "$ver"
 
