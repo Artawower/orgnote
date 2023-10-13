@@ -5,6 +5,7 @@
 #+html: <div align='center'>
 #+html: <img src='./images/image.png' width='256px' height='256px'>
 #+html: </div>
+#+html: &nbsp;
 
 #+TITLE: ✨ Org Note. Note taking application.
 
@@ -26,16 +27,18 @@ Most of them, however, soon enough came to a state of littering. At this point, 
 After a while, when I got familiar with emacs and discovered org-roam, I discovered that note taking can be done comfortably and easily, without much of a problem with structure.
 This project is based on the Zettelkasten approach, and borrows a lot of ideas from emacs + org-roam, allowing you to store notes in the cloud and emacs seamlessly.
 
-[[http://65.108.90.95/][Web version for alpha testing]]
+[[https://org-note.com][Web version for alpha testing]]
 
 * Connected links
-- [[https://github.com/Artawower/orgnote-backend][Org Note bakend]] 
-- [[https://github.com/Artawower/orgnote-client][Org Note frontend]]
+- [[https://github.com/Artawower/orgnote-backend][Org Note backend]] 
+- [[https://github.com/Artawower/orgnote-client][Org Note client]]
 - [[./EXTENSIONS.org][List of extensions]] 
 - [[https://github.com/Artawower/orgnote-publisher][NPM binary package for note syncing]]
-- [[https://github.com/Artawower/orgnote-publisher][Emacs package for note publishing.]] 
+- [[https://github.com/Artawower/orgnote.el][Emacs package for note synchronization.]] 
 - [[https://github.com/Artawower/org-mode-ast][Typescript abstract syntax tree for org mode.]] 
 - [[https://en.wikipedia.org/wiki/Zettelkasten][About Zettelkasten approach]] 
+- [[https://discord.gg/SFpUb2vSDm][Discord server]] 
+
 
 * Contribute guide
 Any contribution is very much appreciated! Please read the [[./CONTRIBUTE.org][style guide]] before contributing to avoid misunderstandings!
