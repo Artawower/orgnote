@@ -18,6 +18,16 @@
 #+html: </span>
 #+html: <a href='https://wakatime.com/badge/github/Artawower/orgnote'><img src='https://wakatime.com/badge/github/Artawower/orgnote.svg' alt='wakatime'></a>
 #+html: </div>
+#+html: <div align='center'>
+#+html: <a href="https://twitter.com/org_note" target="_blank"><img src="https://img.shields.io/twitter/follow/org_note" alt="Twitter link" /></a>
+#+html: <a href="https://emacs.ch/@orgnote" target="_blank"><img src="https://img.shields.io/mastodon/follow/111357296398326501?domain=https%3A%2F%2Femacs.ch" alt="Mastodon link" /></a>
+#+html: <a href="https://discord.com/invite/SFpUb2vSDm" target="_blank"><img src="https://img.shields.io/discord/1161751315324604417" alt="Discord"></a>
+#+html: </div>
+#+html: <div align='center'>
+#+html: <a href="https://play.google.com/store/apps/details?id=org.note.app" target="_blank">
+#+html: <img src="./images/google-play.svg" width="140px" height="auto">
+#+html: </a>
+#+html: </div>
 
 
 * Introduction
