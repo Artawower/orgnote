@@ -26,7 +26,7 @@ body:
     attributes:
       label: Debug info
       description: Which configuration are you using?
-      placeholder: "Copy the debug information from the 'debug info' command in the command menu (accessed with M-x on the desktop)."
+      placeholder: "Copy the debug information from the 'debug info' command in the command menu in the OrgNote app (accessed with M-x on the desktop)."
     validations:
       required: true
   - type: textarea
