@@ -11,7 +11,7 @@
 	path = orgnote-cli
 	url = git@github.com:Artawower/orgnote-cli.git
 [submodule "org-mode-ast"]
-	path = orgnote-cli
+	path = org-mode-ast
 	url = git@github.com:Artawower/org-mode-ast.git
 [submodule "orgnote-api"]
 	path = orgnote-api
