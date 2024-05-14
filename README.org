@@ -43,6 +43,7 @@ This project is based on the Zettelkasten approach, and borrows a lot of ideas f
 
 * Connected links
 - [[https://org-note.com/][Official website]]
+- [[https://github.com/Artawower/orgnote/wiki][WIKI]]
 - [[https://github.com/Artawower/orgnote-client/releases][Download official application]] 
 - [[https://github.com/Artawower/orgnote-backend][Org Note backend]]
 - [[https://github.com/Artawower/orgnote-client][Org Note client]]
