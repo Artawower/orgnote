@@ -60,7 +60,7 @@ This project is based on the Zettelkasten approach, and borrows a lot of ideas f
 
 
 * Contribute guide
-Any contribution is very much appreciated! Please read the [[./CONTRIBUTE.org][style guide]] before contributing to avoid misunderstandings!
+Any contribution is very much appreciated! Please read the [[https://github.com/Artawower/orgnote/wiki/Contribution-guide][style guide]] before contributing to avoid misunderstandings!
 
 I would also appreciate it if you would join my patreon.
 
