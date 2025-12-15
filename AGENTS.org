@@ -1,0 +1,249 @@
+:PROPERTIES:
+:ID: orgnote-main-agents
+:END:
+
+#+TITLE: OrgNote AI Agent Guidelines
+#+DESCRIPTION: Project-specific guidelines for OrgNote development extending base_agents.org
+#+FILETAGS: :ai:prompts:agents:orgnote:
+#+STARTUP: content
+#+OPTIONS: toc:nil
+#+OPTIONS: tags:nil
+
+
+
+* Project Overview
+*OrgNote* is a comprehensive note-taking ecosystem based on the Zettelkasten approach, providing full compatibility with Emacs Org mode and Org-roam. The project consists of multiple interconnected repositories working together to deliver a seamless note-taking experience across web, mobile, desktop, and command-line interfaces.
+
+* Tech Stack
+** Frontend (orgnote-client)
+- *Vue 3*  - Composition API with TypeScript
+- *Quasar Framework*  - Cross-platform UI components
+- *Pinia*  - State management with persistence
+- *Vue Router*  - Client-side routing
+- *Capacitor* - Mobile platform integration
+- *Electron* - Desktop application wrapper
+- *Bun* - Fast JavaScript runtime and package manager
+
+** API Layer (orgnote-api)
+- TypeScript - Strict typing with ESM modules
+- OpenAPI Generator - API code generation
+- org-mode-ast  - Org mode parsing
+- openpgp  - Encryption implementation
+- Vitest - Testing framework
+- *Bun* - Fast JavaScript runtime and package manager
+
+** Backend (orgnote-backend)
+- Go - High-performance REST API
+- PostgreSQL - Primary database
+- Docker - Containerization and deployment
+- JWT - Authentication system
+- Just - command runner
+
+** CLI Tools (orgnote-cli)
+- Node.js - Cross-platform CLI implementation
+- Commander.js - Command-line interface framework
+- Axios - HTTP client for API communication
+- *Bun* - Fast JavaScript runtime and package manager
+
+
+
+#+INCLUDE: "/Users/darkawower/Yandex.Disk.localized/Dropbox/org-roam/programming/ai/base_agents.org"
+
+** Architecture Principles
+
+*** 1. Plugin-Based Ecosystem
+
+- All public functionality MUST be exposed through `orgnote-api`
+- Extensions and themes developed via standardized API
+- Loose coupling between components via well-defined interfaces
+
+*** 2. Cross-Platform Consistency
+
+- **Mobile-first design** - Always start with mobile layouts
+- Support for PWA, Android, iOS, Electron, and SSR
+- Platform-specific optimizations using Quasar utilities
+- Responsive design patterns throughout
+
+*** 3. Performance-Critical Text Processing
+
+- Efficient Org mode parsing with `org-mode-ast`
+- Lazy loading for large document sets
+- Background processing for heavy operations
+- Virtualization for large file lists
+
+*** 4. Security & Privacy First
+
+- End-to-end encryption for sensitive notes
+- Secure storage implementation per platform
+- No secrets or API keys in committed code
+- User data privacy by design
+
+** Code Standards & Conventions
+
+*** Strict Coding Rules (Applied Across All Projects)
+1. Mobile-first responsive design - Always design for mobile screens first
+2. SOLID principles - Single responsibility, interface segregation, etc.
+3. Pure small functions - Maximum 1 responsibility per function
+4. No control flow statements - Avoid `else`, `while`, `switch` operators
+5. DRY / KISS / YAGNI - Don't repeat yourself, keep it simple, you ain't gonna need it
+6. No comments in code - Code should be self-documenting
+7. TypeScript strict mode - All TypeScript code must pass strict type checking
+8. Maximum nesting depth = 1 - No multiple layers of `if`, `for`, `try`, etc.
+9. Early returns and guard clauses - Prefer over deep nesting
+10. Extract inner logic - Break complex functions into smaller parts
+11. Write comprehensive tests - Unit, integration, and e2e testing
+12. Never use `any` type - Always use explicit TypeScript types
+13. Never use NPM, use Bun instead
+
+** State Management Architecture
+*** Client State (Pinia Stores)
+- Centralized state via Pinia stores in `orgnote-client/src/stores/`
+- API exposure through `orgnote-client/src/boot/api.ts`
+- Persistent storage for user preferences and offline support
+
+** Git Workflow & Conventional Commits
+
+*** Submodule Management
+
+- Update all submodules to latest
+git submodule update --remote
+
+- Work in specific submodule
+#+BEGIN_SRC bash
+cd orgnote-client
+git checkout -b feature/new-functionality
+#+END_SRC
+- Make changes...
+#+BEGIN_SRC bash
+git commit -m "feat(ui): add new note creation dialog"
+#+END_SRC
+- Return to root and update submodule reference
+#+BEGIN_SRC bash
+cd ..
+git add orgnote-client
+git commit -m "chore: update orgnote-client to latest version"
+```
+#+END_SRC
+
+** Cross-Project Development Patterns
+
+*** API-First Development
+
+When adding new functionality:
+
+1. **Define types** in `orgnote-api` first
+2. **Implement backend** endpoints in `orgnote-backend`
+3. **Update client** to consume new API in `orgnote-client`
+4. **Add CLI support** in `orgnote-cli` if applicable
+5. **Update documentation** across all affected projects
+
+*** Extension Development
+
+#+BEGIN_SRC typescript
+// In orgnote-api - Define extension interface
+export interface NoteExtension {
+  name: string;
+  version: string;
+  activate: (api: OrgNoteApi) => void;
+  deactivate: () => void;
+}
+
+// In orgnote-client - Register extension
+const extension: NoteExtension = {
+  name: "my-extension",
+  version: "1.0.0",
+  activate: (api) => {
+    api.core.useFileManager().registerCommand("my-command", handler);
+  },
+  deactivate: () => {
+    // Cleanup logic
+  },
+};
+#+END_SRC
+
+** Performance Guidelines
+
+*** Critical Performance Rules
+
+1. Avoid large synchronous tasks - Break work into async chunks
+2. Consider introducing queues for heavy operations
+3. Performance is critical for text processing (Org mode parsing)
+4. Use lazy loading for components and routes
+5. Minimize bundle size with code splitting
+6. Efficient state updates - Avoid unnecessary reactivity triggers
+
+*** Org Mode Processing Optimization
+
+- Cache parsed AST results using `org-mode-ast`
+- Implement virtualization for large note collections
+- Debounce search and filtering operations
+- Use web workers for heavy parsing tasks
+
+** Security Considerations
+
+*** Cross-Platform Security
+
+- File encryption via OpenPGP implementation
+- Secure storage per platform (Keychain, Keystore, etc.)
+- API authentication with JWT tokens
+- No secrets in code - Environment variables only
+
+** Platform-Specific Considerations
+*** Mobile Platforms (Android/iOS)
+- Use Capacitor plugins for native functionality
+- Handle device permissions appropriately
+- Support offline-first architecture
+- Optimize for touch interactions
+*** Desktop Platforms (Electron)
+- Native menu integration
+- File system access patterns
+- System notifications
+- Keyboard shortcuts
+*** Web Platform (PWA)
+- Service worker for offline support
+- Progressive enhancement
+- Responsive breakpoints
+- Web storage limitations
+
+** Common Pitfalls & Best Practices
+
+*** ❌ Things to Avoid
+
+1. Cross-submodule tight coupling - Use defined APIs
+2. Platform assumptions - Always check capabilities
+3. Large synchronous operations - Use background processing
+4. Direct submodule modifications - Follow proper git workflow
+5. Inconsistent error handling - Use centralized error management
+
+*** ✅ Best Practices
+
+1. API-first development - Define interfaces before implementation
+2. Cross-platform testing - Test on all supported platforms
+3. Consistent error boundaries - Handle errors gracefully across projects
+4. Performance monitoring - Profile critical paths regularly
+5. Documentation updates - Keep all project docs synchronized
+
+** Resources & Support
+
+*** Documentation
+
+- Official Website: https://org-note.com/
+- Project Wiki: https://github.com/Artawower/orgnote/wiki
+- Contribution Guide: https://github.com/Artawower/orgnote/wiki/Contribution-guide
+
+*** Community
+
+- Discord: https://discord.com/invite/SFpUb2vSDm
+- GitHub Discussions: For questions and community support
+- GitHub Issues: Bug reports and feature requests per submodule
+
+*** Framework Documentation
+
+- Vue 3: https://vuejs.org/
+- Quasar: https://quasar.dev/
+- Capacitor: https://capacitorjs.com/
+- Go: https://golang.org/doc/
+
+---
+
+Remember: Every feature should be evaluated for cross-platform compatibility, plugin ecosystem impact, and performance implications. When in doubt, prioritize user experience and maintainability across the entire OrgNote ecosystem.

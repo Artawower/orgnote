@@ -14,3 +14,17 @@ second-brian-parser/dist
 backend/app/media/*
 # Frontend build directory
 frontend/*
+
+orgnote-client/
+orgnote-backend/
+orgnote-cli/
+orgnote-api/
+org-mode-ast/
+orgnote-el/
+orgnote.el/
+orgnote-old/
+orgnote-extensions/
+web-roam/
+
+plans
+.serena
