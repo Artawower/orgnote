@@ -11,7 +11,7 @@
 
 
 
-* Project Overview
+* ProjectOverview
 *OrgNote* is a comprehensive note-taking ecosystem based on the Zettelkasten approach, providing full compatibility with Emacs Org mode and Org-roam. The project consists of multiple interconnected repositories working together to deliver a seamless note-taking experience across web, mobile, desktop, and command-line interfaces.
 
 * Tech Stack
@@ -49,11 +49,15 @@
 
 #+INCLUDE: "/Users/darkawower/Yandex.Disk.localized/Dropbox/org-roam/programming/ai/base_agents.org"
 
+** Additional critical rules.
+- Ignore .yalc modules warnings, we have a special hook to replace the yalc package with the real one!
+- When you change orgnote-api, there is only one way to publish it to the client: ~bun run pub:yalc~
 ** Architecture Principles
 
 *** 1. Plugin-Based Ecosystem
 
 - All public functionality MUST be exposed through `orgnote-api`
+- For local development when ~orgnote-api~ changed, use ~bun run pub:yalc~ to update dependent projects!
 - Extensions and themes developed via standardized API
 - Loose coupling between components via well-defined interfaces
 

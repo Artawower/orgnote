@@ -16,6 +16,8 @@ backend/app/media/*
 frontend/*
 
 orgnote-client/
+orgnote-client-master/
+org-mode-ast/
 orgnote-backend/
 orgnote-cli/
 orgnote-api/
@@ -24,6 +26,7 @@ orgnote-el/
 orgnote.el/
 orgnote-old/
 orgnote-extensions/
+subscrumber-repo
 web-roam/
 
 plans
