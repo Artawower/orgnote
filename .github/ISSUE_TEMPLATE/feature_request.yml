@@ -1,0 +1,38 @@
+name: Feature request
+description: Suggest an idea for this project
+labels: "enhancement"
+body:
+  - type: checkboxes
+    id: requirements
+    attributes:
+      label: Before submitting
+      options:
+        - label: I checked for existing feature requests with the same idea
+          required: true
+        - label: I read the [Wiki](https://github.com/Artawower/orgnote/wiki)
+          required: false
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem does this solve?
+      description: Describe the problem or frustration you're experiencing
+      placeholder: "I'm always frustrated when..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: What's your proposed solution?
+      description: Describe what you'd like to happen
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Any alternative solutions or approaches you've thought about
+    validations:
+      required: false

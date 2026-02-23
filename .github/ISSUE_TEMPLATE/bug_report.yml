@@ -1,39 +1,43 @@
 name: Bug Report
 description: Create a report to help us improve
-title: "[Bug] "
 labels: "bug"
 body:
   - type: checkboxes
     id: requirements
     attributes:
-      label: Thank you for the bug report
-      description: Please check the suggestion below before proceeding
+      label: Before submitting
       options:
-        - label: I am using the latest version of the `OrgNote` app.
+        - label: I am using the latest version of OrgNote
           required: true
-        - label: I already checked other related issues
+        - label: I checked for existing issues with the same problem
           required: true
-        - label: I have read the [WIKI](https://github.com/Artawower/orgnote/wiki)
+        - label: I read the [Wiki](https://github.com/Artawower/orgnote/wiki)
+          required: false
+
   - type: textarea
     id: bug-description
     attributes:
-      label: Bug description and steps to reproduce
-      description: A clear and concise description of what the bug is
+      label: What happened?
+      description: Describe the bug and the steps to reproduce it
+      placeholder: |
+        1. Go to '...'
+        2. Click on '...'
+        3. See error
     validations:
       required: true
+
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: What did you expect?
+      description: What should have happened instead?
+    validations:
+      required: true
+
   - type: textarea
     id: debug-info
     attributes:
       label: Debug info
-      description: Which configuration are you using?
-      placeholder: "Copy the debug information from the 'debug info' command in the command menu in the OrgNote app (accessed with M-x on the desktop)."
-    validations:
-      required: true
-  - type: textarea
-    id: error-callstack
-    attributes:
-      label: Additional context
-      description: |
-        Please feel free to add any other context about the problem here.
+      description: Paste debug info if available (helps investigate faster)
     validations:
       required: false
