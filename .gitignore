@@ -26,8 +26,13 @@ orgnote-el/
 orgnote.el/
 orgnote-old/
 orgnote-extensions/
+orgnote-api-master
+rust-org-mode-ast
 subscrumber-repo
 web-roam/
 
 plans
 .serena
+org-blog
+.pi-lens
+.certs
