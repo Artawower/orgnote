@@ -5,6 +5,73 @@
 **OrgNote** is a comprehensive note-taking ecosystem based on the Zettelkasten approach, providing full compatibility with Emacs Org mode and Org-roam. The project consists of multiple interconnected repositories working together to deliver a seamless note-taking experience across web, mobile, desktop, and command-line interfaces.
 
 
+# KNOWLEDGE RETRIEVAL PROTOCOL (QMD MCP)
+
+You have access to the local project knowledge base through the `qmd` MCP server.
+
+
+## When to use QMD
+
+Use QMD before making decisions or writing code when the task involves any of the following:
+
+-   architecture, system design, or cross-file behavior
+-   project-specific conventions, naming, folder structure, or UI patterns
+-   domain terminology, acronyms, or unfamiliar entities
+-   business rules, workflows, or implementation details that may be documented
+-   any situation where project documentation could materially improve correctness
+
+Do not use QMD for trivial edits or tasks fully specified by the user unless project-specific conventions are likely to matter.
+
+
+## Retrieval workflow
+
+1.  Start with search, not full-document reads.
+2.  Use the QMD server's search operation to find the most relevant documents.
+3.  Prefer a combination of:
+    -   `lex` search for exact terms, filenames, acronyms, and conventions
+    -   `vec` search for natural-language questions
+4.  Read only the top 1–2 most relevant results first.
+5.  Use the QMD document-read operation to open a full document only when the snippet appears relevant but incomplete.
+6.  If still uncertain, run one refined follow-up search.
+7.  If nothing relevant is found, proceed cautiously and state that the knowledge base did not contain clear guidance.
+
+
+## Query strategy
+
+-   For exact conventions or identifiers, use short keyword queries.
+-   For architecture or workflow questions, use natural-language queries.
+-   Include concrete project terms from the task, code, filenames, or error messages whenever possible.
+
+
+## Source priority
+
+Use this priority order when sources disagree:
+
+1.  direct user instructions
+2.  current task context and codebase reality
+3.  canonical local project documentation from QMD
+4.  general model knowledge
+
+If local docs conflict with the codebase or appear stale, mention the conflict instead of silently choosing one.
+
+
+## Efficiency rules
+
+-   Never read the entire knowledge base by default.
+-   Prefer the minimum number of documents needed.
+-   Stop searching once you have enough context to act confidently.
+-   When documentation is relevant, verify before coding rather than assuming.
+
+
+## Preferred search pattern
+
+-   First search:
+    -   one `lex` query with 2–5 precise terms
+    -   one `vec` query phrased as the task question
+-   Then inspect top hits
+-   Then open the best document with the QMD read operation
+
+
 # Tech Stack
 
 

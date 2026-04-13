@@ -33,12 +33,12 @@ Do not use QMD for trivial edits or tasks fully specified by the user unless pro
 ** Retrieval workflow
 
 1. Start with search, not full-document reads.
-2. Use =structured_search= to find the most relevant documents.
+2. Use the QMD server's search operation to find the most relevant documents.
 3. Prefer a combination of:
    - =lex= search for exact terms, filenames, acronyms, and conventions
    - =vec= search for natural-language questions
 4. Read only the top 1–2 most relevant results first.
-5. Use =get= to open a full document only when the snippet appears relevant but incomplete.
+5. Use the QMD document-read operation to open a full document only when the snippet appears relevant but incomplete.
 6. If still uncertain, run one refined follow-up search.
 7. If nothing relevant is found, proceed cautiously and state that the knowledge base did not contain clear guidance.
 
@@ -72,7 +72,7 @@ If local docs conflict with the codebase or appear stale, mention the conflict i
   - one =lex= query with 2–5 precise terms
   - one =vec= query phrased as the task question
 - Then inspect top hits
-- Then =get= the best document
+- Then open the best document with the QMD read operation
 * Tech Stack
 ** Frontend (orgnote-client)
 - *Vue 3*  - Composition API with TypeScript
