@@ -12,7 +12,7 @@ This document describes the current synchronization mechanism used by OrgNote ac
 It documents the implementation as it exists today. The goal is to make the current behavior easy to understand, debug, and evolve.
 
 ## Scope
-
+        
 This document covers:
 
 - sync triggers in the client and CLI
@@ -157,9 +157,9 @@ sequenceDiagram
 
 ## Detailed behavior by repository
 
-## `orgnote-client`
+### `orgnote-client`
 
-### What the client is responsible for
+#### What the client is responsible for
 
 The client is responsible for:
 
@@ -171,7 +171,7 @@ The client is responsible for:
 - preserving queue state across restarts
 - exposing sync controls in the UI
 
-### Main sync store
+#### Main sync store
 
 The main client entry point is `orgnote-client/src/stores/sync.ts`.
 
@@ -189,7 +189,7 @@ Key details:
 - sync is blocked after an HTTP `426 Upgrade Required` compatibility error
 - content hash checking is enabled during planning
 
-### Client triggers
+#### Client triggers
 
 The client can start sync from several paths:
 
@@ -206,7 +206,7 @@ This means the system mixes:
 - file-change-triggered sync
 - configuration bootstrap through the same remote sync API
 
-### Queue-based execution
+#### Queue-based execution
 
 The client does not execute the sync plan immediately inside the store. It converts the plan into queue tasks and persists them.
 
@@ -219,7 +219,7 @@ Important properties of the registered sync queue:
 
 This keeps execution serialized and makes restart recovery possible.
 
-### Persistent queue storage
+#### Persistent queue storage
 
 Queue persistence is implemented with Dexie-backed storage and repository abstractions.
 
@@ -239,7 +239,7 @@ This allows the app to:
 - inspect failed tasks
 - serialize sync activity cleanly
 
-### Sync settings and exported profile
+#### Sync settings and exported profile
 
 The client exposes sync settings through a dedicated UI container. It also supports exporting a local sync profile built from:
 
@@ -249,7 +249,7 @@ The client exposes sync settings through a dedicated UI container. It also suppo
 
 This exported profile is intended for CLI/bootstrap usage.
 
-### Remote config bootstrap
+#### Remote config bootstrap
 
 The client uses the same sync API to fetch `config.toml` during bootstrap. That flow only applies the remote configuration when the local file still matches the default config content.
 
@@ -261,9 +261,9 @@ This is an important special case:
 
 ---
 
-## `orgnote-api`
+### `orgnote-api`
 
-### What `orgnote-api` is responsible for
+#### What `orgnote-api` is responsible for
 
 `orgnote-api` contains the shared synchronization engine used by both the client and CLI.
 
@@ -278,7 +278,7 @@ It is responsible for:
 - providing shared upload/download/delete/conflict operations
 - exposing generated sync API bindings
 
-### Sync plan creation
+#### Sync plan creation
 
 The orchestration entry point is `orgnote-api/src/sync/create-sync-plan.ts`.
 
@@ -294,7 +294,7 @@ The current sequence is:
 
 This design keeps planning independent from the client and CLI runtime.
 
-### Decision engine
+#### Decision engine
 
 The core decision logic lives in `orgnote-api/src/sync/plan.ts`.
 
@@ -316,12 +316,16 @@ Important rules from the current implementation:
 
 - if a local file changed and the remote copy is missing, upload it
 - if the remote file is marked deleted and the local file did not change, delete it locally
-- if both local and remote changed, the current planner still resolves to upload
 - if a local deletion is observed and the remote file is unchanged, delete it remotely
 - if a local deletion is observed but the remote file changed, download the remote file back locally
 - new remote files that do not exist locally are downloaded
 
-### Conflict handling
+> [!WARNING]
+> If both local and remote changed, the planner currently prefers an upload operation.
+> The write is still guarded by `expectedVersion` on the backend, so this is not a silent overwrite path.
+> A version mismatch triggers conflict handling instead.
+
+#### Conflict handling
 
 Conflict behavior is implemented in `orgnote-api/src/sync/operations/conflict.ts`.
 
@@ -334,7 +338,7 @@ When a version conflict is detected:
 
 This preserves local user data before overwriting with the server version.
 
-### Shared operation helpers
+#### Shared operation helpers
 
 `orgnote-api/src/sync/operations/*` contains shared helpers for:
 
@@ -347,7 +351,7 @@ This preserves local user data before overwriting with the server version.
 
 These helpers update sync state during execution so the planner can make correct decisions on the next run.
 
-### Generated remote API
+#### Generated remote API
 
 The generated API client in `orgnote-api/src/remote-api/api.ts` exposes the sync HTTP surface used by the client and CLI.
 
@@ -359,7 +363,7 @@ Important sync parameters include:
 - `X-Content-Hash`
 - `expectedVersion`
 
-### Shared models
+#### Shared models
 
 `orgnote-api` also defines the shared sync contracts:
 
@@ -369,7 +373,7 @@ Important sync parameters include:
 - sync profile schema
 - command identifiers and i18n keys
 
-### Adjacent legacy utility path
+#### Adjacent legacy utility path
 
 There is also an older note-diff utility path in:
 
@@ -380,9 +384,9 @@ These files are sync-adjacent, but they are separate from the current `src/sync/
 
 ---
 
-## `orgnote-backend`
+### `orgnote-backend`
 
-### What the backend is responsible for
+#### What the backend is responsible for
 
 The backend is the source of truth for:
 
@@ -395,7 +399,7 @@ The backend is the source of truth for:
 - storage quota enforcement
 - websocket sync notifications
 
-### HTTP endpoints
+#### HTTP endpoints
 
 The backend sync API currently exposes:
 
@@ -406,7 +410,7 @@ The backend sync API currently exposes:
 
 These endpoints are registered by the sync handler and wired from `main.go`.
 
-### Incremental remote changes
+#### Incremental remote changes
 
 `GET /sync/changes` returns remote file changes since a timestamp and cursor. The backend uses:
 
@@ -416,7 +420,7 @@ These endpoints are registered by the sync handler and wired from `main.go`.
 
 This allows deterministic incremental polling.
 
-### Upload behavior
+#### Upload behavior
 
 Upload flow on the server:
 
@@ -429,7 +433,7 @@ Upload flow on the server:
 7. upsert metadata with optimistic version checking
 8. emit a websocket sync notification
 
-### Download behavior
+#### Download behavior
 
 Download flow on the server:
 
@@ -439,7 +443,7 @@ Download flow on the server:
 4. load the blob by content hash
 5. return bytes with metadata-derived version information
 
-### Delete behavior
+#### Delete behavior
 
 Delete flow on the server:
 
@@ -450,7 +454,7 @@ Delete flow on the server:
 
 Deletes are represented as tombstones rather than immediate hard deletes.
 
-### Metadata repository
+#### Metadata repository
 
 The metadata repository is the most important backend sync component.
 
@@ -464,7 +468,7 @@ It is responsible for:
 - referenced-hash lookup for garbage collection
 - total usage calculation for quota checks
 
-### Blob storage
+#### Blob storage
 
 Blob storage is content-hash keyed.
 
@@ -476,7 +480,7 @@ Current shape:
 
 This means metadata and blob storage are intentionally separated.
 
-### Websocket invalidation
+#### Websocket invalidation
 
 The backend emits a `sync` event after upload and delete operations. The websocket handler fans this event out to connected clients and can exclude the originating socket.
 
@@ -496,9 +500,9 @@ flowchart TD
 
 ---
 
-## `orgnote-cli`
+### `orgnote-cli`
 
-### What the CLI is responsible for
+#### What the CLI is responsible for
 
 The CLI provides a non-UI synchronization flow for local folders.
 
@@ -513,7 +517,7 @@ It is responsible for:
 - executing the plan directly
 - reporting operation and summary logs
 
-### Command flow
+#### Command flow
 
 The CLI entry point exposes `sync` and `validate-config`.
 
@@ -528,11 +532,11 @@ The `sync` command path:
 7. executes uploads, downloads, local deletes, and remote deletes
 8. prints final stats
 
-### Persistent sync state
+#### Persistent sync state
 
 The CLI stores per-account sync state under the local config directory. This gives the CLI the same kind of memory the app uses for planning.
 
-### SDK wrapper
+#### SDK wrapper
 
 The CLI SDK wraps the generated sync API for:
 
@@ -541,11 +545,11 @@ The CLI SDK wraps the generated sync API for:
 - remote delete
 - bearer-token authentication
 
-### Backup strategy
+#### Backup strategy
 
 The CLI creates a zip backup of the entire notes directory before sync and trims older backups according to the configured retention count.
 
-This is a protective measure that the interactive client sync queue does not implement the same way.
+This is a protective measure that differs from the client flow. The client relies on persistent queue state, retries, and conflict recovery instead of creating a full pre-sync backup.
 
 ---
 
@@ -605,7 +609,7 @@ Remote files that are not in the local snapshot and are not tracked as deleted l
 
 ## Execution model
 
-## Client execution model
+### Client execution model
 
 The client transforms the plan into queue tasks. That queue is durable and processed serially.
 
@@ -622,7 +626,7 @@ Tradeoffs:
 - queue persistence must remain healthy
 - stale queued items can delay fresh work if not managed carefully
 
-## CLI execution model
+### CLI execution model
 
 The CLI executes the same shared operations directly in process.
 
@@ -714,7 +718,7 @@ Recovery matters because planning depends on historical knowledge:
 - prior errors and conflicts
 - deleted entries
 
-Without recovery, the planner would lose enough historical context to make safe decisions.
+Without recovery, the planner would lose the historical context needed to make safe decisions.
 
 ---
 
@@ -761,7 +765,7 @@ The current design has several strong properties:
 
 ---
 
-## Current caveats and documentation notes
+## Current caveats
 
 ### Remote config sync is a separate concern
 
@@ -771,9 +775,11 @@ The bootstrap of `config.toml` uses the same sync API but is conceptually differ
 
 There is an older sync-adjacent note diff utility path in `orgnote-api`. It is relevant historically, but it is not the main current planner pipeline.
 
-### Backend docs tree ambiguity
+## Documentation gaps
 
-There are generated sync endpoint docs in `app/docs/docs.go`, and there appears to be a sibling docs tree with matching endpoint definitions. The canonical source of truth was not fully established during this analysis.
+### Backend docs tree needs canonical ownership
+
+The backend contains generated sync endpoint docs in `app/docs/docs.go`, and there appears to be a sibling docs tree with matching endpoint definitions. This document should point to a single canonical source once ownership is confirmed.
 
 ---
 
@@ -804,9 +810,9 @@ When synchronization behaves incorrectly, inspect in this order:
 
 This appendix is the implementation index for the current sync mechanism.
 
-## `orgnote-client`
+### `orgnote-client`
 
-### Main store and orchestration
+#### Main store and orchestration
 
 - `orgnote-client/src/stores/sync.ts:1-111`
 - `orgnote-client/src/composables/use-auto-sync.ts:1-45`
@@ -818,20 +824,20 @@ This appendix is the implementation index for the current sync mechanism.
 - `orgnote-client/src/boot/repositories.ts:1-23`
 - `orgnote-client/src/boot/api.ts:88-116`
 
-### Sync infrastructure
+#### Sync infrastructure
 
 - `orgnote-client/src/infrastructure/sync/index.ts:1-8`
 - `orgnote-client/src/infrastructure/sync/sync-executor.ts:1-61`
 - `orgnote-client/src/infrastructure/sync/sync-processor.ts:1-50`
 - `orgnote-client/src/infrastructure/sync/sync-task-factory.ts:1-51`
 
-### Queue infrastructure
+#### Queue infrastructure
 
 - `orgnote-client/src/stores/queue.ts:1-336`
 - `orgnote-client/src/infrastructure/repositories/queue-repository.ts:1-165`
 - `orgnote-client/src/infrastructure/stores/queue-store.ts:1-159`
 
-### Commands and UI
+#### Commands and UI
 
 - `orgnote-client/src/commands/global-commands.ts:268-288`
 - `orgnote-client/src/commands/settings-commands.ts:239-266`
@@ -839,7 +845,7 @@ This appendix is the implementation index for the current sync mechanism.
 - `orgnote-client/src/commands/settings-commands.spec.ts:156-190`
 - `orgnote-client/src/containers/SynchronisationSettings.vue:1-68`
 
-### Config and helpers
+#### Config and helpers
 
 - `orgnote-client/src/utils/sync-state.ts:1-26`
 - `orgnote-client/src/utils/server-endpoints.ts:1-51`
@@ -849,9 +855,9 @@ This appendix is the implementation index for the current sync mechanism.
 
 ---
 
-## `orgnote-api`
+### `orgnote-api`
 
-### Core sync planner
+#### Core sync planner
 
 - `orgnote-api/src/sync/create-sync-plan.ts:1-57`
 - `orgnote-api/src/sync/plan.ts:1-191`
@@ -861,7 +867,7 @@ This appendix is the implementation index for the current sync mechanism.
 - `orgnote-api/src/sync/utils/oldest-synced-at.ts:1-12`
 - `orgnote-api/src/sync/utils/content-hash.ts:1-7`
 
-### Sync operations
+#### Sync operations
 
 - `orgnote-api/src/sync/operations/upload.ts:1-52`
 - `orgnote-api/src/sync/operations/download.ts:1-88`
@@ -870,7 +876,7 @@ This appendix is the implementation index for the current sync mechanism.
 - `orgnote-api/src/sync/operations/conflict.ts:1-98`
 - `orgnote-api/src/sync/operations/synced-file.ts:1-25`
 
-### Shared models and command surface
+#### Shared models and command surface
 
 - `orgnote-api/src/models/sync-store.ts:1-14`
 - `orgnote-api/src/models/queue-store.ts:1-61`
@@ -881,17 +887,17 @@ This appendix is the implementation index for the current sync mechanism.
 - `orgnote-api/src/constants/i18n-keys.ts:22-28`
 - `orgnote-api/src/constants/i18n-keys.ts:47-48`
 
-### Generated API bindings
+#### Generated API bindings
 
 - `orgnote-api/src/remote-api/api.ts:31-79`
 - `orgnote-api/src/remote-api/api.ts:525-553`
 - `orgnote-api/src/remote-api/api.ts:1340-1699`
 
-### Tests
+#### Tests
 
 - `orgnote-api/src/sync/__tests__/*`
 
-### Adjacent legacy utilities
+#### Adjacent legacy utilities
 
 - `orgnote-api/src/models/sync.ts:1-36`
 - `orgnote-api/src/utils/find-notes-files-diff.ts:1-189`
@@ -901,67 +907,67 @@ This appendix is the implementation index for the current sync mechanism.
 
 ---
 
-## `orgnote-backend`
+### `orgnote-backend`
 
-### HTTP handlers and routing
+#### HTTP handlers and routing
 
 - `orgnote-backend/app/handlers/sync_handler.go:1-352`
 - `orgnote-backend/app/main.go:123-155`
 
-### Services
+#### Services
 
 - `orgnote-backend/app/services/sync_service.go:1-285`
 - `orgnote-backend/app/services/notification_service.go:1-37`
 - `orgnote-backend/app/services/errors.go:1-23`
 
-### Repositories and models
+#### Repositories and models
 
 - `orgnote-backend/app/repositories/file_metadata_repository.go:1-505`
 - `orgnote-backend/app/models/file_metadata.go:1-65`
 
-### Storage and path utilities
+#### Storage and path utilities
 
 - `orgnote-backend/app/infrastructure/storage.go:1-37`
 - `orgnote-backend/app/infrastructure/s3_storage.go:1-197`
 - `orgnote-backend/app/tools/normalize_path.go:1-7`
 - `orgnote-backend/app/tools/normalize_path_test.go:1-31`
 
-### Websocket invalidation
+#### Websocket invalidation
 
 - `orgnote-backend/app/handlers/websocket_handler.go:1-182`
 
-### Generated docs
+#### Generated docs
 
 - `orgnote-backend/app/docs/docs.go:355-603`
 - `orgnote-backend/app/docs/docs.go:784-902`
 
-### Backend tests
+#### Backend tests
 
 - `orgnote-backend/app/*/*_test.go`
 
 ---
 
-## `orgnote-cli`
+### `orgnote-cli`
 
-### Entry points and command wiring
+#### Entry points and command wiring
 
 - `orgnote-cli/src/cli.ts:1-40`
 - `orgnote-cli/src/index.ts:1-93`
 - `orgnote-cli/src/commands/command-handlers.ts:1-55`
 - `orgnote-cli/src/commands/sync.ts:1-348`
 
-### Local state and filesystem
+#### Local state and filesystem
 
 - `orgnote-cli/src/adapters/sync-state.ts:1-40`
 - `orgnote-cli/src/adapters/node-file-system.ts:1-114`
 - `orgnote-cli/src/store/store.ts:1-73`
 
-### Config and API wrapper
+#### Config and API wrapper
 
 - `orgnote-cli/src/config.ts:1-193`
 - `orgnote-cli/src/commands/sdk.ts:1-163`
 
-### Backup and tests
+#### Backup and tests
 
 - `orgnote-cli/src/backup.ts:1-74`
 - `orgnote-cli/src/config.spec.ts:1-72`
