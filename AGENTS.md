@@ -190,6 +190,18 @@ When you receive a task, BEFORE starting work:
     Note: For deep reasoning, use sequential thinking tool instead of verbose tags.
 
 
+### Internal documentation
+
+-   `docs/file-synchronization.md` — Full description of the sync mechanism across all four sub-repos (`orgnote-client`, `orgnote-api`, `orgnote-backend`, `orgnote-cli`). Read before working on any sync-related task.
+-   `docs/plans/` — Task plans for complex fixes and features. Check for an existing plan before starting a complex task. Mark completed plans with `**Status: COMPLETED**` at the top. Create new plans as `docs/plans/<descriptive-name>.md`.
+
+
+### CodeMirror widget conventions
+
+-   Every block widget (`WidgetType` used with `Decoration.replace({ block: true })`) **must** set `contenteditable="false"` on the root DOM element returned by `toDOM()`. Omitting this causes `RangeError: Invalid child in posBefore` when the user clicks inside the widget, because CodeMirror's `posAtCoords` traversal cannot find the widget's DOM node in its content-view registry.
+-   Reference implementation: `orgnote-client/src/containers/RichEditor/widgets/org-multiline-widget.ts`
+
+
 ### Before start
 
 1.  Repository inspection (run once per session)
