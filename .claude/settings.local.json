@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__sequential-thinking__sequentialthinking",
+      "Bash(head:*)",
+      "WebSearch",
+      "WebFetch(domain:github.com)",
+      "Bash(gh api:*)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:capacitorjs.com)",
+      "WebFetch(domain:lightrun.com)",
+      "Bash(python3 -c \" import sys, json lines = sys.stdin.readlines\\(\\) for line in lines[-50:]: try: d = json.loads\\(line\\) role = d.get\\(''role'', ''''\\) content = d.get\\(''content'', ''''\\) if isinstance\\(content, list\\): for c in content: if isinstance\\(c, dict\\) and c.get\\(''type''\\) == ''text'': print\\(f''[{role}]: {c[\"\"text\"\"][:500]}''\\) break elif isinstance\\(content, str\\): print\\(f''[{role}]: {content[:500]}''\\) except: pass \")",
+      "Bash(npx vue-tsc:*)",
+      "Bash(bunx vue-tsc:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
