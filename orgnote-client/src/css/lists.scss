@@ -1,0 +1,18 @@
+ul,
+ol {
+  list-style: initial;
+}
+
+li {
+  display: list-item;
+  padding-bottom: var(--padding-md);
+}
+
+ul,
+ol {
+  margin-left: 40px; /* или любое другое значение */
+}
+
+li::marker {
+  color: var(--fg-muted);
+}

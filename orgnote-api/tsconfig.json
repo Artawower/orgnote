@@ -1,0 +1,34 @@
+{
+  "compilerOptions": {
+    "baseUrl": "./",
+    "module": "esnext",
+    "lib": ["es2022", "dom"],
+    "target": "esnext",
+    "outDir": "dist",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "emitDecoratorMetadata": true,
+    "emitDeclarationOnly": false,
+    "declaration": true,
+    "declarationDir": "./dist",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "experimentalDecorators": true,
+    "skipLibCheck": true,
+    "paths": {
+      "src/*": ["src/*"],
+      "remote-api/*": ["src/remote-api/*"]
+    },
+    "types": ["node", "vitest/importMeta"],
+    "plugins": [
+      { "transform": "typescript-transform-paths" },
+      { "transform": "typescript-transform-paths", "afterDeclarations": true },
+      {
+        "transform": "typescript-transformer-esm",
+        "after": true
+      }
+    ]
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules"]
+}

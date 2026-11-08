@@ -1,0 +1,83 @@
+PODS:
+  - Capacitor (7.2.0):
+    - CapacitorCordova
+  - CapacitorApp (7.0.1):
+    - Capacitor
+  - CapacitorBrowser (8.0.0):
+    - Capacitor
+  - CapacitorCordova (7.2.0)
+  - CapacitorInappbrowser (3.0.0):
+    - Capacitor
+    - OSInAppBrowserLib (~> 2.3.1)
+  - CapacitorKeyboard (7.0.1):
+    - Capacitor
+  - CapacitorSplashScreen (7.0.1):
+    - Capacitor
+  - CapacitorStatusBar (7.0.1):
+    - Capacitor
+  - HugotomaziCapacitorNavigationBar (4.0.1):
+    - Capacitor
+  - JcesarmobileSslSkip (0.4.0):
+    - Capacitor
+  - OSInAppBrowserLib (2.3.1)
+  - WebViewBackgroundPlugin (1.0.0):
+    - Capacitor
+
+DEPENDENCIES:
+  - "Capacitor (from `../../node_modules/@capacitor/ios`)"
+  - "CapacitorApp (from `../../node_modules/@capacitor/app`)"
+  - "CapacitorBrowser (from `../../node_modules/@capacitor/browser`)"
+  - "CapacitorCordova (from `../../node_modules/@capacitor/ios`)"
+  - "CapacitorInappbrowser (from `../../node_modules/@capacitor/inappbrowser`)"
+  - "CapacitorKeyboard (from `../../node_modules/@capacitor/keyboard`)"
+  - "CapacitorSplashScreen (from `../../node_modules/@capacitor/splash-screen`)"
+  - "CapacitorStatusBar (from `../../node_modules/@capacitor/status-bar`)"
+  - "HugotomaziCapacitorNavigationBar (from `../../node_modules/@hugotomazi/capacitor-navigation-bar`)"
+  - "JcesarmobileSslSkip (from `../../node_modules/@jcesarmobile/ssl-skip`)"
+  - WebViewBackgroundPlugin (from `../../plugins/webview-background/ios`)
+
+SPEC REPOS:
+  trunk:
+    - OSInAppBrowserLib
+
+EXTERNAL SOURCES:
+  Capacitor:
+    :path: "../../node_modules/@capacitor/ios"
+  CapacitorApp:
+    :path: "../../node_modules/@capacitor/app"
+  CapacitorBrowser:
+    :path: "../../node_modules/@capacitor/browser"
+  CapacitorCordova:
+    :path: "../../node_modules/@capacitor/ios"
+  CapacitorInappbrowser:
+    :path: "../../node_modules/@capacitor/inappbrowser"
+  CapacitorKeyboard:
+    :path: "../../node_modules/@capacitor/keyboard"
+  CapacitorSplashScreen:
+    :path: "../../node_modules/@capacitor/splash-screen"
+  CapacitorStatusBar:
+    :path: "../../node_modules/@capacitor/status-bar"
+  HugotomaziCapacitorNavigationBar:
+    :path: "../../node_modules/@hugotomazi/capacitor-navigation-bar"
+  JcesarmobileSslSkip:
+    :path: "../../node_modules/@jcesarmobile/ssl-skip"
+  WebViewBackgroundPlugin:
+    :path: "../../plugins/webview-background/ios"
+
+SPEC CHECKSUMS:
+  Capacitor: 03bc7cbdde6a629a8b910a9d7d78c3cc7ed09ea7
+  CapacitorApp: febecbb9582cb353aed037e18ec765141f880fe9
+  CapacitorBrowser: b7d7f05f840fe042e46f6528bb8db853e3058fb2
+  CapacitorCordova: 5967b9ba03915ef1d585469d6e31f31dc49be96f
+  CapacitorInappbrowser: 66fc8cc3ff414c2393fe5dcfd52815cf8b6a046f
+  CapacitorKeyboard: 09fd91dcde4f8a37313e7f11bde553ad1ed52036
+  CapacitorSplashScreen: 1d67815a422a9b61539c94f283c08ed56667c0fc
+  CapacitorStatusBar: 6e7af040d8fc4dd655999819625cae9c2d74c36f
+  HugotomaziCapacitorNavigationBar: d56bded81461cc38cd071727126e7298002ff2b5
+  JcesarmobileSslSkip: 5fa98636a64c36faa50f32ab4daf34e38f4d45b9
+  OSInAppBrowserLib: bf7cdcc072394ae827f8cfe3f5f9c807691834c0
+  WebViewBackgroundPlugin: 0ab897f07de77d97a55b2b41617df15119d9b2ac
+
+PODFILE CHECKSUM: a09a263c5be30dbfddacbee386fe86c5e69c1dee
+
+COCOAPODS: 1.16.2

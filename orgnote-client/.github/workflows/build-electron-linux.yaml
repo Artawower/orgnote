@@ -1,0 +1,101 @@
+name: Build Electron Linux
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        required: true
+        type: string
+        description: 'Environment name (dev or deploy)'
+      version:
+        required: true
+        type: string
+        description: 'Version string for the artifact name'
+      prerelease:
+        required: false
+        type: boolean
+        default: false
+        description: 'Whether this is a prerelease build'
+      update_channel:
+        required: false
+        type: string
+        default: latest
+        description: 'Electron updater channel name'
+      enable_devtools:
+        required: false
+        type: boolean
+        default: false
+        description: 'Allow Electron DevTools in packaged builds'
+
+jobs:
+  build-electron-linux:
+    name: Build Electron Linux
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate required secrets
+        env:
+          API_URL: ${{ secrets.API_URL }}
+          AUTH_URL: ${{ secrets.AUTH_URL }}
+          WS_URL: ${{ secrets.WS_URL }}
+        run: |
+          REQUIRED_SECRETS=(API_URL AUTH_URL WS_URL)
+          for SECRET_NAME in "${REQUIRED_SECRETS[@]}"; do
+            if [ -z "${!SECRET_NAME}" ]; then
+              echo "::error::Missing required secret: $SECRET_NAME"
+              exit 1
+            fi
+          done
+
+      - uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - uses: actions/cache@v4
+        with:
+          path: '**/node_modules'
+          key: ${{ runner.os }}-modules-${{ hashFiles('**/bun.lock') }}
+
+      # Defensive: project has no production native modules today,
+      # but QEMU enables arm64 cross-rebuild if one is added later.
+      - uses: docker/setup-qemu-action@v3
+        with:
+          platforms: arm64
+
+      - name: Install dependencies
+        run: |
+          bun install --frozen-lockfile
+          bun add -g @quasar/cli
+
+      - name: Build Electron
+        env:
+          DEBUG: ${{ inputs.prerelease && 'true' || 'false' }}
+          ORGNOTE_ENABLE_DEVTOOLS: ${{ inputs.enable_devtools && 'true' || 'false' }}
+          ORGNOTE_UPDATE_CHANNEL: ${{ inputs.update_channel }}
+          VITE_API_URL: ${{ secrets.API_URL }}
+          VITE_AUTH_URL: ${{ secrets.AUTH_URL }}
+          VITE_DEPLOYMENT_ENV: ${{ inputs.environment }}
+          VITE_WS_URL: ${{ secrets.WS_URL }}
+        run: bunx quasar build -m electron -P never
+
+      - name: Collect Linux artifacts
+        run: |
+          mkdir -p ./dist/build
+          find ./dist/electron -name '*.rpm' -exec cp {} ./dist/build/ \;
+          find ./dist/electron -name '*.AppImage' -exec cp {} ./dist/build/ \;
+          find ./dist/electron -name '*.blockmap' -exec cp {} ./dist/build/ \;
+          find ./dist/electron -name '*-linux.yml' -exec cp {} ./dist/build/ \;
+          echo "Collected artifacts:"
+          ls -la ./dist/build
+          if [ -z "$(ls -A ./dist/build 2>/dev/null)" ]; then
+            echo "ERROR: no .rpm or .AppImage artifacts found" && exit 1
+          fi
+
+      - name: Upload Electron Linux artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: orgnote-linux-${{ inputs.version }}
+          path: ./dist/build/*
+          retention-days: ${{ inputs.prerelease && 7 || 30 }}

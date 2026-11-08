@@ -1,0 +1,150 @@
+:PROPERTIES:
+:ID: contributino-guide
+:END:
+
+#+TITLE: How to contribute?
+#+STARTUP: content
+
+
+* Few words
+/Some of these rules and tips may be very subjective. Perhaps you may disagree with some of them, because you really have more experience and knowledge than I do./
+/But I ask you to follow these rules because even you can write code with a better approach, once you are done, I will be forced to maintain the existing code. Thanks for your understanding!/
+* Style guides.
+- User prettier to format your code
+- Don't use =switch/case=
+- Try to avoid =else= construction.
+- Try to avoid nested blocks with more than 3 levels
+
+  /Work in progress/
+* How to write good extension!?
+- Consider to import only types from =orgnote-api= package. It could significantly reduce the size of your extension!
+- Clean resources after unmount! It's important to avoid memory leaks.
+  For example:
+ #+BEGIN_SRC typescript
+export default {
+    onMounted: async (api) => {
+        api.ui.applyStyles('unique-id', `.org-keyword-title-line { color: blue }`);
+    },
+};
+#+END_SRC
+
+This code will preserve style block after user disable your extension.
+
+To avoid it use =onUnmounted= hook
+
+#+BEGIN_SRC typescript
+export default {
+    onMounted: async (api) => {
+        api.ui.applyStyles('unique-id', `.org-keyword-title-line { color: blue }`);
+    },
+    onUnmounted: async (api) => {
+        api.ui.removeStyles('unique-id');
+    }
+};
+#+END_SRC
+* Creating your own extension, example
+/Do you use Emacs? My respect! You can easily tangle this code into ready to start project!/
+Just copy this document to your working directory and run =M-x org-babel-tangle=. or just press =C-c C-v t=
+
+** Init tsconfig (skip if you prefer to work with js)
+#+BEGIN_SRC json :tangle tsconfig.json
+{
+  "compilerOptions": {
+    "baseUrl": "./",
+    "rootDir": "src",
+    "module": "es2015",
+    "target": "es2022",
+    "lib": ["es2022", "dom"],
+    "outDir": "dist",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "emitDecoratorMetadata": true,
+    "declaration": false,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "experimentalDecorators": true,
+    "skipLibCheck": true,
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "**/*.spec.ts"]
+}
+
+#+END_SRC
+** Init package.json file
+#+BEGIN_SRC json :tangle package.json
+{
+  "name": "<PACKAGE NAME>",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "<DESCRIPTION>",
+  "main": "index.js",
+  "scripts": {
+    "build": "rm -rf ./dist && tsc -p .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+<REPO URL>"
+  },
+  "keywords": [
+    "orgnote",
+    "extension"
+  ],
+  "author": "<AUTHOR>",
+  "license": "MIT",
+  "homepage": "<REPO URL>",
+  "devDependencies": {
+    "typescript": "5.3.3"
+  },
+  "dependencies": {
+    "orgnote-api": "0.0.19"
+  }
+}
+
+#+END_SRC
+** Create extension entrypoint
+create source folder
+
+#+BEGIN_SRC sh
+mkdir src
+#+END_SRC
+
+
+#+BEGIN_SRC typescript :tangle src/index.ts
+import { Extension, ExtensionManifest, OrgNoteApi } from 'orgnote-api';
+
+const packageName = 'my-awesome-package';
+
+export default {
+  onMounted: async (api: OrgNoteApi): Promise<void> => {
+    api.interaction.confirm('Arrrr!', 'Whoooo Lives in a under the sea!?');
+  },
+
+  onUnmounted: async (api: OrgNoteApi): Promise<void> => {
+    api.interaction.confirm('Good bye!', '');
+  }
+} as Extension;
+
+
+export const manifest: ExtensionManifest = {
+  name: 'My first extension',
+  description: '🦄🌈',
+  version: '0.0.1',
+  sourceType: 'git',
+  sourceUrl: 'https://github.com/artawower/orgnote-colorful-headlines',
+  author: 'artawower',
+  category: 'other',
+  keywords: ['color', 'headline', 'styles'],
+}
+#+END_SRC
+
+** Install dependencies
+#+BEGIN_SRC sh
+npm install
+#+END_SRC
+** Compile your code
+#+BEGIN_SRC sh
+npm run build
+#+END_SRC
+
+You can find compiled =index.js= file in the =dist= directory. For debug just drag & drop it into opened OrgNote window.

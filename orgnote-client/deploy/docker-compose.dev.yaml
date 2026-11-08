@@ -1,0 +1,9 @@
+version: '3.8'
+services:
+  app:
+    platform: linux/amd64
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+    volumes:
+      - ~/frontend-build:/app/dist

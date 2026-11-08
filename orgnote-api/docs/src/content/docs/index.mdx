@@ -1,0 +1,37 @@
+---
+title: OrgNote API
+description: Official SDK for building OrgNote extensions
+template: splash
+hero:
+  title: OrgNote API
+  tagline: Build extensions for the Zettelkasten-powered note-taking ecosystem with full Org mode compatibility.
+  image:
+    file: ../../assets/logo.png
+  actions:
+    - text: Get Started
+      link: /getting-started/
+      icon: right-arrow
+      variant: primary
+    - text: API Reference
+      link: /api/
+      variant: minimal
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+## What can extensions do?
+
+<CardGrid stagger>
+  <Card title="Commands" icon="terminal">
+    Register keyboard shortcuts and command palette actions.
+  </Card>
+  <Card title="Themes" icon="sun">
+    Create custom color themes with CSS variables.
+  </Card>
+  <Card title="Editor Widgets" icon="puzzle">
+    Render custom inline or block widgets inside the Org-mode editor.
+  </Card>
+  <Card title="File Operations" icon="document">
+    Read, write, and manage notes through a virtual file system.
+  </Card>
+</CardGrid>

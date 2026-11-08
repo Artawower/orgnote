@@ -1,0 +1,29 @@
+:PROPERTIES:
+:ID: orgnote-backend-agent
+:END:
+
+#+TITLE: OrgNote AI Agent Guidelines
+#+DESCRIPTION: Project-specific guidelines for OrgNote development extending base_agents.org
+#+FILETAGS: :ai:prompts:agents:orgnote:
+#+STARTUP: content
+#+OPTIONS: toc:nil
+#+OPTIONS: tags:nil
+
+
+
+* Project Overview
+*OrgNote* is a comprehensive note-taking ecosystem based on the Zettelkasten approach, providing full compatibility with Emacs Org mode and Org-roam. The project consists of multiple interconnected repositories working together to deliver a seamless note-taking experience across web, mobile, desktop, and command-line interfaces.
+
+* Tech Stack
+** Development Tools and dependencies
+- Go - Backend services
+- Docker and docker compose - Containerization and orchestration
+- Air - Live reloading for Go applications
+- Zerolog - Structured logging library
+- Just - Command runner for task automation
+- Mongo DB - NoSQL database for data storage
+- s3-compatible storage - File storage solution
+
+
+#+INCLUDE: "/Users/darkawower/Yandex.Disk.localized/Dropbox/org-roam/programming/ai/base_agents.org"
+

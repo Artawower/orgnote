@@ -1,0 +1,92 @@
+name: CI
+
+on:
+  push:
+    branches: [master, dev]
+  pull_request:
+    branches: [master, dev]
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.12
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+      - name: Run tests
+        run: bun run test --run
+      - name: Build
+        run: bun run build
+
+  release:
+    name: Create Release
+    needs: [test]
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev')
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Check package version change
+        id: version_change
+        run: |
+          BEFORE="${{ github.event.before }}"
+          if [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if git cat-file -e "$BEFORE:package.json" 2>/dev/null; then
+            PREV_VERSION=$(git show "$BEFORE:package.json" | node -p "JSON.parse(require('fs').readFileSync(0, 'utf8')).version")
+          else
+            PREV_VERSION=""
+          fi
+          CURRENT_VERSION=$(node -p "require('./package.json').version")
+          echo "Previous: $PREV_VERSION, Current: $CURRENT_VERSION"
+          if [ "$CURRENT_VERSION" != "$PREV_VERSION" ]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "changed=false" >> "$GITHUB_OUTPUT"
+      - name: Check stable release existence
+        id: stable_release
+        if: steps.version_change.outputs.changed == 'true' && github.ref == 'refs/heads/master'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          if gh release view "$VERSION" >/dev/null 2>&1; then
+            echo "should_create=false" >> "$GITHUB_OUTPUT"
+            echo "Release $VERSION already exists, skipping"
+            exit 0
+          fi
+          echo "should_create=true" >> "$GITHUB_OUTPUT"
+      - name: Create stable release
+        if: >-
+          steps.version_change.outputs.changed == 'true' &&
+          github.ref == 'refs/heads/master' &&
+          steps.stable_release.outputs.should_create == 'true'
+        uses: justincy/github-action-npm-release@2.0.2
+        with:
+          token: ${{ github.token }}
+      - name: Create dev prerelease
+        if: steps.version_change.outputs.changed == 'true' && github.ref == 'refs/heads/dev'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          DEV_VERSION="${VERSION}-dev.$(echo '${{ github.sha }}' | cut -c1-7)"
+          if gh release view "$DEV_VERSION" >/dev/null 2>&1; then
+            echo "Prerelease $DEV_VERSION already exists"
+            exit 0
+          fi
+          gh release create "$DEV_VERSION" \
+            --target "${{ github.sha }}" \
+            --title "$DEV_VERSION" \
+            --notes "Dev prerelease for $VERSION" \
+            --prerelease

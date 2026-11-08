@@ -1,0 +1,54 @@
+---
+title: Widgets
+description: Creating custom editor widgets for the Org-mode editor
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+Widgets let extensions render custom UI inside the Org-mode editor. OrgNote supports three widget types, each targeting different levels of the document structure.
+
+## Widget types
+
+| Type | Description | Use case |
+|------|-------------|----------|
+| `Inline` | Decorates a single inline node | Custom link rendering, inline previews |
+| `Multiline` | Replaces an entire block node | Embedded charts, code runners |
+| `LineClass` | Attaches a CSS class to a line | Syntax highlighting, visual markers |
+
+## Registering a widget
+
+```typescript
+import { WidgetType } from 'orgnote-api';
+
+async onMounted(api: OrgNoteApi) {
+  const editor = api.core.useEditor();
+
+  editor.addWidgets({
+    type: WidgetType.Inline,
+    nodeType: 'link',
+    id: 'my-ext.fancy-links',
+    decorationType: 'replace',
+    widgetBuilder: ({ node }) => {
+      const el = document.createElement('a');
+      el.href = node.value;
+      el.textContent = node.children?.[0]?.value ?? node.value;
+      el.classList.add('fancy-link');
+      return el;
+    },
+  });
+}
+```
+
+<Aside type="caution">
+  Widget builders receive raw DOM access. Make sure to sanitize any user content before inserting it into the DOM.
+</Aside>
+
+## Widget lifecycle
+
+Widgets are automatically cleaned up when the editor view is destroyed. If your widget creates external resources (event listeners, timers), clean them up in the widget's destroy callback.
+
+## See also
+
+- [`WidgetMeta`](/api/) — discriminated union describing widget registration
+- [`InlineEmbeddedWidget`](/api/) — inline widget configuration
+- [`MultilineEmbeddedWidget`](/api/) — block widget configuration

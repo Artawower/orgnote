@@ -1,0 +1,26 @@
+name: CD for orgnote backend (prod)
+
+on:
+  workflow_run:
+    workflows:
+      - CI for orgnote backend
+    types:
+      - completed
+    branches:
+      - master
+  repository_dispatch:
+    types: [trigger-deploy-repo-workflow]
+
+jobs:
+  deploy:
+    if: >
+      github.event_name == 'repository_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' && 
+      github.event.workflow_run.head_branch == 'master')
+    uses: ./.github/workflows/cd.base.yaml
+    with:
+      environment: deploy
+      branch: master
+      debug: false
+      client_image_tag: latest
+    secrets: inherit

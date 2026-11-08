@@ -1,0 +1,20 @@
+body {
+  --scroll-bar-width: 4px;
+  --scroll-bar-color: var(--base4);
+}
+
+* {
+  ::-webkit-scrollbar {
+    width: var(--scroll-bar-width);
+    height: var(--scroll-bar-width);
+  }
+
+  ::-webkit-scrollbar-track {
+    border-radius: 10px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--scroll-bar-color);
+    border-radius: 10px;
+  }
+}

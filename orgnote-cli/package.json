@@ -1,0 +1,80 @@
+{
+  "name": "orgnote-cli",
+  "version": "0.64.0",
+  "description": "Project for synchronizing org roam notes and Org Note ",
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "start": "node --loader tsm src/index.ts",
+    "debug:force-sync": "bun ./dist/index.js sync --force --debug",
+    "debug:sync": "bun ./dist/index.js sync --debug",
+    "debug:sync:no-cache": "bun run build && bun run debug:sync",
+    "clear": "rm -rf dist",
+    "build": "tsup",
+    "build-old": "npm run clear && tsc --project tsconfig.json && mv -f ./dist/src/* ./dist/ && chmod +x ./dist/index.js",
+    "prepublish": "npm run build",
+    "test": "vitest",
+    "prepublishOnly": "npm run test && npm run build",
+    "convert:api": "fix-esm-import-path src/generated"
+  },
+  "repository": "git+https://github.com/Artawower/orgnote-cli.git",
+  "keywords": [
+    "org",
+    "roam",
+    "Org Note"
+  ],
+  "author": "darkawower <app.orgnote@gmail.com> (https://about.org-note.com)",
+  "license": "MIT",
+  "files": [
+    "dist/**"
+  ],
+  "bin": {
+    "orgnote-cli": "dist/index.js"
+  },
+  "bugs": {
+    "url": "https://github.com/Artawower/orgnote-cli/issues"
+  },
+  "homepage": "https://github.com/Artawower/orgnote-cli#readme",
+  "devDependencies": {
+    "@digitak/tsc-esm": "3.1.4",
+    "@eslint/js": "9.14.0",
+    "@openapitools/openapi-generator-cli": "2.13.5",
+    "@types/axios": "0.14.0",
+    "@types/bun": "latest",
+    "@types/node": "22.5.4",
+    "eslint": "9.14.0",
+    "fix-esm-import-path": "1.10.0",
+    "globals": "15.12.0",
+    "nyc": "17.0.0",
+    "prettier": "3.3.3",
+    "swagger-axios-codegen": "0.16.14",
+    "swagger-typescript-api": "13.0.22",
+    "ts-node": "10.9.2",
+    "tsm": "2.3.0",
+    "tsup": "^8.5.1",
+    "typescript": "5.6.2",
+    "typescript-eslint": "8.13.0",
+    "vitest": "2.1.0"
+  },
+  "dependencies": {
+    "@commander-js/extra-typings": "12.1.0",
+    "@pinojs/redact": "^0.4.0",
+    "@types/uuid": "10.0.0",
+    "axios": "1.7.7",
+    "commander": "12.1.0",
+    "diff-match-patch": "1.0.5",
+    "form-data": "4.0.0",
+    "neverthrow": "8.2.0",
+    "openpgp": "6.3.0",
+    "org-mode-ast": "0.11.7",
+    "orgnote-api": "0.67.2",
+    "p-map": "7.0.4",
+    "partysocket": "1.1.6",
+    "smol-toml": "1.5.2",
+    "spectrallogs": "0.2.2",
+    "sqlite3": "5.1.7",
+    "uuid": "10.0.0",
+    "valibot": "^1.2.0",
+    "zip-a-folder": "3.1.7"
+  }
+}

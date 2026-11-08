@@ -1,0 +1,1 @@
+export const ICON_CHANGE_DURATION = 1000;

@@ -1,0 +1,70 @@
+name: Publish Android to Google Play
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        required: true
+        type: string
+        description: 'GitHub environment containing Google Play credentials'
+      artifact_version:
+        required: true
+        type: string
+        description: 'Version in the Android App Bundle artifact name'
+
+permissions:
+  contents: read
+
+jobs:
+  publish-google-play:
+    name: Publish Android to Google Play production
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Prepare Capacitor Android project
+        working-directory: src-capacitor
+        run: |
+          bun install --frozen-lockfile
+          mkdir -p android/app/src/main/assets
+          bunx cap update android
+          test -f android/app/src/main/assets/capacitor.plugins.json
+          test -f android/capacitor-cordova-android-plugins/cordova.variables.gradle
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Download Android App Bundle
+        uses: actions/download-artifact@v4
+        with:
+          name: orgnote-${{ inputs.artifact_version }}.aab
+          path: ${{ runner.temp }}/google-play-aab
+
+      - name: Validate Google Play credentials
+        env:
+          GOOGLE_PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+        run: |
+          if [ -z "$GOOGLE_PLAY_SERVICE_ACCOUNT_JSON" ]; then
+            echo '::error::GOOGLE_PLAY_SERVICE_ACCOUNT_JSON is required.'
+            exit 1
+          fi
+
+      - name: Publish production bundle
+        working-directory: src-capacitor/android
+        env:
+          ANDROID_PUBLISHER_CREDENTIALS: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+        run: |
+          AAB_DIR="${RUNNER_TEMP}/google-play-aab"
+          test -f "$AAB_DIR/orgnote-${{ inputs.artifact_version }}.aab"
+          ./gradlew publishReleaseBundle --artifact-dir "$AAB_DIR" --track production --release-status completed

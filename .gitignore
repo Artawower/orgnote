@@ -12,27 +12,11 @@ second-brian-parser/dist
 .env
 
 backend/app/media/*
-# Frontend build directory
-frontend/*
 
-orgnote-client/
-orgnote-client-master/
 org-mode-ast/
-orgnote-backend/
-orgnote-cli/
-orgnote-api/
-org-mode-ast/
-orgnote-el/
-orgnote.el/
-orgnote-old/
-orgnote-extensions/
-orgnote-api-master
 rust-org-mode-ast
-subscrumber-repo
-web-roam/
 
 plans
 .serena
-org-blog
 .pi-lens
 .certs

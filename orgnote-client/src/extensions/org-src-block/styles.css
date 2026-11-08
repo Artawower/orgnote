@@ -1,0 +1,15 @@
+.src-code-wrapper pre {
+  margin: 0 !important;
+  background: var(--bg-elevated);
+  border-radius: var(--border-radius-sm);
+}
+
+.src-code-wrapper pre code {
+  padding: var(--padding-md);
+  display: block;
+  overflow-x: auto;
+}
+
+.src-code-wrapper pre code.hljs {
+  background: transparent;
+}

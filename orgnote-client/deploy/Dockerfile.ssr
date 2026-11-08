@@ -1,0 +1,16 @@
+FROM node:22-alpine3.19
+
+WORKDIR /app
+
+RUN ls
+RUN pwd
+COPY ./dist/ssr/package.json ./
+RUN npm i -g pm2@latest
+RUN npm install
+
+COPY ./dist/ssr ./
+
+EXPOSE 3000
+
+ENTRYPOINT ["pm2-runtime"]
+CMD ["index.js"]

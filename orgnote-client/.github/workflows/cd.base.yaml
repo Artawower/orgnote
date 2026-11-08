@@ -1,0 +1,76 @@
+name: CD orgnote client
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        required: true
+        type: string
+        description: 'Environment name (dev or deploy)'
+      image_tag:
+        required: true
+        type: string
+        description: 'Docker image tag (dev or latest)'
+      trigger_event:
+        required: false
+        type: string
+        default: ''
+        description: 'Event type to trigger backend deployment'
+
+jobs:
+  ci-checks:
+    uses: ./.github/workflows/ci-checks.yaml
+
+  push_image:
+    name: Push Docker image
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: [ci-checks]
+    environment: ${{ inputs.environment }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+      - name: Install dependencies
+        run: |
+          bun install --frozen-lockfile
+          bun add global @quasar/cli
+      - name: Init environment
+        run: |
+          cat <<EOT > .env.build
+          DEBUG=${{ inputs.environment == 'dev' && 'true' || 'false' }}
+          VITE_API_URL=${{ secrets.API_URL }}
+          VITE_AUTH_URL=${{ secrets.AUTH_URL }}
+          VITE_WS_URL=${{ secrets.WS_URL }}
+          VITE_SOURCEMAP=${{ inputs.environment == 'dev' && 'true' || 'false' }}
+          VITE_DEPLOYMENT_ENV=${{ inputs.environment }}
+          EOT
+      - name: Build ssr
+        run: bunx env-cmd -f ./.env.build bun run build -m ssr
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: deploy/Dockerfile.ssr
+          push: true
+          tags: orgnote/client:${{ inputs.image_tag }}
+
+  trigger_backend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    needs: [push_image]
+    if: ${{ inputs.trigger_event != '' }}
+    environment: ${{ inputs.environment }}
+    steps:
+      - name: Trigger backend deployment
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.PAT }}
+          repository: artawower/orgnote-backend
+          event-type: ${{ inputs.trigger_event }}

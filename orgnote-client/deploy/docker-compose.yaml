@@ -1,0 +1,15 @@
+version: '3.9'
+services:
+  app:
+    platform: linux/x86_64
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+
+    volumes:
+      - ~/frontend-build:/app/dist
+
+    environment:
+      - API_URL=${API_URL}
+      - KEYPASS=${KEYPASS}
+      - STOREPASS=${STOREPASS}

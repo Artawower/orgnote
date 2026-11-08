@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">orgnote</string>
+    <string name="title_activity_main">orgnote</string>
+    <string name="package_name">org.note.app</string>
+    <string name="custom_url_scheme">orgnote</string>
+</resources>

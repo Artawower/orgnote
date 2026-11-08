@@ -1,0 +1,90 @@
+---
+title: Your First Extension
+description: Step-by-step guide to creating an OrgNote extension
+---
+
+import { Steps, Tabs, TabItem } from '@astrojs/starlight/components';
+
+This guide walks you through creating a minimal OrgNote extension that registers a command.
+
+## Prerequisites
+
+- [Bun](https://bun.sh/)
+- Basic TypeScript knowledge
+
+## Create the extension
+
+<Steps>
+
+1. **Initialize the project**
+
+   ```bash
+   mkdir my-orgnote-extension && cd my-orgnote-extension
+   bun init -y
+   bun add orgnote-api
+   ```
+
+2. **Create the entry point**
+
+   Create `src/index.ts`:
+
+   ```typescript
+   import type { Extension, OrgNoteApi } from 'orgnote-api';
+
+   const extension: Extension = {
+     async onMounted(api: OrgNoteApi) {
+       const commands = api.core.useCommands();
+
+       commands.add({
+         command: 'hello-world.greet',
+         title: 'Hello World',
+         handler: () => {
+           const notifications = api.core.useNotifications();
+           notifications.notify({
+             message: 'Hello from my extension!',
+             type: 'positive',
+           });
+         },
+       });
+     },
+
+     async onUnmounted(api: OrgNoteApi) {
+       // Commands registered via `add` are cleaned up automatically
+     },
+   };
+
+   export default extension;
+   ```
+
+3. **Create the manifest**
+
+   Create `src/manifest.ts`:
+
+   ```typescript
+   import type { ExtensionManifest } from 'orgnote-api';
+
+   export const manifest: ExtensionManifest = {
+     name: 'hello-world',
+     version: '1.0.0',
+     category: 'extension',
+     description: 'A simple Hello World extension',
+     source: {
+       type: 'git',
+       repo: 'https://example.com/hello-world',
+     },
+   };
+   ```
+
+4. **Build and test**
+
+   Bundle your extension into a single `index.js` file (using your preferred bundler) and load it in OrgNote. See [Extension Assets](/guides/extension-assets/) when the extension also ships fonts or images.
+
+</Steps>
+
+## Example extensions
+
+Looking for more inspiration? Check out these real extensions:
+
+- [Atom One Dark theme](https://github.com/Artawower/orgnote-atom-one-dark) — pure JS theme
+- [Colorful Headlines](https://github.com/Artawower/orgnote-colorful-headlines) — TypeScript + API package
+- [Built-in extensions](https://github.com/Artawower/orgnote-client/tree/master/src/components/extensions) — bundled with OrgNote

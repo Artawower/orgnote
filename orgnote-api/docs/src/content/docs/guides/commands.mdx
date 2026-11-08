@@ -1,0 +1,52 @@
+---
+title: Commands
+description: Registering and executing commands in OrgNote extensions
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+Commands are the primary way extensions add functionality to OrgNote. They appear in the command palette and can be bound to keyboard shortcuts.
+
+## Registering a command
+
+```typescript
+async onMounted(api: OrgNoteApi) {
+  const commands = api.core.useCommands();
+
+  commands.add({
+    command: 'my-ext.toggle-feature',
+    title: 'Toggle My Feature',
+    handler: () => {
+      // Command logic here
+    },
+  });
+}
+```
+
+<Aside type="tip">
+  Prefix your command IDs with your extension name to avoid collisions (e.g. `my-ext.do-thing`).
+</Aside>
+
+## Executing commands programmatically
+
+```typescript
+const commands = api.core.useCommands();
+await commands.execute('my-ext.toggle-feature');
+```
+
+## Command groups
+
+Group related commands for better UI organization:
+
+```typescript
+const groups = api.core.useCommandsGroup();
+// Commands in the same group appear together in the command palette
+```
+
+## Pinned commands
+
+Extensions can also interact with pinned commands — quick-access shortcuts visible in the UI toolbar:
+
+```typescript
+const pinned = api.ui.usePinnedCommands();
+```

@@ -1,0 +1,78 @@
+:PROPERTIES:
+:ID: orgnote-faq
+:END:
+
+* Related links
+- [[./installation.org][Installation guide]]
+- [[./write-extensions.org][How to write extensions]]
+
+* Why another app for working with org format?
+In short, I wasn't satisfied with existing solutions. I wanted to bring the full power of Emacs note-taking to mobile devices. The final version of the app will support the following features:
+
+- Seamless synchronization of notes with Emacs through various types of providers
+- Data encryption
+- Extension mechanism
+- User-friendly interface
+- Support for literate programming through various org-babel providers, allowing code execution through third-party providers
+- Use of notifications to work with org-agenda
+- Ability to publish notes in blog format, as well as share notes via links with colleagues and friends.
+
+* What technology stack is used in the project?
+[[https://github.com/Artawower/orgnote-client][Client side]]:
+- [[https://quasar.dev/][Quasar]] - a framework for building cross-platform applications.
+- [[https://vuejs.org/][VueJs]] - core of frontend side.
+- [[https://pinia.vuejs.org/][Pinia.]] - State manager
+- [[https://codemirror.net/][CodeMirror6]] - editor for org files
+- Local storage (IndexedDB) with optional cloud sync
+- [[https://github.com/Artawower/org-mode-ast][org-mode-ast]] - custom Org-mode parser
+[[https://github.com/Artawower/orgnote-backend][Backend]]:
+- Backend written in [[https://go.dev/][Go]] using the [[https://docs.gofiber.io/][Fiber]] framework
+- [[https://www.postgresql.org/][PostgreSQL]] database
+
+* Why JavaScript and not Flutter/QT/something else?
+The stack was chosen primarily for development speed. It's not perfect, but sufficient to deliver a working product across all platforms.
+
+* Is Markdown integration planned?
+Technically, OrgNote supports any text files—you can open and edit Markdown files. However, there is no special Markdown syntax support, so files won't be rendered as Markdown. This may change in the future, but it's not currently planned.
+
+* Are my data secure?
+Currently, it's possible to enable end-to-end encryption using PGP.
+
+* Is org-roam mandatory? Or can I use regular org files?
+You can use regular org or text files.
+
+* Can I use my own server? 
+Yes! However, documentation is not yet available. If someone can help with this, I would be very grateful! Note that there are currently some limitations when configuring a remote server on the client side.
+
+* Can I lose my notes?
+Yes. Despite having migrations for updates, there is currently no backup server. I postponed its support for several reasons:
+- It requires additional financial resources
+- The project is in the beta testing stage.
+
+*So please, back up your notes.*
+
+* Will synchronization from the file system be available?
+Yes. This is one of the key tasks at the moment. I plan to add a special API that will have access to the file system. Through this API, it will be possible to write extensions for synchronization via the file system as well as through other sources.
+
+* Will synchronization through GitLab/GitHub/Dropbox, etc. be available?
+There won't be native synchronization. But third-party developers will be able to use the API to write extensions, which will allow notes to be synchronized through any source.
+
+* Will the app be published on F-Droid?
+Yes. After the first stable version is released for synchronization of notes through the file system.
+
+* Will there be an iOS version?
+Yes. Immediately after implementing the API for synchronizing notes through the file system.
+
+* What are the plans for implementing new features?
+Check the [[https://github.com/users/Artawower/projects/3/views/2?visibleFields=\[%22Labels%22%2C%22Title%22%2C%22Assignees%22%2C%22Status%22%2C254761433\]][roadmap]]
+
+
+* How can I contribute to the project?
+I am grateful for any help. This project requires significant effort beyond just programming. You can:
+- Create a pull request to fix a bug or add a new feature
+- Help with documentation
+- Support the project financially via [[https://www.patreon.com/artawower][Patreon]], cryptocurrency, or [[https://www.paypal.me/darkawower][PayPal]].
+- Create videos demonstrating new features.
+- Moderate the Discord channel
+- Help with testing. Perhaps this point is currently the most important.
+- Design system development. I'm not a designer, and I have to do many things several times, so if you have the time and desire, I will be very grateful for help in this aspect.

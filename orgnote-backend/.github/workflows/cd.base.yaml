@@ -1,0 +1,97 @@
+name: Deploy
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        required: true
+        type: string
+        description: 'Environment name (dev or deploy)'
+      branch:
+        required: true
+        type: string
+        description: 'Branch to deploy (dev or master)'
+      debug:
+        required: false
+        type: boolean
+        default: false
+        description: 'Enable debug mode'
+      client_image_tag:
+        required: false
+        type: string
+        default: 'latest'
+        description: 'Docker image tag for client (dev or latest)'
+
+jobs:
+  deploy:
+    name: Deploy to ${{ inputs.environment }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: ${{ inputs.environment }}
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          command_timeout: 10m
+          script: |
+            set -e
+            
+            if ! command -v just &> /dev/null; then
+              curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash -s -- --to ~/bin
+            fi
+            export PATH="$HOME/bin:$PATH"
+
+            DEPLOY_DIR=~/orgnote/${{ inputs.environment == 'deploy' && 'prod' || 'dev' }}
+            mkdir -p "$DEPLOY_DIR"
+            cd "$DEPLOY_DIR"
+
+            if [ ! -d "orgnote-backend" ]; then
+              eval $(ssh-agent -s)
+              ssh-add ~/.ssh/sb-back
+              git clone git@github.com:Artawower/orgnote-backend.git
+            fi
+
+            cd orgnote-backend
+            eval $(ssh-agent -s)
+            ssh-add ~/.ssh/sb-back
+            git fetch --all
+            git checkout ${{ inputs.branch }}
+            git reset --hard origin/${{ inputs.branch }}
+
+            cat <<EOT > .env.traefik
+            ACME_EMAIL=${{ secrets.ACME_EMAIL }}
+            EOT
+
+            cat <<EOT > .env.${{ inputs.environment == 'deploy' && 'prod' || 'dev' }}
+            DEBUG=${{ inputs.debug }}
+            MONGO_USERNAME=${{ secrets.MONGO_USERNAME }}
+            MONGO_PASSWORD=${{ secrets.MONGO_PASSWORD }}
+            GITHUB_ID=${{ secrets.OAUTH_GITHUB_ID }}
+            GITHUB_SECRET=${{ secrets.OAUTH_GITHUB_SECRET }}
+            CLIENT_ADDRESS=${{ vars.CLIENT_ADDRESS }}
+            BACKEND_URL=${{ vars.BACKEND_URL }}
+            ACCESS_CHECK_URL=${{ vars.ACCESS_CHECK_URL }}
+            ACCESS_CHECK_TOKEN=${{ secrets.ACCESS_CHECK_TOKEN }}
+            SUBSCRIPTION_SCHEMA_URL=${{ vars.SUBSCRIPTION_SCHEMA_URL }}
+            S3_ACCESS_KEY=${{ secrets.S3_ACCESS_KEY || (inputs.environment == 'deploy' && secrets.S3_ACCESS_KEY_PROD || secrets.S3_ACCESS_KEY_DEV) }}
+            S3_SECRET_KEY=${{ secrets.S3_SECRET_KEY || (inputs.environment == 'deploy' && secrets.S3_SECRET_KEY_PROD || secrets.S3_SECRET_KEY_DEV) }}
+            S3_BUCKET=${{ vars.S3_BUCKET || (inputs.environment == 'deploy' && secrets.S3_BUCKET_PROD || secrets.S3_BUCKET_DEV) }}
+            S3_USE_SSL=false
+            MAX_FILE_SIZE=52428800
+            MIN_CLIENT_VERSION=0.41.64
+            EOT
+
+            echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login --username=${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
+            docker pull orgnote/client:${{ inputs.client_image_tag }} || true
+
+            just deploy-${{ inputs.environment == 'deploy' && 'prod' || 'dev' }}
+            just prune
+
+      - name: Health check
+        if: vars.HEALTH_CHECK_URL != ''
+        run: |
+          sleep 10
+          curl -sf "${{ vars.HEALTH_CHECK_URL }}" || echo "Health check skipped or endpoint not ready"

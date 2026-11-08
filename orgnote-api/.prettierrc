@@ -1,0 +1,15 @@
+{
+  "trailingComma": "es5",
+  "tabWidth": 2,
+  "semi": true,
+  "singleQuote": true,
+  "lineWidth": 80,
+  "importOrderSeparation": true,
+  "importOrderSortSpecifiers": true,
+  "importOrder": [
+    "^vue$",
+    "^@server/(.*)$",
+    "^src/^(.(?!.*world))*$",
+    "(.*)\\.vue$"
+  ]
+}

@@ -1,0 +1,128 @@
+name: CI Checks
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        required: false
+        type: string
+        default: ''
+        description: 'Optional environment name'
+
+jobs:
+  install_dependencies:
+    name: Install dependencies
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+      - uses: actions/cache@v4
+        with:
+          path: '**/node_modules'
+          key: ${{ runner.os }}-modules-${{ hashFiles('**/bun.lock') }}
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [install_dependencies]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+      - uses: actions/cache@v4
+        with:
+          path: '**/node_modules'
+          key: ${{ runner.os }}-modules-${{ hashFiles('**/bun.lock') }}
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+      - name: Prepare Quasar
+        run: bunx quasar prepare
+      - name: Run linters
+        run: bun run lint
+
+  typecheck:
+    name: Typecheck
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [install_dependencies]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+      - uses: actions/cache@v4
+        with:
+          path: '**/node_modules'
+          key: ${{ runner.os }}-modules-${{ hashFiles('**/bun.lock') }}
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+      - name: Prepare Quasar
+        run: bunx quasar prepare
+      - name: Run type checks
+        run: ./node_modules/.bin/vue-tsc --noEmit
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [install_dependencies]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+      - uses: actions/cache@v4
+        with:
+          path: '**/node_modules'
+          key: ${{ runner.os }}-modules-${{ hashFiles('**/bun.lock') }}
+      - name: Create dummy certs for Quasar config
+        run: |
+          mkdir -p .certs
+          openssl req -x509 -newkey rsa:2048 -keyout .certs/key.pem -out .certs/cert.pem -days 1 -nodes -subj "/CN=localhost"
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+      - name: Prepare Quasar
+        run: bunx quasar prepare
+      - name: Run tests
+        run: bun run test:ci
+
+  health-check:
+    name: SSR Health Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    needs: [lint, typecheck, test]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+      - name: Install dependencies
+        run: |
+          bun install --frozen-lockfile
+          bun add global @quasar/cli
+      - name: Create dummy certs for Quasar config
+        run: |
+          mkdir -p .certs
+          openssl req -x509 -newkey rsa:2048 -keyout .certs/key.pem -out .certs/cert.pem -days 1 -nodes -subj "/CN=localhost"
+      - name: Build SSR
+        run: bun run build -m ssr
+      - name: Start SSR server
+        run: |
+          cd dist/ssr
+          npm install
+          node index.js &
+          sleep 10
+      - name: SSR health check
+        uses: pchalupa/site-health-check@v1.0.2
+        with:
+          url: 'http://localhost:3000'

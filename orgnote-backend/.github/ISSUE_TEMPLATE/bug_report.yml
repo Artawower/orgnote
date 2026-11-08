@@ -1,0 +1,31 @@
+name: Bug Report
+description: Create a report to help us improve
+title: "[Bug] "
+labels: "bug"
+body:
+  - type: checkboxes
+    id: requirements
+    attributes:
+      label: Thank you for the bug report
+      description: Please check the suggestion below before proceeding
+      options:
+        - label: I am using the latest version of the `OrgNote` app.
+          required: true
+        - label: I already checked other related issues
+          required: true
+        - label: I have read the [WIKI](https://github.com/Artawower/orgnote/wiki)
+  - type: textarea
+    id: bug-description
+    attributes:
+      label: Bug description and steps to reproduce
+      description: A clear and concise description of what the bug is
+    validations:
+      required: true
+  - type: textarea
+    id: error-callstack
+    attributes:
+      label: Additional context
+      description: |
+        Please feel free to add any other context about the problem here.
+    validations:
+      required: false

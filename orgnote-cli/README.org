@@ -1,0 +1,107 @@
+:PROPERTIES:
+:ID: orgnote-cli
+:END:
+
+#+html: <div align='center'>
+#+html: <img src='./images/image.png' width='256px' height='256px'>
+#+html: </div>
+#+html: &nbsp;
+
+#+TITLE: ✨ Org Note CLI
+
+#+html: <div align='center'>
+#+html: <span class='badge-buymeacoffee'>
+#+html: <a href='https://www.paypal.me/darkawower' title='Paypal' target='_blank'><img src='https://img.shields.io/badge/paypal-donate-blue.svg' alt='Buy Me A Coffee donate button' /></a>
+#+html: </span>
+#+html: <span class='badge-patreon'>
+#+html: <a href='https://patreon.com/artawower' target='_blank' title='Donate to this project using Patreon'><img src='https://img.shields.io/badge/patreon-donate-orange.svg' alt='Patreon donate button' /></a>
+#+html: </span>
+#+html: <a href="https://wakatime.com/badge/github/Artawower/orgnote-cli"><img src="https://wakatime.com/badge/github/Artawower/orgnote-cli.svg" alt="wakatime"></a>
+#+html: </div>
+#+html: <div align='center'>
+#+html: <a href="https://twitter.com/org_note" target="_blank"><img src="https://img.shields.io/twitter/follow/org_note" alt="Twitter link" /></a>
+#+html: <a href="https://emacs.ch/@orgnote" target="_blank"><img alt="Mastodon Follow" src="https://img.shields.io/mastodon/follow/113090697216193319?domain=https%3A%2F%2Ffosstodon.org&style=social"></a>
+#+html: <a href="https://discord.com/invite/SFpUb2vSDm" target="_blank"><img src="https://img.shields.io/discord/1161751315324604417" alt="Discord"></a>
+#+html: <a href="https://www.youtube.com/@OrgNote" target="_blank"><img alt="YouTube Channel Views" src="https://img.shields.io/youtube/channel/views/UCN14DUE5umdrlEm7odW3gOw"></a>
+#+html: </div>
+
+
+
+*  Introduction
+NPM binary script for synchronising and publishing notes from org roam. Closely related to the Org Note project.
+*WARNING*: This package doesn't provide a way to resolve conflicts and doesn't use CRDT yet! Be careful, and don't forget to backup your notes!
+*  Connected links
+- [[https://github.com/Artawower/orgnote][Org Note main repo.]] 
+* ️ Install
+#+BEGIN_SRC bash
+npm install -g orgnote-cli
+#+END_SRC
+* Usage
+** Configuration
+Create ~~/.config/orgnote/config.toml~ with the following structure:
+
+#+BEGIN_SRC toml
+[[accounts]]
+name = "Local"
+remoteAddress = "http://localhost:8000/v1"
+clientAddress = "http://localhost:3000"
+token = "your-api-token-here"
+rootFolder = "~/org-roam"
+logPath = "~/tmp/logs/orgnote.log"
+debug = false
+backupDir = "/tmp/orgnote/backups"
+backupCount = 3
+
+[[accounts]]
+name = "Production"
+remoteAddress = "https://org-note.com/api/v1"
+token = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+rootFolder = "~/org-roam"
+#+END_SRC
+
+*** Available options
+| Option        | Required | Default                  | Description                     |
+|---------------+----------+--------------------------+---------------------------------|
+| name          | yes      |                          | Account identifier              |
+| remoteAddress | no       | http://localhost:8000/v1 | OrgNote server URL              |
+| token         | yes      |                          | API token from OrgNote settings |
+| rootFolder    | yes      |                          | Path to org-roam directory      |
+| logPath       | no       | /tmp/log/orgnote         | Log file path                   |
+| debug         | no       | false                    | Enable debug logging            |
+| backupDir     | no       |                          | Backup directory path           |
+| backupCount   | no       | 3                        | Number of backups to keep       |
+
+*** Selecting account
+Use ~--account~ flag to select specific account:
+#+BEGIN_SRC bash
+orgnote-cli sync --account Production
+#+END_SRC
+If not specified, the first account in config will be used.
+
+
+** Available commands
+- ~sync~ - synchronize files between local folder and remote server
+  #+BEGIN_SRC bash
+  orgnote-cli sync
+  orgnote-cli sync --account Production
+  orgnote-cli sync --force  # clear local cache before sync
+  #+END_SRC
+- ~validate-config~ - validate configuration file
+  #+BEGIN_SRC bash
+  orgnote-cli validate-config
+  #+END_SRC
+
+** Available flags
+| Flag              | Description                              |
+|-------------------+------------------------------------------|
+| ~--debug~, ~-d~   | Enable debug logging                     |
+| ~--force~, ~-f~   | Clear local cache and last sync time     |
+| ~--account~, ~-a~ | Select specific account from config file |
+
+* 🍩 Contribute guide
+Any contribution is very much appreciated! Please read the [[https://github.com/Artawower/orgnote/wiki/Contribution-guide][style guide]] before contributing to avoid misunderstandings!
+I would also appreciate it if you would consider becoming my [[https://www.patreon.com/artawower][patron]]
+
+
+
+

@@ -1,0 +1,183 @@
+
+:PROPERTIES:
+:ID: how-to-write-first-extensions
+:END:
+
+
+*Disclaimer* /The provided API is currently in beta and may change in the future!/
+
+
+* Related links
+- [[./installation.org][Installation guide]]
+- [[./faq.org][FAQ]]
+
+* Links
+- [[https://github.com/Artawower/orgnote-api][TypeScript SDK for working with API]] 
+- [[https://github.com/Artawower/orgnote-extensions][Collection with built-in extensions]]
+- [[https://github.com/Artawower/org-mode-ast][Abstract syntax tree for working with Org-mode format]]
+- [[https://github.com/Artawower/orgnote-colorful-headlines][Extension example]]
+
+* Limitations
+Extensions API is under development, so it has some limitations:
+- Extensions must be compiled into a single JavaScript file
+/I plan to add WebAssembly support in the future/
+- There is no API for creating complex UI components yet 
+
+* Extension structure
+Each extension consists of two parts:
+1. Default exported JavaScript file
+#+BEGIN_SRC typescript
+export interface Extension {
+  [key: string]: unknown;
+
+  onMounted: (api: OrgNoteApi) => Promise<void> | void;
+  onUnmounted?: (api: OrgNoteApi) => Promise<void> | void;
+}
+#+END_SRC
+=OrgNoteApi= can be found [[https://github.com/Artawower/orgnote-api/blob/master/src/api.ts][here]]
+2. Exported manifest
+#+BEGIN_SRC typescript
+export interface ExtensionManifest {
+  name: string;
+  version: string;
+  category: 'theme' | 'extension' | 'language pack' | 'other';
+  
+  /* Source configuration */
+  source: 
+    | { type: 'git'; repo: string; branch?: string; tag?: string }
+    | { type: 'local' }
+    | { type: 'builtin' };
+
+  /* Optional metadata */
+  author?: string;
+  description?: string;
+  keywords?: string[];
+  icon?: string;
+  license?: string;
+  sponsor?: string[];
+  
+  /* Version requirements */
+  apiVersion?: string;
+  minOrgNoteVersion?: string;
+  
+  /* Platform support */
+  platforms?: Array<
+    'mobile' | 'desktop' | 'capacitor' | 'electron' | 
+    'ios' | 'ipad' | 'iphone' | 'android' | 
+    'linux' | 'mac' | 'win' | 
+    'chrome' | 'firefox' | 'safari'
+  >;
+  
+  /* Permissions */
+  permissions?: Array<'files' | 'personal info' | '*' | 'third party'>;
+  
+  /* Extension features */
+  commands?: Array<{
+    id: string;
+    title: string;
+    category?: string;
+  }>;
+  
+  keybindings?: Array<{
+    key: string;
+    command: string;
+    when?: string;
+  }>;
+  
+  activationEvents?: Array<'onStartup' | '*'>;
+  
+  /* Configuration */
+  dependencies?: Record<string, string>;
+  configSchema?: {
+    type: 'object';
+    properties: Record<string, {
+      type: string;
+      description?: string;
+      default?: unknown;
+    }>;
+  };
+  
+  /* Other options */
+  readmeFilePath?: string;
+  reloadRequired?: boolean;
+  development?: boolean;
+}
+#+END_SRC
+
+Actual interface can be found [[https://github.com/Artawower/orgnote-api/blob/master/src/models/extension.ts][here]]
+
+* Simple extension example
+Simple extension for changing headline colors in the OrgNote editor:
+#+BEGIN_SRC typescript
+import { Extension, ExtensionManifest, OrgNoteApi } from 'orgnote-api';
+
+const packageName = 'colorful-headlines';
+
+export default {
+  onMounted: async (api: OrgNoteApi): Promise<void> => {
+    api.ui.applyStyles(packageName, `
+.org-headline-1 {
+    color: var(--red);
+}
+.org-headline-2 {
+    color: var(--orange);
+}
+.org-headline-3 {
+    color: var(--yellow);
+}
+.org-headline-4 {
+    color: var(--green);
+}
+.org-headline-5 {
+    color: var(--blue);
+}
+.org-headline-6 {
+    color: var(--magenta);
+}
+.org-headline-7 {
+    color: var(--cyan);
+}
+`)
+  },
+
+  onUnmounted: async (api: OrgNoteApi): Promise<void> => {
+    api.ui.removeStyles(packageName);
+  }
+} as Extension;
+
+
+export const manifest: ExtensionManifest = {
+  name: 'Colorful Headlines',
+  description: 'Colorful headlines for your notes',
+  version: '0.0.1',
+  category: 'other',
+  source: {
+    type: 'git',
+    repo: 'https://github.com/artawower/orgnote-colorful-headlines'
+  },
+  author: 'artawower',
+  keywords: ['color', 'headline', 'styles'],
+}
+#+END_SRC
+
+
+* Register extension in the official registry
+You can add your extension to the official registry by creating a pull request on [[https://github.com/Artawower/orgnote-extensions][GitHub]].
+
+Create a pull request with a new recipe in the following format:
+
+#+BEGIN_SRC json
+{
+  "name": "Colorful Headlines",
+  "description": "Colorful headlines for your notes",
+  "version": "0.0.1",
+  "category": "other",
+  "source": {
+    "type": "git",
+    "repo": "https://github.com/artawower/orgnote-colorful-headlines"
+  },
+  "author": "artawower",
+  "keywords": ["color", "headline", "styles"]
+}
+#+END_SRC
+

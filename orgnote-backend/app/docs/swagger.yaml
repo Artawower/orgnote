@@ -1,0 +1,753 @@
+definitions:
+  FileChange:
+    description: File change information for synchronization
+    properties:
+      contentHash:
+        example: a1b2c3d4e5f6...
+        type: string
+      deleted:
+        example: false
+        type: boolean
+      deletedAt:
+        type: string
+      id:
+        example: 507f1f77bcf86cd799439011
+        type: string
+      path:
+        example: notes/todo.org
+        type: string
+      size:
+        example: 1024
+        type: integer
+      updatedAt:
+        example: "2024-01-01T00:00:00Z"
+        type: string
+      version:
+        example: 1
+        type: integer
+    required:
+    - deleted
+    - id
+    - path
+    - updatedAt
+    - version
+    type: object
+  FileUploadResponse:
+    description: Response after successful file upload
+    properties:
+      contentHash:
+        example: a1b2c3d4e5f6...
+        type: string
+      id:
+        example: 507f1f77bcf86cd799439011
+        type: string
+      path:
+        example: notes/todo.org
+        type: string
+      size:
+        example: 1024
+        type: integer
+      updatedAt:
+        example: "2024-01-01T00:00:00Z"
+        type: string
+      uploaded:
+        example: true
+        type: boolean
+      version:
+        example: 1
+        type: integer
+    required:
+    - contentHash
+    - id
+    - path
+    - size
+    - updatedAt
+    - uploaded
+    - version
+    type: object
+  SyncChangesResponse:
+    description: Response containing file changes since last sync
+    properties:
+      changes:
+        items:
+          $ref: '#/definitions/FileChange'
+        type: array
+      cursor:
+        example: 507f1f77bcf86cd799439011
+        type: string
+      hasMore:
+        example: false
+        type: boolean
+      serverTime:
+        example: "2024-01-01T00:00:00Z"
+        type: string
+    required:
+    - changes
+    - hasMore
+    - serverTime
+    type: object
+  VersionConflictResponse:
+    description: Response when optimistic locking fails due to version mismatch
+    properties:
+      error:
+        example: version mismatch
+        type: string
+      path:
+        example: notes/todo.org
+        type: string
+      serverVersion:
+        example: 5
+        type: integer
+    required:
+    - error
+    - path
+    - serverVersion
+    type: object
+  handlers.HttpError-any:
+    properties:
+      data: {}
+      message:
+        type: string
+    type: object
+  handlers.HttpResponse-FileUploadResponse-any:
+    properties:
+      data:
+        $ref: '#/definitions/FileUploadResponse'
+      meta: {}
+    type: object
+  handlers.HttpResponse-SyncChangesResponse-any:
+    properties:
+      data:
+        $ref: '#/definitions/SyncChangesResponse'
+      meta: {}
+    type: object
+  handlers.HttpResponse-array_models_APIToken-any:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/models.APIToken'
+        type: array
+      meta: {}
+    type: object
+  handlers.HttpResponse-handlers_OAuthRedirectData-any:
+    properties:
+      data:
+        $ref: '#/definitions/handlers.OAuthRedirectData'
+      meta: {}
+    type: object
+  handlers.HttpResponse-models_APIToken-any:
+    properties:
+      data:
+        $ref: '#/definitions/models.APIToken'
+      meta: {}
+    type: object
+  handlers.HttpResponse-models_FileMetadata-any:
+    properties:
+      data:
+        $ref: '#/definitions/models.FileMetadata'
+      meta: {}
+    type: object
+  handlers.HttpResponse-models_UserPersonalInfo-any:
+    properties:
+      data:
+        $ref: '#/definitions/models.UserPersonalInfo'
+      meta: {}
+    type: object
+  handlers.OAuthRedirectData:
+    properties:
+      redirectUrl:
+        type: string
+    type: object
+  handlers.SubscribeBody:
+    properties:
+      email:
+        type: string
+      token:
+        type: string
+    type: object
+  handlers.SystemInfo:
+    properties:
+      environment:
+        $ref: '#/definitions/models.EnvironmentInfo'
+      update:
+        $ref: '#/definitions/models.OrgNoteClientUpdateInfo'
+    type: object
+  models.APIToken:
+    properties:
+      id:
+        type: string
+      permission:
+        type: string
+      token:
+        type: string
+    type: object
+  models.EnvironmentInfo:
+    properties:
+      minClientVersion:
+        type: string
+      selfHosted:
+        type: boolean
+    type: object
+  models.FileMetadata:
+    properties:
+      contentHash:
+        type: string
+      createdAt:
+        type: string
+      deletedAt:
+        type: string
+      id:
+        type: string
+      path:
+        type: string
+      size:
+        type: integer
+      updatedAt:
+        type: string
+      userId:
+        type: string
+      version:
+        type: integer
+    type: object
+  models.OrgNoteClientUpdateInfo:
+    properties:
+      changeLog:
+        type: string
+      url:
+        type: string
+      version:
+        type: string
+    type: object
+  models.UserPersonalInfo:
+    properties:
+      active:
+        type: string
+      avatarUrl:
+        type: string
+      email:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      nickName:
+        type: string
+      profileUrl:
+        type: string
+      provider:
+        type: string
+      spaceLimit:
+        type: integer
+      usedSpace:
+        type: integer
+    type: object
+info:
+  contact:
+    email: artawower@protonmail.com
+    name: API Support
+  description: List of methods for work with Org Note.
+  license:
+    name: GPL 3.0
+    url: https://www.gnu.org/licenses/gpl-3.0.html
+  termsOfService: http://swagger.io/terms/
+  title: Org Note API
+  version: 0.0.1
+paths:
+  /auth/{provider}/callback:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: provider
+        in: path
+        name: provider
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema: {}
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HttpError-any'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.HttpError-any'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HttpError-any'
+      summary: Callback for OAuth
+      tags:
+      - auth
+  /auth/{provider}/login:
+    get:
+      consumes:
+      - application/json
+      description: Entrypoint for login
+      parameters:
+      - description: provider
+        in: path
+        name: provider
+        required: true
+        type: string
+      - description: OAuth state
+        in: query
+        name: state
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HttpResponse-handlers_OAuthRedirectData-any'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HttpError-any'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.HttpError-any'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HttpError-any'
+      summary: OAuth Login
+      tags:
+      - auth
+  /auth/account:
+    delete:
+      consumes:
+      - application/json
+      description: Delete user account
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HttpError-any'
+      summary: Delete user account
+      tags:
+      - auth
+  /auth/api-tokens:
+    get:
+      consumes:
+      - application/json
+      description: Return all available API tokens
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HttpResponse-array_models_APIToken-any'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HttpError-any'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HttpError-any'
+      summary: Get API tokens
+      tags:
+      - auth
+  /auth/logout:
+    get:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HttpError-any'
+      summary: Logout
+      tags:
+      - auth
+  /auth/subscribe:
+    post:
+      consumes:
+      - application/json
+      description: Subscribe for backend features, like sync notes
+      parameters:
+      - description: token
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.SubscribeBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HttpError-any'
+      summary: Subscribe
+      tags:
+      - auth
+  /auth/token:
+    post:
+      consumes:
+      - application/json
+      description: Create API token
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HttpResponse-models_APIToken-any'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HttpError-any'
+      summary: Create API token
+      tags:
+      - auth
+  /auth/token/{tokenId}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete API token
+      parameters:
+      - description: token id
+        in: path
+        name: tokenId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HttpError-any'
+      summary: Delete API token
+      tags:
+      - auth
+  /auth/verify:
+    get:
+      consumes:
+      - application/json
+      description: Return found user by provided token
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HttpResponse-models_UserPersonalInfo-any'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handlers.HttpError-any'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HttpError-any'
+      summary: Verify user
+      tags:
+      - auth
+  /sync/changes:
+    get:
+      consumes:
+      - application/json
+      description: Returns file changes since the specified timestamp
+      parameters:
+      - description: Unix timestamp in milliseconds for incremental sync
+        in: query
+        name: since
+        type: integer
+      - description: 'Maximum number of changes to return (default: 100, max: 500)'
+        in: query
+        name: limit
+        type: integer
+      - description: Pagination cursor
+        in: query
+        name: cursor
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HttpResponse-SyncChangesResponse-any'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HttpError-any'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.HttpError-any'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HttpError-any'
+      summary: Get file changes
+      tags:
+      - sync
+  /sync/files:
+    delete:
+      consumes:
+      - application/json
+      description: Soft delete a file (creates tombstone for sync)
+      parameters:
+      - description: File path
+        in: query
+        name: path
+        required: true
+        type: string
+      - description: Expected version for optimistic locking
+        in: query
+        name: version
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HttpResponse-models_FileMetadata-any'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HttpError-any'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.HttpError-any'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.HttpError-any'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/VersionConflictResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HttpError-any'
+      summary: Delete a file
+      tags:
+      - sync
+    get:
+      description: Download file content by path
+      parameters:
+      - description: File path
+        in: query
+        name: path
+        required: true
+        type: string
+      produces:
+      - application/octet-stream
+      responses:
+        "200":
+          description: OK
+          headers:
+            X-Content-Hash:
+              description: SHA-256 hash of file content
+              type: string
+          schema:
+            type: file
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HttpError-any'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.HttpError-any'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.HttpError-any'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HttpError-any'
+      summary: Download a file
+      tags:
+      - sync
+    put:
+      consumes:
+      - multipart/form-data
+      description: Upload a file to sync storage with content-addressable deduplication
+      parameters:
+      - description: Relative file path
+        in: formData
+        name: filePath
+        required: true
+        type: string
+      - description: File content
+        in: formData
+        name: file
+        required: true
+        type: file
+      - description: Expected version for optimistic locking
+        in: formData
+        name: expectedVersion
+        type: integer
+      - description: SHA-256 hash for verification
+        in: header
+        name: X-Content-Hash
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HttpResponse-FileUploadResponse-any'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HttpError-any'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.HttpError-any'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/VersionConflictResponse'
+        "413":
+          description: Request Entity Too Large
+          schema:
+            $ref: '#/definitions/handlers.HttpError-any'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HttpError-any'
+      summary: Upload a file
+      tags:
+      - sync
+  /system-info/{version}:
+    get:
+      consumes:
+      - application/json
+      description: Get system info
+      parameters:
+      - description: provider
+        in: path
+        name: version
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.SystemInfo'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HttpError-any'
+      summary: GetSystemInfo
+      tags:
+      - system info
+  /system-info/client-update/{version}:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: provider
+        in: path
+        name: version
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.OrgNoteClientUpdateInfo'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HttpError-any'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.HttpError-any'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HttpError-any'
+      summary: GetUpdatesFromVersion
+      tags:
+      - system info
+  /system-info/client-update/latest:
+    get:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.OrgNoteClientUpdateInfo'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.HttpError-any'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HttpError-any'
+      summary: GetLatestClientUpdate
+      tags:
+      - system info
+  /ws/events:
+    get:
+      description: 'Generic WebSocket endpoint for real-time user events (sync, notifications,
+        etc). Requires `Upgrade: websocket` header.'
+      parameters:
+      - description: Auth token (alternative to Authorization header)
+        in: query
+        name: token
+        type: string
+      responses:
+        "101":
+          description: Switching Protocols
+          schema:
+            type: string
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.HttpError-any'
+        "426":
+          description: Upgrade Required
+          schema:
+            $ref: '#/definitions/handlers.HttpError-any'
+      summary: WebSocket Events Channel
+      tags:
+      - events
+swagger: "2.0"

@@ -1,0 +1,68 @@
+---
+title: Extension Lifecycle
+description: Understanding OrgNote extension lifecycle hooks
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+Every OrgNote extension has two lifecycle hooks that control its activation and cleanup.
+
+## Lifecycle hooks
+
+### `onMounted`
+
+Called when the extension is activated. This is where you register commands, widgets, themes, and other resources.
+
+```typescript
+async onMounted(api: OrgNoteApi) {
+  const commands = api.core.useCommands();
+  commands.add({
+    command: 'my-ext.do-thing',
+    title: 'Do Thing',
+    handler: () => { /* ... */ },
+  });
+}
+```
+
+The `api` argument provides access to the full OrgNote API — see the [API Reference](/api/) for all available stores and utilities.
+
+### `onUnmounted`
+
+Called when the extension is deactivated or OrgNote shuts down. Use it for cleanup that isn't handled automatically.
+
+```typescript
+async onUnmounted(api: OrgNoteApi) {
+  // Clean up event listeners, intervals, etc.
+}
+```
+
+<Aside type="tip">
+  Commands registered via `useCommands().add()` are cleaned up automatically — you don't need to remove them in `onUnmounted`.
+</Aside>
+
+## Full example
+
+```typescript
+import type { Extension, OrgNoteApi } from 'orgnote-api';
+
+let intervalId: ReturnType<typeof setInterval> | undefined;
+
+const extension: Extension = {
+  async onMounted(api: OrgNoteApi) {
+    const notifications = api.core.useNotifications();
+
+    intervalId = setInterval(() => {
+      notifications.notify({ message: 'Reminder: take a break!' });
+    }, 30 * 60 * 1000);
+  },
+
+  async onUnmounted() {
+    if (intervalId) {
+      clearInterval(intervalId);
+      intervalId = undefined;
+    }
+  },
+};
+
+export default extension;
+```

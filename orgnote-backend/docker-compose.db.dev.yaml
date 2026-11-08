@@ -1,0 +1,57 @@
+services:
+  orgnote-mongo-dev:
+    container_name: orgnote-mongo-dev
+    image: mongo:5.0.9
+    restart: always
+    logging:
+      driver: none
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
+    volumes:
+      - orgnote-mongo-dev-data:/data/db
+    networks:
+      - orgnote-dev-network
+    command: [--auth]
+
+  orgnote-minio-dev:
+    image: minio/minio:latest
+    container_name: orgnote-minio-dev
+    restart: always
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${S3_ACCESS_KEY}
+      MINIO_ROOT_PASSWORD: ${S3_SECRET_KEY}
+    volumes:
+      - orgnote-minio-dev-data:/data
+    networks:
+      - orgnote-dev-network
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  orgnote-minio-init-dev:
+    image: minio/mc:latest
+    container_name: orgnote-minio-init-dev
+    depends_on:
+      orgnote-minio-dev:
+        condition: service_healthy
+    entrypoint: >
+      /bin/sh -c "
+      mc alias set orgnote http://orgnote-minio-dev:9000 ${S3_ACCESS_KEY} ${S3_SECRET_KEY};
+      mc mb --ignore-existing orgnote/${S3_BUCKET};
+      echo 'Bucket created successfully';
+      "
+    networks:
+      - orgnote-dev-network
+
+volumes:
+  orgnote-mongo-dev-data:
+  orgnote-minio-dev-data:
+
+networks:
+  orgnote-dev-network:
+    name: orgnote-dev-network
+    driver: bridge

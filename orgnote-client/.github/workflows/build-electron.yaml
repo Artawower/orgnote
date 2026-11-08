@@ -1,0 +1,162 @@
+name: Build Electron macOS
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        required: true
+        type: string
+        description: 'Environment name (dev or deploy)'
+      version:
+        required: true
+        type: string
+        description: 'Version string for the artifact name'
+      prerelease:
+        required: false
+        type: boolean
+        default: false
+        description: 'Whether this is a prerelease build'
+      update_channel:
+        required: false
+        type: string
+        default: latest
+        description: 'Electron updater channel name'
+      enable_devtools:
+        required: false
+        type: boolean
+        default: false
+        description: 'Allow Electron DevTools in packaged builds'
+
+jobs:
+  build-electron-macos:
+    name: Build Electron macOS
+    runs-on: macos-latest
+    environment: ${{ inputs.environment }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate required secrets
+        env:
+          API_URL: ${{ secrets.API_URL }}
+          AUTH_URL: ${{ secrets.AUTH_URL }}
+          WS_URL: ${{ secrets.WS_URL }}
+        run: |
+          REQUIRED_SECRETS=(API_URL AUTH_URL WS_URL)
+          for SECRET_NAME in "${REQUIRED_SECRETS[@]}"; do
+            if [ -z "${!SECRET_NAME}" ]; then
+              echo "::error::Missing required secret: $SECRET_NAME"
+              exit 1
+            fi
+          done
+
+      - name: Validate stable signing secrets
+        if: ${{ !inputs.prerelease }}
+        env:
+          MACOS_CERTIFICATE_P12: ${{ secrets.MACOS_CERTIFICATE_P12 }}
+          MACOS_CERTIFICATE_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}
+          MACOS_SIGNING_IDENTITY: ${{ secrets.MACOS_SIGNING_IDENTITY }}
+        run: |
+          REQUIRED_SECRETS=(MACOS_CERTIFICATE_P12 MACOS_CERTIFICATE_PASSWORD MACOS_SIGNING_IDENTITY)
+          for SECRET_NAME in "${REQUIRED_SECRETS[@]}"; do
+            if [ -z "${!SECRET_NAME}" ]; then
+              echo "::error::Missing required stable signing secret: $SECRET_NAME"
+              exit 1
+            fi
+          done
+
+      - uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - uses: actions/cache@v4
+        with:
+          path: '**/node_modules'
+          key: ${{ runner.os }}-modules-${{ hashFiles('**/bun.lock') }}
+
+      - name: Install dependencies
+        run: |
+          bun install --frozen-lockfile
+          bun add -g @quasar/cli
+
+      - name: Import macOS signing certificate
+        timeout-minutes: 5
+        env:
+          MACOS_CERTIFICATE_P12: ${{ secrets.MACOS_CERTIFICATE_P12 }}
+          MACOS_CERTIFICATE_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}
+          MACOS_SIGNING_IDENTITY: ${{ secrets.MACOS_SIGNING_IDENTITY }}
+        run: |
+          if [ -z "$MACOS_CERTIFICATE_P12" ] || [ -z "$MACOS_CERTIFICATE_PASSWORD" ] || [ -z "$MACOS_SIGNING_IDENTITY" ]; then
+            echo "macOS signing certificate secrets are not configured for this prerelease; using ad-hoc signing fallback."
+            exit 0
+          fi
+
+          CERTIFICATE_PATH="$RUNNER_TEMP/orgnote-macos-signing.p12"
+          KEYCHAIN_PATH="$RUNNER_TEMP/orgnote-signing.keychain-db"
+          KEYCHAIN_PASSWORD="$(uuidgen)"
+
+          echo "Decoding macOS signing certificate."
+          printf '%s' "$MACOS_CERTIFICATE_P12" | base64 --decode > "$CERTIFICATE_PATH"
+
+          echo "Creating temporary signing keychain."
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+
+          echo "Importing macOS signing identity."
+          security import "$CERTIFICATE_PATH" \
+            -k "$KEYCHAIN_PATH" \
+            -P "$MACOS_CERTIFICATE_PASSWORD" \
+            -T /usr/bin/codesign
+
+          echo "Configuring codesign key access."
+          security set-key-partition-list \
+            -S apple-tool:,apple:,codesign: \
+            -s \
+            -k "$KEYCHAIN_PASSWORD" \
+            "$KEYCHAIN_PATH"
+          security list-keychains -d user -s "$KEYCHAIN_PATH" $(security list-keychains -d user | tr -d '"')
+          security default-keychain -d user -s "$KEYCHAIN_PATH"
+          if ! security find-identity -v -p codesigning "$KEYCHAIN_PATH" \
+            | grep -F -- "\"$MACOS_SIGNING_IDENTITY\"" >/dev/null; then
+            echo "::error::Configured macOS signing identity was not imported."
+            exit 1
+          fi
+          echo "macOS signing identity imported."
+
+      - name: Build Electron
+        env:
+          DEBUG: ${{ inputs.prerelease && 'true' || 'false' }}
+          ORGNOTE_ENABLE_DEVTOOLS: ${{ inputs.enable_devtools && 'true' || 'false' }}
+          ORGNOTE_MACOS_SIGNING_IDENTITY: ${{ secrets.MACOS_SIGNING_IDENTITY }}
+          ORGNOTE_UPDATE_CHANNEL: ${{ inputs.update_channel }}
+          VITE_API_URL: ${{ secrets.API_URL }}
+          VITE_AUTH_URL: ${{ secrets.AUTH_URL }}
+          VITE_DEPLOYMENT_ENV: ${{ inputs.environment }}
+          VITE_WS_URL: ${{ secrets.WS_URL }}
+        run: bunx quasar build -m electron -P never
+
+      - name: Cleanup macOS signing keychain
+        if: always()
+        run: |
+          security delete-keychain "$RUNNER_TEMP/orgnote-signing.keychain-db" 2>/dev/null || true
+          rm -f "$RUNNER_TEMP/orgnote-macos-signing.p12"
+
+      - name: Collect Electron artifacts
+        run: |
+          mkdir -p ./dist/build
+          find ./dist/electron -name '*.dmg' -exec cp {} ./dist/build/ \;
+          find ./dist/electron -name '*.zip' -exec cp {} ./dist/build/ \;
+          find ./dist/electron -name '*.blockmap' -exec cp {} ./dist/build/ \;
+          find ./dist/electron -name '*-mac.yml' -exec cp {} ./dist/build/ \;
+          echo "Collected artifacts:"
+          ls -la ./dist/build
+          if [ -z "$(ls -A ./dist/build 2>/dev/null)" ]; then
+            echo "ERROR: no macOS Electron artifacts found" && exit 1
+          fi
+
+      - name: Upload Electron artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: orgnote-macos-${{ inputs.version }}
+          path: ./dist/build/*
+          retention-days: ${{ inputs.prerelease && 7 || 30 }}

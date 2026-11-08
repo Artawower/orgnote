@@ -1,0 +1,64 @@
+---
+title: Introduction
+description: Getting started with OrgNote extension development
+---
+
+import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
+
+OrgNote API is the official SDK for building extensions for [OrgNote](https://org-note.com/) — a note-taking ecosystem based on the Zettelkasten approach with full Emacs Org mode compatibility.
+
+## What can extensions do?
+
+<CardGrid>
+  <Card title="Commands" icon="terminal">
+    Register keyboard shortcuts and command palette actions.
+  </Card>
+  <Card title="Themes" icon="sun">
+    Create custom color themes with CSS variables.
+  </Card>
+  <Card title="Widgets" icon="puzzle">
+    Render custom inline or block widgets inside the Org-mode editor.
+  </Card>
+  <Card title="File Operations" icon="document">
+    Read, write, and manage notes through a virtual file system.
+  </Card>
+</CardGrid>
+
+## Quick install
+
+```bash
+npm install orgnote-api
+```
+
+## Extension structure
+
+Every OrgNote extension exports a default object with lifecycle hooks:
+
+```typescript
+import type { Extension, OrgNoteApi } from 'orgnote-api';
+
+const extension: Extension = {
+  async onMounted(api: OrgNoteApi) {
+    // Called when the extension is activated
+  },
+  async onUnmounted(api: OrgNoteApi) {
+    // Called when the extension is deactivated
+  },
+};
+
+export default extension;
+```
+
+<LinkCard
+  title="Build your first extension"
+  description="Step-by-step tutorial to create a Hello World extension."
+  href="/getting-started/first-extension/"
+/>
+
+## Next steps
+
+<CardGrid>
+  <LinkCard title="Extension Lifecycle" href="/guides/lifecycle/" />
+  <LinkCard title="Extension Manifest" href="/guides/manifest/" />
+  <LinkCard title="API Reference" href="/api/" />
+</CardGrid>

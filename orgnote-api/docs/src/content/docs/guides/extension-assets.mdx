@@ -1,0 +1,76 @@
+---
+title: Extension Assets
+description: Declare and read local runtime files from an OrgNote extension
+---
+
+Extensions can ship passive files such as fonts and images beside their bundled JavaScript entry.
+
+## Package layout
+
+OrgNote extensions use one self-contained JavaScript entry. Additional JavaScript chunks are not supported.
+
+```text
+dist/
+  index.js
+  manifest.json
+  assets/
+    fonts/
+      Example.woff2
+```
+
+## Declare assets
+
+Every asset must be listed in the manifest with its path relative to `dist/assets/`:
+
+```typescript
+import type { ExtensionManifest } from 'orgnote-api';
+
+export const manifest: ExtensionManifest = {
+  name: 'drawing-viewer',
+  version: '1.0.0',
+  category: 'extension',
+  source: {
+    type: 'git',
+    repo: 'https://example.com/drawing-viewer',
+  },
+  assets: [
+    {
+      path: 'fonts/Example.woff2',
+      mediaType: 'font/woff2',
+      size: 1024,
+      integrity: 'sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=',
+    },
+  ],
+};
+```
+
+OrgNote validates the size and SHA-256 integrity before activating the extension.
+
+## Read an asset
+
+Runtime files are stored under the local `.orgnote/extensions/` cache. Use the public path helper and the existing filesystem API:
+
+```typescript
+import {
+  getExtensionAssetPath,
+  type Extension,
+  type OrgNoteApi,
+} from 'orgnote-api';
+import { manifest } from './manifest';
+
+const extension: Extension = {
+  async onMounted(api: OrgNoteApi) {
+    const path = getExtensionAssetPath(manifest, 'fonts/Example.woff2');
+    const bytes = await api.core.useFileSystem().readFile(path, 'binary');
+    if (!bytes) return;
+
+    const font = new FontFace('Example', bytes);
+    await font.load();
+    document.fonts.add(font);
+  },
+};
+
+export default extension;
+```
+
+Asset runtime files are local reproducible cache. They are not synchronized between devices. OrgNote downloads missing Git extension runtime files again from their declared source.

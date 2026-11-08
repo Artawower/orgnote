@@ -1,0 +1,24 @@
+{
+  "name": "orgnote-client",
+  "version": "0.64.7",
+  "description": "Org Roam implementation for web and mobile devices.",
+  "author": "OrgNote <app.orgnote@gmail.com>",
+  "private": true,
+  "dependencies": {
+    "@capacitor/android": "^7.2.0",
+    "@capacitor/app": "^7.0.1",
+    "@capacitor/browser": "^8.0.0",
+    "@capacitor/cli": "^7.2.0",
+    "@capacitor/core": "^7.2.0",
+    "@capacitor/inappbrowser": "^3.0.0",
+    "@capacitor/ios": "^7.2.0",
+    "@capacitor/keyboard": "^7.0.1",
+    "@capacitor/splash-screen": "^7.0.1",
+    "@capacitor/status-bar": "^7.0.1",
+    "@hugotomazi/capacitor-navigation-bar": "^4.0.1",
+    "@jcesarmobile/ssl-skip": "^0.4.0"
+  },
+  "devDependencies": {
+    "@capacitor/assets": "^3.0.5"
+  }
+}
