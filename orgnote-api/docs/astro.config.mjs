@@ -6,7 +6,7 @@ const isCI = !!process.env.CI;
 
 export default defineConfig({
   site: isCI ? 'https://artawower.github.io' : undefined,
-  base: isCI ? '/orgnote-api' : '/',
+  base: isCI ? '/orgnote' : '/',
   integrations: [
     starlight({
       title: 'OrgNote API',
@@ -14,12 +14,12 @@ export default defineConfig({
         src: './src/assets/logo.png',
       },
       social: [
-        { icon: 'github', label: 'GitHub', href: 'https://github.com/Artawower/orgnote-api' },
+        { icon: 'github', label: 'GitHub', href: 'https://github.com/Artawower/orgnote' },
         { icon: 'discord', label: 'Discord', href: 'https://discord.com/invite/SFpUb2vSDm' },
         { icon: 'youtube', label: 'YouTube', href: 'https://www.youtube.com/@OrgNote' },
       ],
       editLink: {
-        baseUrl: 'https://github.com/Artawower/orgnote-api/edit/master/docs/',
+        baseUrl: 'https://github.com/Artawower/orgnote/edit/master/orgnote-api/docs/',
       },
       sidebar: [
         {

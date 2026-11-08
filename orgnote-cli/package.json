@@ -17,7 +17,11 @@
     "prepublishOnly": "npm run test && npm run build",
     "convert:api": "fix-esm-import-path src/generated"
   },
-  "repository": "git+https://github.com/Artawower/orgnote-cli.git",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Artawower/orgnote.git",
+    "directory": "orgnote-cli"
+  },
   "keywords": [
     "org",
     "roam",
@@ -32,9 +36,9 @@
     "orgnote-cli": "dist/index.js"
   },
   "bugs": {
-    "url": "https://github.com/Artawower/orgnote-cli/issues"
+    "url": "https://github.com/Artawower/orgnote/issues"
   },
-  "homepage": "https://github.com/Artawower/orgnote-cli#readme",
+  "homepage": "https://github.com/Artawower/orgnote/tree/master/orgnote-cli#readme",
   "devDependencies": {
     "@digitak/tsc-esm": "3.1.4",
     "@eslint/js": "9.14.0",

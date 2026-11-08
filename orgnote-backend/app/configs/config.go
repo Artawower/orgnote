@@ -188,7 +188,7 @@ func NewConfig() Config {
 		ElectronCallbackURL:      electronCallbackURL,
 
 		GithubClientOwner:    "artawower",
-		GithubClientRepoName: "orgnote-client",
+		GithubClientRepoName: "orgnote",
 
 		MinClientVersion: minClientVersion,
 
