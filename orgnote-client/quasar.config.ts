@@ -10,6 +10,19 @@ const DEFAULT_UPDATE_CHANNEL = 'latest';
 const UPDATE_CHANNEL_ENV_NAME = 'ORGNOTE_UPDATE_CHANNEL';
 const ENABLE_DEVTOOLS_ENV_NAME = 'ORGNOTE_ENABLE_DEVTOOLS';
 const MACOS_SIGNING_IDENTITY_ENV_NAME = 'ORGNOTE_MACOS_SIGNING_IDENTITY';
+const BUNDLED_WORKSPACE_PACKAGES = ['orgnote-api'];
+
+type PackageDependencies = Record<string, string>;
+
+const isBundledWorkspacePackage = (name: string): boolean =>
+  BUNDLED_WORKSPACE_PACKAGES.includes(name);
+
+const omitBundledWorkspacePackages = (
+  dependencies: PackageDependencies = {},
+): PackageDependencies =>
+  Object.fromEntries(
+    Object.entries(dependencies).filter(([name]) => !isBundledWorkspacePackage(name)),
+  );
 
 const getUpdateChannel = (): string =>
   process.env[UPDATE_CHANNEL_ENV_NAME]?.trim() || DEFAULT_UPDATE_CHANNEL;
@@ -255,6 +268,9 @@ export default defineConfig((ctx) => {
       prodPort: 3000,
       middlewares: ['render'],
       pwa: true,
+      extendPackageJson(pkg) {
+        pkg.dependencies = omitBundledWorkspacePackages(pkg.dependencies);
+      },
     },
 
     // https://v2.quasar.dev/quasar-cli-vite/developing-pwa/configuring-pwa
@@ -289,10 +305,15 @@ export default defineConfig((ctx) => {
           'process.env.ORGNOTE_UPDATE_CHANNEL': JSON.stringify(updateChannel),
           'process.env.ORGNOTE_ENABLE_DEVTOOLS': JSON.stringify(enableDevtools),
         };
+        esbuildConf.external = esbuildConf.external?.filter(
+          (name) => !isBundledWorkspacePackage(name),
+        );
       },
       // extendElectronPreloadConf (esbuildConf) {},
 
-      // extendPackageJson (json) {},
+      extendPackageJson(pkg) {
+        pkg.dependencies = omitBundledWorkspacePackages(pkg.dependencies);
+      },
 
       // Electron preload scripts (if any) from /src-electron, WITHOUT file extension
       preloadScripts: ['electron-preload'],
