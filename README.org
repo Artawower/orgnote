@@ -64,8 +64,3 @@ Any contribution is very much appreciated! Please read the [[https://github.com/
 
 I would also appreciate it if you would join my patreon.
 
-
-** How to update version of the application.
-#+BEGIN_SRC bash
-./update-version.sh
-#+END_SRC

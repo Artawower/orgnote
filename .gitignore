@@ -3,15 +3,9 @@
 .AppleDouble
 .LSOverride
 node_modules/
-.pnpm-debug.log
 node_modules/*
-moonbrain/.DS_Store
-index.js
 dist/*
-second-brian-parser/dist
 .env
-
-backend/app/media/*
 
 org-mode-ast/
 rust-org-mode-ast
@@ -20,3 +14,4 @@ plans
 .serena
 .pi-lens
 .certs
+.claude/settings.local.json
