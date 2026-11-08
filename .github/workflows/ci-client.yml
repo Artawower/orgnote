@@ -1,0 +1,84 @@
+name: CI client
+
+on:
+  pull_request:
+    paths: &paths
+      - orgnote-client/**
+      - orgnote-api/**
+      - package.json
+      - bun.lock
+      - bunfig.toml
+      - .github/actions/setup-workspace/**
+      - .github/workflows/ci-client.yml
+  push:
+    branches: [master, dev]
+    paths: *paths
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+defaults:
+  run:
+    working-directory: orgnote-client
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-workspace
+      - name: Prepare Quasar
+        run: bunx quasar prepare
+      - name: Lint
+        run: bun run lint
+
+  typecheck:
+    name: Typecheck
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-workspace
+      - name: Prepare Quasar
+        run: bunx quasar prepare
+      - name: Typecheck
+        run: bunx vue-tsc --noEmit
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-workspace
+      - name: Prepare Quasar
+        run: bunx quasar prepare
+      - name: Test
+        run: bun run test:ci
+
+  ssr:
+    name: SSR build and health check
+    needs: [lint, typecheck, test]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-workspace
+      - name: Build SSR
+        run: bun run build -m ssr
+      - name: Start SSR server
+        working-directory: orgnote-client/dist/ssr
+        run: |
+          npm install --omit=dev
+          node index.js &
+          sleep 10
+      - name: Health check
+        uses: pchalupa/site-health-check@v1.0.2
+        with:
+          url: http://localhost:3000

@@ -1,0 +1,41 @@
+name: CI cli
+
+on:
+  pull_request:
+    paths: &paths
+      - orgnote-cli/**
+      - orgnote-api/**
+      - package.json
+      - bun.lock
+      - bunfig.toml
+      - .github/actions/setup-workspace/**
+      - .github/workflows/ci-cli.yml
+  push:
+    branches: [master, dev]
+    paths: *paths
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+defaults:
+  run:
+    working-directory: orgnote-cli
+
+jobs:
+  check:
+    name: Typecheck, test, build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-workspace
+      - name: Typecheck
+        run: bunx tsc --noEmit -p .
+      - name: Test
+        run: bun run test --run
+      - name: Build
+        run: bun run build
