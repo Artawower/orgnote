@@ -343,7 +343,7 @@ export default defineConfig((ctx) => {
           {
             provider: 'github',
             owner: 'Artawower',
-            repo: 'orgnote-client',
+            repo: 'orgnote',
             channel: updateChannel,
           },
         ],

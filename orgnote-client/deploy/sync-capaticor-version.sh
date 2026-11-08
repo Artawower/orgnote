@@ -23,7 +23,7 @@ VERSIONCODE=$((MAJOR * 10000 + MINOR * 100 + PATCH))
 
 # For dev builds, add build number offset
 if [ -n "$GITHUB_RUN_NUMBER" ] && [ "${PRERELEASE:-false}" = "true" ]; then
-  VERSIONCODE=$((VERSIONCODE + GITHUB_RUN_NUMBER))
+  VERSIONCODE=$((VERSIONCODE + GITHUB_RUN_NUMBER + ${ANDROID_PRERELEASE_BUILD_OFFSET:-0}))
 fi
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
