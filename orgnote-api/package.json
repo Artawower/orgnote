@@ -3,8 +3,7 @@
   "version": "0.67.2",
   "description": "Official API for creating extensions for OrgNote app",
   "type": "module",
-  "main": "./index.js",
-  "packageManager": "bun@1.1.22",
+  "main": "./dist/index.js",
   "scripts": {
     "test": "vitest",
     "test:ci": "vitest run",
@@ -16,9 +15,8 @@
     "codegen:css-doc": "node collect-css-variables.cjs --docs",
     "codegen:css-types": "node collect-css-variables.cjs --types",
     "fix-esm-imports": "fix-esm-import-path ./dist",
-    "prepub": "bun run build && bun run fix-esm-imports && cp -rf package.json package-lock.json README.md dist/",
-    "pub": "bun run prepub && cd dist && npm publish",
-    "pub:yalc": "bun run prepub && cd dist && yalc publish --push",
+    "prepub": "bun run build && bun run fix-esm-imports",
+    "pub": "bun run prepub && npm publish",
     "docs:dev": "cd docs && bun run dev",
     "docs:build": "cd docs && bun run build",
     "docs:preview": "cd docs && bun run preview"
@@ -28,17 +26,17 @@
     "url": "git+https://github.com/Artawower/orgnote-api.git"
   },
   "exports": {
-    ".": "./index.js",
-    "./remote-api": "./remote-api/index.js",
-    "./encryption": "./encryption/index.js",
-    "./utils": "./utils/index.js",
-    "./mappers": "./mappers/index.js",
-    "./commands": "./commands/index.js",
-    "./constants": "./constants/index.js",
-    "./sync": "./sync/index.js"
+    ".": "./dist/index.js",
+    "./remote-api": "./dist/remote-api/index.js",
+    "./encryption": "./dist/encryption/index.js",
+    "./utils": "./dist/utils/index.js",
+    "./mappers": "./dist/mappers/index.js",
+    "./commands": "./dist/commands/index.js",
+    "./constants": "./dist/constants/index.js",
+    "./sync": "./dist/sync/index.js"
   },
-  "files": ["**"],
-  "types": "./index.d.ts",
+  "files": ["dist"],
+  "types": "./dist/index.d.ts",
   "keywords": ["orgnote", "org-mode", "org-roam", "api", "extensions"],
   "author": "darkawower <app.orgnote@gmail.com> (https://org-note.com)",
   "license": "GPL-3.0-or-later",
@@ -53,7 +51,6 @@
     "neverthrow": "^8.2.0",
     "openpgp": "6.3.0",
     "org-mode-ast": "0.13.5",
-    "orgnote-api": "0.67.0",
     "partysocket": "1.1.6",
     "picomatch": "4.0.4",
     "smol-toml": "1.5.2"
@@ -86,5 +83,16 @@
     "valibot": ">=1.0.0",
     "vue": ">=3.0.0",
     "vue-router": ">=4.0.0"
+  },
+  "typesVersions": {
+    "*": {
+      "dist/*": [
+        "dist/*"
+      ],
+      "*": [
+        "dist/*",
+        "dist/*/index.d.ts"
+      ]
+    }
   }
 }

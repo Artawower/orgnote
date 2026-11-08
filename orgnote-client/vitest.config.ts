@@ -29,6 +29,11 @@ export default defineConfig({
     globals: true,
     css: false,
     setupFiles: ['./test/init-env.ts', './test/setup-tests.ts'],
+    server: {
+      deps: {
+        external: [/\/orgnote-api\/dist\//],
+      },
+    },
   },
   resolve: {
     alias: {

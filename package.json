@@ -1,5 +1,6 @@
 {
-  "dependencies": {
-    "orgnote-api": "0.51.10"
-  }
+  "name": "orgnote",
+  "private": true,
+  "packageManager": "bun@1.4.4",
+  "workspaces": ["orgnote-api", "orgnote-client", "orgnote-cli"]
 }

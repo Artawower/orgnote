@@ -67,7 +67,7 @@
     "neverthrow": "8.2.0",
     "openpgp": "6.3.0",
     "org-mode-ast": "0.11.7",
-    "orgnote-api": "0.67.2",
+    "orgnote-api": "workspace:*",
     "p-map": "7.0.4",
     "partysocket": "1.1.6",
     "smol-toml": "1.5.2",
