@@ -109,14 +109,14 @@ If local docs conflict with the codebase or appear stale, mention the conflict i
 #+INCLUDE: "/Users/darkawower/Yandex.Disk.localized/Dropbox/org-roam/programming/ai/base_agents.org"
 
 ** Additional critical rules.
-- Ignore .yalc modules warnings, we have a special hook to replace the yalc package with the real one!
-- When you change orgnote-api, there is only one way to publish it to the client: ~bun run pub:yalc~
+- Install dependencies once from the repository root with ~bun install~; ~orgnote-api~, ~orgnote-client~ and ~orgnote-cli~ are Bun workspaces.
+- Client and CLI consume ~orgnote-api~ through ~workspace:*~ from its build output. After changing ~orgnote-api~, run ~bun run build~ in ~orgnote-api~ before typechecking, testing or running consumers.
 ** Architecture Principles
 
 *** 1. Plugin-Based Ecosystem
 
 - All public functionality MUST be exposed through `orgnote-api`
-- For local development when ~orgnote-api~ changed, use ~bun run pub:yalc~ to update dependent projects!
+- When ~orgnote-api~ changes, rebuild it; dependent workspaces pick up ~dist~ without publishing.
 - Extensions and themes developed via standardized API
 - Loose coupling between components via well-defined interfaces
 
@@ -166,27 +166,11 @@ If local docs conflict with the codebase or appear stale, mention the conflict i
 
 ** Git Workflow & Conventional Commits
 
-*** Submodule Management
+*** Repository Layout
 
-- Update all submodules to latest
-git submodule update --remote
-
-- Work in specific submodule
-#+BEGIN_SRC bash
-cd orgnote-client
-git checkout -b feature/new-functionality
-#+END_SRC
-- Make changes...
-#+BEGIN_SRC bash
-git commit -m "feat(ui): add new note creation dialog"
-#+END_SRC
-- Return to root and update submodule reference
-#+BEGIN_SRC bash
-cd ..
-git add orgnote-client
-git commit -m "chore: update orgnote-client to latest version"
-```
-#+END_SRC
+- This repository is a monorepo managed with jj: ~orgnote-client~, ~orgnote-api~, ~orgnote-cli~ and ~orgnote-backend~ are plain directories, not submodules.
+- A change spanning several components is one logical change; use component scopes (~client~, ~api~, ~cli~, ~backend~) or cross-cutting ones (~sync~, ~core~, ~deps~, ~repo~).
+- ~org-mode-ast~ and ~rust-org-mode-ast~ are separate, ignored repositories kept in the root for reference; changes to them belong to their own repositories.
 
 ** Cross-Project Development Patterns
 
@@ -272,10 +256,10 @@ const extension: NoteExtension = {
 
 *** ❌ Things to Avoid
 
-1. Cross-submodule tight coupling - Use defined APIs
+1. Cross-component tight coupling - Use defined APIs
 2. Platform assumptions - Always check capabilities
 3. Large synchronous operations - Use background processing
-4. Direct submodule modifications - Follow proper git workflow
+4. Editing ignored nested repositories as part of a monorepo change - They are separate repositories
 5. Inconsistent error handling - Use centralized error management
 
 *** ✅ Best Practices
@@ -298,7 +282,7 @@ const extension: NoteExtension = {
 
 - Discord: https://discord.com/invite/SFpUb2vSDm
 - GitHub Discussions: For questions and community support
-- GitHub Issues: Bug reports and feature requests per submodule
+- GitHub Issues: Bug reports and feature requests
 
 *** Framework Documentation
 

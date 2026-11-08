@@ -22,7 +22,7 @@ OrgNote cli is a command-line interface tool designed to interact with the OrgNo
 
 -   ES Modules - Native ESM output with import path fixing
 -   TypeScript transformers - Path resolution and ESM compatibility
--   bun/yalc publishing - Multi-target publishing support
+-   npm publishing; consumes `orgnote-api` as a Bun workspace
 
 :ID: base-agents
 

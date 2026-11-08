@@ -1204,7 +1204,7 @@ When you receive a task, BEFORE starting work:
 -   **ALL public functionality** MUST be exposed via `orgnote-api` interfaces
 -   **Check API contract** in `src/boot/api.ts` before implementing features
 -   **Evaluate plugin needs** - ask "Would a plugin need this?" before making private
--   **API package location** - `node_modules/orgnote-api` (via Yalc)
+-   **API package location** - `orgnote-api` Bun workspace (`../orgnote-api`, build output in `dist`)
 
     // ✅ GOOD - exposed through API
     const api: OrgNoteApi = {

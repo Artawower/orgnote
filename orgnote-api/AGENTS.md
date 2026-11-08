@@ -30,7 +30,7 @@
 
 -   ES Modules - Native ESM output with import path fixing
 -   TypeScript transformers - Path resolution and ESM compatibility
--   bun/yalc publishing - Multi-target publishing support
+-   npm publishing from `dist`; consumed in the monorepo as a Bun workspace
 
 :ID: base-agents
 

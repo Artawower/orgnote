@@ -169,7 +169,7 @@ When you receive a task, BEFORE starting work:
 
 ### Internal documentation
 
-- `docs/file-synchronization.md` — Full description of the sync mechanism across all four sub-repos (`orgnote-client`, `orgnote-api`, `orgnote-backend`, `orgnote-cli`). Read before working on any sync-related task.
+- `docs/file-synchronization.md` — Full description of the sync mechanism across the four core components (`orgnote-client`, `orgnote-api`, `orgnote-backend`, `orgnote-cli`). Read before working on any sync-related task.
 - `docs/plans/` — Task plans for complex fixes and features. Check for an existing plan before starting a complex task. Mark completed plans with `**Status: COMPLETED**` at the top. Create new plans as `docs/plans/<descriptive-name>.md`.
 
 ### CodeMirror widget conventions
@@ -1080,8 +1080,8 @@ When you receive a task, BEFORE starting work:
 
 ## Additional critical rules.
 
-- Ignore .yalc modules warnings, we have a special hook to replace the yalc package with the real one!
-- When you change orgnote-api, there is only one way to publish it to the client: `bun run pub:yalc`
+- Install dependencies once from the repository root with `bun install`; `orgnote-api`, `orgnote-client` and `orgnote-cli` are Bun workspaces.
+- Client and CLI consume `orgnote-api` through `workspace:*` from its build output. After changing `orgnote-api`, run `bun run build` in `orgnote-api` before typechecking, testing or running consumers.
 - For recursive AST traversals over `org-mode-ast` nodes use `walkTree` from `org-mode-ast`, not hand-rolled recursion. `walkTree` is only for true tree walks (`title` → `section` → `children`); flat sibling iteration over `node.childrenList` stays as a normal array method.
 
 ## Architecture Principles
@@ -1089,7 +1089,7 @@ When you receive a task, BEFORE starting work:
 ### 1. Plugin-Based Ecosystem
 
 - All public functionality MUST be exposed through \`orgnote-api\`
-- For local development when `orgnote-api` changed, use `bun run pub:yalc` to update dependent projects!
+- When `orgnote-api` changes, rebuild it; dependent workspaces pick up `dist` without publishing.
 - Extensions and themes developed via standardized API
 - Loose coupling between components via well-defined interfaces
 
@@ -1160,30 +1160,11 @@ When you receive a task, BEFORE starting work:
 
 ## Git Workflow & Conventional Commits
 
-### Submodule Management
+### Repository Layout
 
-- Update all submodules to latest
-
-git submodule update &#x2013;remote
-
-- Work in specific submodule
-
-  cd orgnote-client
-  git checkout -b feature/new-functionality
-
-- Make changes&#x2026;
-
-  git commit -m "feat(ui): add new note creation dialog"
-
-- Return to root and update submodule reference
-
-  cd ..
-  git add orgnote-client
-  git commit -m "chore: update orgnote-client to latest version"
-
-  ```
-
-  ```
+- This repository is a monorepo managed with jj: `orgnote-client`, `orgnote-api`, `orgnote-cli` and `orgnote-backend` are plain directories, not submodules.
+- A change spanning several components is one logical change; use component scopes (`client`, `api`, `cli`, `backend`) or cross-cutting ones (`sync`, `core`, `deps`, `repo`).
+- `org-mode-ast` and `rust-org-mode-ast` are separate, ignored repositories kept in the root for reference; changes to them belong to their own repositories.
 
 ## Cross-Project Development Patterns
 
@@ -1273,10 +1254,10 @@ When adding new functionality:
 
 ### ❌ Things to Avoid
 
-1.  Cross-submodule tight coupling - Use defined APIs
+1.  Cross-component tight coupling - Use defined APIs
 2.  Platform assumptions - Always check capabilities
 3.  Large synchronous operations - Use background processing
-4.  Direct submodule modifications - Follow proper git workflow
+4.  Editing ignored nested repositories as part of a monorepo change - They are separate repositories
 5.  Inconsistent error handling - Use centralized error management
 
 ### ✅ Best Practices
@@ -1299,7 +1280,7 @@ When adding new functionality:
 
 - Discord: <https://discord.com/invite/SFpUb2vSDm>
 - GitHub Discussions: For questions and community support
-- GitHub Issues: Bug reports and feature requests per submodule
+- GitHub Issues: Bug reports and feature requests
 
 ### Framework Documentation
 
