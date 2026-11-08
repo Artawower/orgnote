@@ -7,7 +7,7 @@ import {
   WithNoteDecryptionContent,
 } from '../models/encryption';
 import { parse, withMetaInfo } from 'org-mode-ast';
-import { isGpgEncrypted } from '..';
+import { isGpgEncrypted } from '../utils/is-gpg-encrypted';
 
 export interface AbstractEncryptedNote {
   encrypted?: boolean;
