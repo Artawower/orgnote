@@ -1,4 +1,4 @@
-name: Deploy
+name: Backend deploy
 
 on:
   workflow_call:
@@ -7,10 +7,6 @@ on:
         required: true
         type: string
         description: 'Environment name (dev or deploy)'
-      branch:
-        required: true
-        type: string
-        description: 'Branch to deploy (dev or master)'
       debug:
         required: false
         type: boolean
@@ -22,13 +18,33 @@ on:
         default: 'latest'
         description: 'Docker image tag for client (dev or latest)'
 
+permissions:
+  contents: read
+
+concurrency:
+  group: backend-deploy-${{ inputs.environment }}
+  cancel-in-progress: false
+
 jobs:
   deploy:
     name: Deploy to ${{ inputs.environment }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     environment: ${{ inputs.environment }}
+    env:
+      DEPLOY_NAME: ${{ inputs.environment == 'deploy' && 'prod' || 'dev' }}
     steps:
+      - uses: actions/checkout@v4
+
+      - name: Upload backend sources
+        uses: appleboy/scp-action@v1
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: orgnote-backend
+          target: orgnote/${{ env.DEPLOY_NAME }}
+
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1
         with:
@@ -38,34 +54,19 @@ jobs:
           command_timeout: 10m
           script: |
             set -e
-            
+
             if ! command -v just &> /dev/null; then
               curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash -s -- --to ~/bin
             fi
             export PATH="$HOME/bin:$PATH"
 
-            DEPLOY_DIR=~/orgnote/${{ inputs.environment == 'deploy' && 'prod' || 'dev' }}
-            mkdir -p "$DEPLOY_DIR"
-            cd "$DEPLOY_DIR"
-
-            if [ ! -d "orgnote-backend" ]; then
-              eval $(ssh-agent -s)
-              ssh-add ~/.ssh/sb-back
-              git clone git@github.com:Artawower/orgnote-backend.git
-            fi
-
-            cd orgnote-backend
-            eval $(ssh-agent -s)
-            ssh-add ~/.ssh/sb-back
-            git fetch --all
-            git checkout ${{ inputs.branch }}
-            git reset --hard origin/${{ inputs.branch }}
+            cd ~/orgnote/${{ env.DEPLOY_NAME }}/orgnote-backend
 
             cat <<EOT > .env.traefik
             ACME_EMAIL=${{ secrets.ACME_EMAIL }}
             EOT
 
-            cat <<EOT > .env.${{ inputs.environment == 'deploy' && 'prod' || 'dev' }}
+            cat <<EOT > .env.${{ env.DEPLOY_NAME }}
             DEBUG=${{ inputs.debug }}
             MONGO_USERNAME=${{ secrets.MONGO_USERNAME }}
             MONGO_PASSWORD=${{ secrets.MONGO_PASSWORD }}
@@ -87,11 +88,13 @@ jobs:
             echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login --username=${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
             docker pull orgnote/client:${{ inputs.client_image_tag }} || true
 
-            just deploy-${{ inputs.environment == 'deploy' && 'prod' || 'dev' }}
+            just deploy-${{ env.DEPLOY_NAME }}
             just prune
 
       - name: Health check
         if: vars.HEALTH_CHECK_URL != ''
+        env:
+          HEALTH_CHECK_URL: ${{ vars.HEALTH_CHECK_URL }}
         run: |
           sleep 10
-          curl -sf "${{ vars.HEALTH_CHECK_URL }}" || echo "Health check skipped or endpoint not ready"
+          curl -sf "$HEALTH_CHECK_URL" || echo "Health check skipped or endpoint not ready"

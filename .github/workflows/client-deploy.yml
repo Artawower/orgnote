@@ -1,4 +1,4 @@
-name: CD orgnote client
+name: Client deploy
 
 on:
   workflow_call:
@@ -11,31 +11,22 @@ on:
         required: true
         type: string
         description: 'Docker image tag (dev or latest)'
-      trigger_event:
-        required: false
-        type: string
-        default: ''
-        description: 'Event type to trigger backend deployment'
+
+permissions:
+  contents: read
 
 jobs:
-  ci-checks:
-    uses: ./.github/workflows/ci-checks.yaml
-
-  push_image:
+  push-image:
     name: Push Docker image
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    needs: [ci-checks]
     environment: ${{ inputs.environment }}
+    defaults:
+      run:
+        working-directory: orgnote-client
     steps:
       - uses: actions/checkout@v4
-      - uses: oven-sh/setup-bun@v1
-        with:
-          bun-version: latest
-      - name: Install dependencies
-        run: |
-          bun install --frozen-lockfile
-          bun add global @quasar/cli
+      - uses: ./.github/actions/setup-workspace
       - name: Init environment
         run: |
           cat <<EOT > .env.build
@@ -46,7 +37,7 @@ jobs:
           VITE_SOURCEMAP=${{ inputs.environment == 'dev' && 'true' || 'false' }}
           VITE_DEPLOYMENT_ENV=${{ inputs.environment }}
           EOT
-      - name: Build ssr
+      - name: Build SSR
         run: bunx env-cmd -f ./.env.build bun run build -m ssr
       - name: Login to Docker Hub
         uses: docker/login-action@v3
@@ -56,21 +47,17 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
-          context: .
-          file: deploy/Dockerfile.ssr
+          context: orgnote-client
+          file: orgnote-client/deploy/Dockerfile.ssr
           push: true
           tags: orgnote/client:${{ inputs.image_tag }}
 
-  trigger_backend:
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    needs: [push_image]
-    if: ${{ inputs.trigger_event != '' }}
-    environment: ${{ inputs.environment }}
-    steps:
-      - name: Trigger backend deployment
-        uses: peter-evans/repository-dispatch@v3
-        with:
-          token: ${{ secrets.PAT }}
-          repository: artawower/orgnote-backend
-          event-type: ${{ inputs.trigger_event }}
+  deploy-backend:
+    name: Redeploy backend
+    needs: [push-image]
+    uses: ./.github/workflows/backend-deploy.yml
+    with:
+      environment: ${{ inputs.environment }}
+      debug: ${{ inputs.environment == 'dev' }}
+      client_image_tag: ${{ inputs.image_tag }}
+    secrets: inherit

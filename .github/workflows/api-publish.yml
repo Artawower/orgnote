@@ -1,0 +1,43 @@
+name: API publish
+
+on:
+  push:
+    branches: [master, dev]
+    paths:
+      - orgnote-api/package.json
+
+permissions:
+  contents: read
+
+concurrency:
+  group: api-publish-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  ci:
+    name: CI
+    uses: ./.github/workflows/ci-api.yml
+
+  publish:
+    name: Publish to npm
+    needs: [ci]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: npm-publish
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: ./.github/actions/setup-workspace
+        with:
+          build-api: 'false'
+      - uses: ./.github/actions/publish-npm-package
+        with:
+          package-dir: orgnote-api
+          build-script: prepub

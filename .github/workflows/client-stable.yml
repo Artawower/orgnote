@@ -1,19 +1,18 @@
-name: CD orgnote client (stable release)
+name: Client stable release
 
 on:
   push:
-    branches:
-      - master
+    branches: [master]
     paths:
-      - 'package.json'
+      - orgnote-client/package.json
 
 permissions:
   contents: write
 
 jobs:
-  stable-release:
+  release:
     name: Build and publish stable release
-    uses: ./.github/workflows/release.yaml
+    uses: ./.github/workflows/client-release.yml
     with:
       environment: deploy
       tag_prefix: ''

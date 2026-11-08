@@ -1,4 +1,4 @@
-name: Build Electron macOS
+name: Client build Electron macOS
 
 on:
   workflow_call:
@@ -26,6 +26,13 @@ on:
         type: boolean
         default: false
         description: 'Allow Electron DevTools in packaged builds'
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    working-directory: orgnote-client
 
 jobs:
   build-electron-macos:
@@ -64,19 +71,8 @@ jobs:
             fi
           done
 
-      - uses: oven-sh/setup-bun@v1
-        with:
-          bun-version: latest
 
-      - uses: actions/cache@v4
-        with:
-          path: '**/node_modules'
-          key: ${{ runner.os }}-modules-${{ hashFiles('**/bun.lock') }}
-
-      - name: Install dependencies
-        run: |
-          bun install --frozen-lockfile
-          bun add -g @quasar/cli
+      - uses: ./.github/actions/setup-workspace
 
       - name: Import macOS signing certificate
         timeout-minutes: 5
@@ -158,5 +154,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: orgnote-macos-${{ inputs.version }}
-          path: ./dist/build/*
+          path: orgnote-client/dist/build/*
           retention-days: ${{ inputs.prerelease && 7 || 30 }}

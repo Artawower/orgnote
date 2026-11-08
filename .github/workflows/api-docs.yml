@@ -1,8 +1,11 @@
-name: Deploy Docs to GitHub Pages
+name: API docs
 
 on:
   push:
     branches: [master]
+    paths:
+      - orgnote-api/**
+      - .github/workflows/api-docs.yml
   workflow_dispatch:
 
 permissions:
@@ -16,31 +19,26 @@ concurrency:
 
 jobs:
   build:
+    name: Build docs
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: orgnote-api/docs
     steps:
       - uses: actions/checkout@v4
-
-      - uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: '1.1.45'
-
-      - name: Install root dependencies
-        run: bun install
-
+      - uses: ./.github/actions/setup-workspace
       - name: Install docs dependencies
-        working-directory: docs
         run: bun install
-
       - name: Build docs
-        working-directory: docs
         run: bun run build
-
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: docs/dist
+          path: orgnote-api/docs/dist
 
   deploy:
-    needs: build
+    name: Deploy to GitHub Pages
+    needs: [build]
     runs-on: ubuntu-latest
     environment:
       name: github-pages

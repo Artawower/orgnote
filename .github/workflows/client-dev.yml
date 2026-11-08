@@ -1,33 +1,32 @@
-name: CD orgnote client (dev)
+name: Client dev
 
 on:
   push:
-    branches:
-      - dev
+    branches: [dev]
     paths:
-      - 'package.json'
+      - orgnote-client/package.json
 
 permissions:
   contents: write
 
 jobs:
-  ci-checks:
-    uses: ./.github/workflows/ci-checks.yaml
+  ci:
+    name: CI
+    uses: ./.github/workflows/ci-client.yml
 
-  docker-deploy:
-    name: Docker Build and Deploy
-    needs: [ci-checks]
-    uses: ./.github/workflows/cd.base.yaml
+  deploy:
+    name: Docker build and deploy
+    needs: [ci]
+    uses: ./.github/workflows/client-deploy.yml
     with:
       environment: dev
       image_tag: dev
-      trigger_event: trigger-deploy-dev
     secrets: inherit
 
-  dev-release:
+  release:
     name: Build and publish dev prerelease
-    needs: [ci-checks]
-    uses: ./.github/workflows/release.yaml
+    needs: [ci]
+    uses: ./.github/workflows/client-release.yml
     with:
       ci_checks_passed: true
       environment: dev

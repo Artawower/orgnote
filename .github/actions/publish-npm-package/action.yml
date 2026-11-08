@@ -1,0 +1,102 @@
+name: Publish npm package
+description: Publish a workspace package to npm when its version changes on master (latest) or dev (dev prerelease)
+
+inputs:
+  package-dir:
+    description: Workspace package directory
+    required: true
+  build-script:
+    description: Package script that produces the publishable build
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Resolve publish version
+      id: version
+      shell: bash
+      working-directory: ${{ inputs.package-dir }}
+      env:
+        BASE_SHA: ${{ github.event.before }}
+        BRANCH: ${{ github.ref_name }}
+        COMMIT_SHA: ${{ github.sha }}
+        PACKAGE_DIR: ${{ inputs.package-dir }}
+      run: |
+        NAME="$(jq -er '.name' package.json)"
+        VERSION="$(jq -er '.version' package.json)"
+        PREVIOUS_VERSION="$(git show "${BASE_SHA}:${PACKAGE_DIR}/package.json" 2>/dev/null | jq -r '.version' || true)"
+
+        PUBLISH_VERSION="$VERSION"
+        DIST_TAG=latest
+        if [ "$BRANCH" = dev ]; then
+          PUBLISH_VERSION="${VERSION}-dev.${COMMIT_SHA::7}"
+          DIST_TAG=dev
+        fi
+
+        SHOULD_PUBLISH=true
+        if [ "$PREVIOUS_VERSION" = "$VERSION" ]; then
+          SHOULD_PUBLISH=false
+          echo "Skipping: ${NAME} version did not change."
+        elif npm view "${NAME}@${PUBLISH_VERSION}" version >/dev/null 2>&1; then
+          SHOULD_PUBLISH=false
+          echo "Skipping: ${NAME}@${PUBLISH_VERSION} is already published."
+        fi
+
+        {
+          echo "publish_version=$PUBLISH_VERSION"
+          echo "dist_tag=$DIST_TAG"
+          echo "should_publish=$SHOULD_PUBLISH"
+        } >> "$GITHUB_OUTPUT"
+
+    - name: Verify trusted publishing auth
+      if: steps.version.outputs.should_publish == 'true'
+      shell: bash
+      run: |
+        if [ -n "${NODE_AUTH_TOKEN:-}" ] || [ -n "${NPM_TOKEN:-}" ]; then
+          echo "Unexpected npm token present; remove NODE_AUTH_TOKEN/NPM_TOKEN."
+          exit 1
+        fi
+
+    - name: Build package
+      if: steps.version.outputs.should_publish == 'true'
+      shell: bash
+      working-directory: ${{ inputs.package-dir }}
+      run: bun run "${{ inputs.build-script }}"
+
+    - name: Set publish version
+      if: steps.version.outputs.should_publish == 'true'
+      shell: bash
+      working-directory: ${{ inputs.package-dir }}
+      env:
+        PUBLISH_VERSION: ${{ steps.version.outputs.publish_version }}
+      run: npm pkg set version="$PUBLISH_VERSION"
+
+    - name: Pack package
+      id: pack
+      if: steps.version.outputs.should_publish == 'true'
+      shell: bash
+      working-directory: ${{ inputs.package-dir }}
+      run: |
+        PACK_DIR="${RUNNER_TEMP}/npm-package"
+        mkdir -p "$PACK_DIR"
+        bun pm pack --destination "$PACK_DIR"
+        TARBALL="$(find "$PACK_DIR" -name '*.tgz' -print -quit)"
+        test -n "$TARBALL"
+        if tar -xOzf "$TARBALL" package/package.json | grep -q '"workspace:'; then
+          echo "::error::Packed manifest still contains workspace: dependencies."
+          exit 1
+        fi
+        echo "tarball=$TARBALL" >> "$GITHUB_OUTPUT"
+
+    - name: Publish package
+      if: steps.version.outputs.should_publish == 'true'
+      shell: bash
+      env:
+        DIST_TAG: ${{ steps.version.outputs.dist_tag }}
+        TARBALL: ${{ steps.pack.outputs.tarball }}
+        NPM_CONFIG_USERCONFIG: ${{ runner.temp }}/npmrc
+        NPM_CONFIG_GLOBALCONFIG: ${{ runner.temp }}/npmrc-global
+      run: |
+        : > "$NPM_CONFIG_USERCONFIG"
+        : > "$NPM_CONFIG_GLOBALCONFIG"
+        env -u NODE_AUTH_TOKEN -u NPM_TOKEN npm publish "$TARBALL" --provenance --access public --tag "$DIST_TAG" --registry https://registry.npmjs.org

@@ -1,4 +1,4 @@
-name: Build Electron Linux
+name: Client build Electron Linux
 
 on:
   workflow_call:
@@ -27,6 +27,13 @@ on:
         default: false
         description: 'Allow Electron DevTools in packaged builds'
 
+permissions:
+  contents: read
+
+defaults:
+  run:
+    working-directory: orgnote-client
+
 jobs:
   build-electron-linux:
     name: Build Electron Linux
@@ -49,14 +56,6 @@ jobs:
             fi
           done
 
-      - uses: oven-sh/setup-bun@v1
-        with:
-          bun-version: latest
-
-      - uses: actions/cache@v4
-        with:
-          path: '**/node_modules'
-          key: ${{ runner.os }}-modules-${{ hashFiles('**/bun.lock') }}
 
       # Defensive: project has no production native modules today,
       # but QEMU enables arm64 cross-rebuild if one is added later.
@@ -64,10 +63,7 @@ jobs:
         with:
           platforms: arm64
 
-      - name: Install dependencies
-        run: |
-          bun install --frozen-lockfile
-          bun add -g @quasar/cli
+      - uses: ./.github/actions/setup-workspace
 
       - name: Build Electron
         env:
@@ -97,5 +93,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: orgnote-linux-${{ inputs.version }}
-          path: ./dist/build/*
+          path: orgnote-client/dist/build/*
           retention-days: ${{ inputs.prerelease && 7 || 30 }}
