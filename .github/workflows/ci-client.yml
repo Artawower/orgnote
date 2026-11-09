@@ -75,7 +75,7 @@ jobs:
         run: bun run build -m ssr
       - name: Start SSR server
         run: |
-          cp -R orgnote-client/dist/ssr "$RUNNER_TEMP/ssr"
+          cp -R dist/ssr "$RUNNER_TEMP/ssr"
           cd "$RUNNER_TEMP/ssr"
           npm install --omit=dev
           node index.js &
