@@ -24,6 +24,18 @@ const omitBundledWorkspacePackages = (
     Object.entries(dependencies).filter(([name]) => !isBundledWorkspacePackage(name)),
   );
 
+const readWorkspacePackageDependencies = (name: string): PackageDependencies => {
+  const manifestPath = fileURLToPath(new URL(`../${name}/package.json`, import.meta.url));
+  return JSON.parse(fs.readFileSync(manifestPath, 'utf8')).dependencies ?? {};
+};
+
+const inlineBundledWorkspacePackages = (
+  dependencies: PackageDependencies = {},
+): PackageDependencies => ({
+  ...Object.assign({}, ...BUNDLED_WORKSPACE_PACKAGES.map(readWorkspacePackageDependencies)),
+  ...omitBundledWorkspacePackages(dependencies),
+});
+
 const getUpdateChannel = (): string =>
   process.env[UPDATE_CHANNEL_ENV_NAME]?.trim() || DEFAULT_UPDATE_CHANNEL;
 
@@ -269,7 +281,7 @@ export default defineConfig((ctx) => {
       middlewares: ['render'],
       pwa: true,
       extendPackageJson(pkg) {
-        pkg.dependencies = omitBundledWorkspacePackages(pkg.dependencies);
+        pkg.dependencies = inlineBundledWorkspacePackages(pkg.dependencies);
       },
     },
 
@@ -312,7 +324,7 @@ export default defineConfig((ctx) => {
       // extendElectronPreloadConf (esbuildConf) {},
 
       extendPackageJson(pkg) {
-        pkg.dependencies = omitBundledWorkspacePackages(pkg.dependencies);
+        pkg.dependencies = inlineBundledWorkspacePackages(pkg.dependencies);
       },
 
       // Electron preload scripts (if any) from /src-electron, WITHOUT file extension

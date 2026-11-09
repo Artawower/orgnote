@@ -74,8 +74,9 @@ jobs:
       - name: Build SSR
         run: bun run build -m ssr
       - name: Start SSR server
-        working-directory: orgnote-client/dist/ssr
         run: |
+          cp -R orgnote-client/dist/ssr "$RUNNER_TEMP/ssr"
+          cd "$RUNNER_TEMP/ssr"
           npm install --omit=dev
           node index.js &
           sleep 10
