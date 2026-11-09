@@ -268,7 +268,12 @@ jobs:
   publish:
     name: Publish release
     needs: [prepare, build-android, build-electron, build-electron-linux]
-    if: needs.prepare.outputs.should_release == 'true'
+    if: >-
+      !cancelled() &&
+      needs.prepare.outputs.should_release == 'true' &&
+      needs.build-android.result == 'success' &&
+      needs.build-electron.result == 'success' &&
+      needs.build-electron-linux.result == 'success'
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment }}
     steps:
@@ -329,6 +334,8 @@ jobs:
     name: Publish Android to Google Play
     needs: [prepare, build-android, publish]
     if: >-
+      !cancelled() &&
+      needs.publish.result == 'success' &&
       needs.prepare.outputs.should_release == 'true' &&
       inputs.publish_google_play &&
       !inputs.prerelease &&
