@@ -9,6 +9,9 @@ dist/*
 
 org-mode-ast/
 rust-org-mode-ast
+orgnote-extensions/
+subscrumber/
+orgnote.el/
 
 plans
 .serena
