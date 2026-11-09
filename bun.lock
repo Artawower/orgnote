@@ -100,7 +100,7 @@
     },
     "orgnote-client": {
       "name": "orgnote-client",
-      "version": "0.68.9",
+      "version": "0.68.10",
       "dependencies": {
         "@capacitor/app": "^7.1.0",
         "@capacitor/browser": "^8.0.0",
