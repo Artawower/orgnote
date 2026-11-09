@@ -14,7 +14,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: ci-backend-${{ github.ref }}
+  group: ci-backend-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 defaults:
