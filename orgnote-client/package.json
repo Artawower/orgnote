@@ -4,6 +4,12 @@
   "description": "Org Roam implementation for web and mobile devices.",
   "productName": "orgnote",
   "author": "OrgNote <app.orgnote@gmail.com>",
+  "homepage": "https://org-note.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Artawower/orgnote.git",
+    "directory": "orgnote-client"
+  },
   "license": "GPL-3.0",
   "type": "module",
   "private": false,
