@@ -45,7 +45,7 @@ The application is available as a [[https://developer.mozilla.org/en-US/docs/Web
 
 
 ** Android
-You can download the latest Android version [[https://github.com/Artawower/orgnote-client/releases][here]]. On Android, you can use native file system support, so you can easily sync your notes with tools like Syncthing. You can also use it offline without any limitations.
+You can download the latest Android version [[https://github.com/Artawower/orgnote/releases][here]]. On Android, you can use native file system support, so you can easily sync your notes with tools like Syncthing. You can also use it offline without any limitations.
 
 
 ** Desktop
@@ -93,11 +93,11 @@ You can download the CLI config from the account settings page. Go to [[https://
 The config is stored at ~~/.config/orgnote/config.toml~.
 
 ** CLI
-You can sync notes via CLI utility. See the actual details [[https://github.com/Artawower/orgnote-cli][here]]
+You can sync notes via CLI utility. See the actual details [[https://github.com/Artawower/orgnote/tree/master/orgnote-cli][here]]
 
 To sync notes, you need to have Node.js version 22 or higher.
 
-Install [[https://github.com/Artawower/orgnote-cli][orgnote-cli]] from [[https://www.npmjs.com/package/orgnote-cli][npm]]
+Install [[https://github.com/Artawower/orgnote/tree/master/orgnote-cli][orgnote-cli]] from [[https://www.npmjs.com/package/orgnote-cli][npm]]
 
 #+BEGIN_SRC bash
 npm install -g orgnote-cli
@@ -116,7 +116,7 @@ logPath = "/tmp/logs/orgnote.log"
 #+END_SRC
 
 
-*The full config example is available in the [[https://github.com/Artawower/orgnote-cli][CLI README]].*
+*The full config example is available in the [[https://github.com/Artawower/orgnote/tree/master/orgnote-cli][CLI README]].*
 
 After that you can run synchronization with the following command:
 

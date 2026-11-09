@@ -18,14 +18,14 @@ In short, I wasn't satisfied with existing solutions. I wanted to bring the full
 - Ability to publish notes in blog format, as well as share notes via links with colleagues and friends.
 
 * What technology stack is used in the project?
-[[https://github.com/Artawower/orgnote-client][Client side]]:
+[[https://github.com/Artawower/orgnote/tree/master/orgnote-client][Client side]]:
 - [[https://quasar.dev/][Quasar]] - a framework for building cross-platform applications.
 - [[https://vuejs.org/][VueJs]] - core of frontend side.
 - [[https://pinia.vuejs.org/][Pinia.]] - State manager
 - [[https://codemirror.net/][CodeMirror6]] - editor for org files
 - Local storage (IndexedDB) with optional cloud sync
 - [[https://github.com/Artawower/org-mode-ast][org-mode-ast]] - custom Org-mode parser
-[[https://github.com/Artawower/orgnote-backend][Backend]]:
+[[https://github.com/Artawower/orgnote/tree/master/orgnote-backend][Backend]]:
 - Backend written in [[https://go.dev/][Go]] using the [[https://docs.gofiber.io/][Fiber]] framework
 - [[https://www.postgresql.org/][PostgreSQL]] database
 

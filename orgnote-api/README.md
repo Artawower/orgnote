@@ -34,7 +34,6 @@
 
 </span>
 
-<a href="https://wakatime.com/badge/github/Artawower/orgnote-api"><img src="https://wakatime.com/badge/github/Artawower/orgnote-api.svg" alt="wakatime"></a>
 
 </div>
 
@@ -76,11 +75,11 @@ You can find all available methods here. They are currently undocumented.
 
 # Connected links
 
--   [Built-in extensions](https://github.com/Artawower/orgnote-client/tree/master/src/components/extensions)
--   [Type definition for existing extension API](https://github.com/Artawower/orgnote-api/blob/master/src/api.ts#L24)
+-   [Built-in extensions](https://github.com/Artawower/orgnote/tree/master/orgnote-client/src/extensions)
+-   [Type definition for existing extension API](https://github.com/Artawower/orgnote/blob/master/orgnote-api/src/api.ts)
 -   [OrgNote entrypoint](https://github.com/artawower/orgnote)
 -   [Official website](https://org-note.com/)
--   [Org Note client](https://github.com/Artawower/orgnote-client)
+-   [Org Note client](https://github.com/Artawower/orgnote/tree/master/orgnote-client)
 -   [Repository with collection of extensions](https://github.com/Artawower/orgnote-extensions)
 -   [Typescript abstract syntax tree for org mode.](https://github.com/Artawower/org-mode-ast)
 
@@ -110,7 +109,7 @@ Each extension should **export an object by default** with the following structu
       onUnmounted?: (api: OrgNoteApi) => Promise<void>;
     }
 
-You can find available methods of `OrgNoteApi` [here](https://github.com/Artawower/orgnote-api/blob/master/src/api.ts#L24)
+You can find available methods of `OrgNoteApi` [here](https://github.com/Artawower/orgnote/blob/master/orgnote-api/src/api.ts)
 
 
 <a id="org76005de"></a>

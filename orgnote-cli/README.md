@@ -33,7 +33,6 @@
 
 </span>
 
-<a href="https://wakatime.com/badge/github/Artawower/orgnote-cli"><img src="https://wakatime.com/badge/github/Artawower/orgnote-cli.svg" alt="wakatime"></a>
 
 </div>
 

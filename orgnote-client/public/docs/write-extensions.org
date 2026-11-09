@@ -12,7 +12,7 @@
 - [[./faq.org][FAQ]]
 
 * Links
-- [[https://github.com/Artawower/orgnote-api][TypeScript SDK for working with API]] 
+- [[https://github.com/Artawower/orgnote/tree/master/orgnote-api][TypeScript SDK for working with API]] 
 - [[https://github.com/Artawower/orgnote-extensions][Collection with built-in extensions]]
 - [[https://github.com/Artawower/org-mode-ast][Abstract syntax tree for working with Org-mode format]]
 - [[https://github.com/Artawower/orgnote-colorful-headlines][Extension example]]
@@ -34,7 +34,7 @@ export interface Extension {
   onUnmounted?: (api: OrgNoteApi) => Promise<void> | void;
 }
 #+END_SRC
-=OrgNoteApi= can be found [[https://github.com/Artawower/orgnote-api/blob/master/src/api.ts][here]]
+=OrgNoteApi= can be found [[https://github.com/Artawower/orgnote/blob/master/orgnote-api/src/api.ts][here]]
 2. Exported manifest
 #+BEGIN_SRC typescript
 export interface ExtensionManifest {
@@ -104,7 +104,7 @@ export interface ExtensionManifest {
 }
 #+END_SRC
 
-Actual interface can be found [[https://github.com/Artawower/orgnote-api/blob/master/src/models/extension.ts][here]]
+Actual interface can be found [[https://github.com/Artawower/orgnote/blob/master/orgnote-api/src/models/extension.ts][here]]
 
 * Simple extension example
 Simple extension for changing headline colors in the OrgNote editor:
