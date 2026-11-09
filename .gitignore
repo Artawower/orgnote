@@ -18,3 +18,5 @@ plans
 .pi-lens
 .certs
 .claude/settings.local.json
+WORKFLOW.md
+log/*
