@@ -171,6 +171,7 @@ When you receive a task, BEFORE starting work:
 
 - `docs/file-synchronization.md` — Full description of the sync mechanism across the four core components (`orgnote-client`, `orgnote-api`, `orgnote-backend`, `orgnote-cli`). Read before working on any sync-related task.
 - `docs/plans/` — Task plans for complex fixes and features. Check for an existing plan before starting a complex task. Mark completed plans with `**Status: COMPLETED**` at the top. Create new plans as `docs/plans/<descriptive-name>.md`.
+- `docs/plans/tasks.org` — Task backlog. Read its header (agent protocol) before working on a task from it.
 
 ### CodeMirror widget conventions
 
