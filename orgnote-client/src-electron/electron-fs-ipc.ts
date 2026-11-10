@@ -1,20 +1,21 @@
 import type { BrowserWindow, OpenDialogOptions } from 'electron';
 import { dialog, ipcMain } from 'electron';
-import chokidar, { type FSWatcher } from 'chokidar';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import type { DiskFile, FileSystemChange } from 'orgnote-api';
 import { ELECTRON_FS_CHANNELS } from './electron-fs-channels';
+import { createVaultChangeTracker, type VaultChange } from './vault-change-tracker';
+import { isPathInsideRoot } from './vault-tree';
+import { createVaultWatcher, type VaultWatcher } from './vault-watcher';
 
-const WATCH_EVENT_NAMES = ['add', 'addDir', 'change', 'unlink', 'unlinkDir'] as const;
-type WatchEventName = (typeof WATCH_EVENT_NAMES)[number];
+const WATCH_EVENT_FAILURE_MESSAGE = 'Vault watch event failed:';
 
 interface RegisterElectronFsIpcOptions {
   getMainWindow: () => BrowserWindow | undefined;
 }
 
 interface WatchEntry {
-  watcher: FSWatcher;
+  watcher: VaultWatcher;
 }
 
 interface ElectronFsIpcRuntime {
@@ -43,11 +44,8 @@ const createElectronFsIpcRuntime = (
   let nextWatchId = 1;
   const watchers = new Map<number, WatchEntry>();
 
-  const isInsideRoot = (absolutePath: string): boolean => {
-    if (!rootRealPath) return false;
-    const relativePath = path.relative(rootRealPath, absolutePath);
-    return relativePath === '' || (!relativePath.startsWith('..') && !path.isAbsolute(relativePath));
-  };
+  const isInsideRoot = (absolutePath: string): boolean =>
+    Boolean(rootRealPath) && isPathInsideRoot(rootRealPath ?? '', absolutePath);
 
   const toLogicalPath = (absolutePath: string): string => {
     if (!rootRealPath) throw new Error('Electron filesystem is not mounted');
@@ -190,41 +188,44 @@ const createElectronFsIpcRuntime = (
     await fs.copyFile(srcPath, destPath);
   };
 
-  const buildWatchChange = async (
-    eventName: WatchEventName,
-    absolutePath: string,
-  ): Promise<FileSystemChange | undefined> => {
-    if (!isInsideRoot(absolutePath)) return undefined;
-    const type = eventName === 'change' ? 'modify' : eventName.startsWith('unlink') ? 'delete' : 'create';
-    const stat = type === 'delete' ? undefined : await fs.stat(absolutePath).catch(() => undefined);
-    return {
-      path: toLogicalPath(absolutePath),
-      type,
-      mtime: stat?.mtimeMs,
-    };
+  const toFileSystemChange = ({ absolutePath, type, mtime }: VaultChange): FileSystemChange => ({
+    path: toLogicalPath(absolutePath),
+    type,
+    mtime,
+  });
+
+  const sendWatchEvent = (watchId: number, change: FileSystemChange): void => {
+    options.getMainWindow()?.webContents.send(ELECTRON_FS_CHANNELS.watchEvent, { watchId, change });
   };
 
-  const sendWatchEvent = (window: BrowserWindow | undefined, watchId: number, change: FileSystemChange): void => {
-    window?.webContents.send(ELECTRON_FS_CHANNELS.watchEvent, { watchId, change });
+  const publishWatchChanges = (watchId: number, changes: VaultChange[]): void => {
+    if (!watchers.has(watchId)) return;
+    changes
+      .filter((change) => isInsideRoot(change.absolutePath))
+      .map(toFileSystemChange)
+      .forEach((change) => sendWatchEvent(watchId, change));
   };
 
-  const watchStart = (): number => {
+  const watchStart = async (): Promise<number> => {
     if (!rootRealPath) throw new Error('Electron filesystem is not mounted');
     const watchId = nextWatchId++;
-    const watcher = chokidar.watch(rootRealPath, {
-      ignoreInitial: true,
-      awaitWriteFinish: { stabilityThreshold: 100, pollInterval: 50 },
+    const tracker = createVaultChangeTracker(rootRealPath);
+    const reportFailure = (absolutePath: string) => (error: unknown) =>
+      console.error(WATCH_EVENT_FAILURE_MESSAGE, toLogicalPath(absolutePath), error);
+    const watcher = createVaultWatcher({
+      root: rootRealPath,
+      onPathSettled: (absolutePath) => {
+        void tracker
+          .resolveChanges(absolutePath)
+          .then((changes) => publishWatchChanges(watchId, changes))
+          .catch(reportFailure(absolutePath));
+      },
     });
-    const handleChange = (eventName: WatchEventName) => {
-      watcher.on(eventName, (changedPath) => {
-        void buildWatchChange(eventName, changedPath).then((change) => {
-          if (!change) return;
-          sendWatchEvent(options.getMainWindow(), watchId, change);
-        });
-      });
-    };
-    WATCH_EVENT_NAMES.forEach(handleChange);
     watchers.set(watchId, { watcher });
+    await tracker.ready.catch(async (error: unknown) => {
+      await watchStop(watchId);
+      throw error;
+    });
     return watchId;
   };
 
@@ -232,7 +233,7 @@ const createElectronFsIpcRuntime = (
     const entry = watchers.get(watchId);
     if (!entry) return;
     watchers.delete(watchId);
-    await entry.watcher.close();
+    entry.watcher.close();
   };
 
   const register = (): void => {

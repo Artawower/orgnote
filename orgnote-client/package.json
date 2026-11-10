@@ -81,7 +81,6 @@
     "@vueuse/core": "13.1.0",
     "axios": "1.8.4",
     "better-queue": "3.8.12",
-    "chokidar": "5.0.0",
     "date-fns": "4.1.0",
     "dexie": "4.0.11",
     "diff-match-patch": "1.0.5",
