@@ -664,6 +664,75 @@ test('should move tab to specific index', async () => {
   expect(tabKeys[1]).toBe(tab1!.id);
 });
 
+test('should reorder tab within the same pane and activate it', async () => {
+  setActivePinia(createPinia());
+  const paneStore = usePaneStore();
+
+  const pane1 = await paneStore.createPane();
+  const tab1 = await paneStore.addTab(pane1.id, { title: 'Tab 1' });
+  const tab2 = await paneStore.addTab(pane1.id, { title: 'Tab 2' });
+  const tab3 = await paneStore.addTab(pane1.id, { title: 'Tab 3' });
+  await paneStore.createPane();
+  assertDefined(tab1, 'tab1 is nullable');
+  assertDefined(tab2, 'tab2 is nullable');
+  assertDefined(tab3, 'tab3 is nullable');
+  paneStore.selectTab(pane1.id, tab3.id);
+
+  await paneStore.moveTab(tab1.id, pane1.id, pane1.id, 2);
+
+  const paneValue = getPaneValue(paneStore, pane1.id);
+  expect(Object.keys(paneValue.tabs.value)).toEqual([tab2.id, tab3.id, tab1.id]);
+  expect(paneValue.activeTabId).toBe(tab1.id);
+  expect(paneStore.activePaneId).toBe(pane1.id);
+});
+
+test('should keep the active tab active when reordering it within the same pane', async () => {
+  setActivePinia(createPinia());
+  const paneStore = usePaneStore();
+
+  const pane1 = await paneStore.createPane();
+  const tab1 = await paneStore.addTab(pane1.id, { title: 'Tab 1' });
+  const tab2 = await paneStore.addTab(pane1.id, { title: 'Tab 2' });
+  const tab3 = await paneStore.addTab(pane1.id, { title: 'Tab 3' });
+  assertDefined(tab1, 'tab1 is nullable');
+  assertDefined(tab2, 'tab2 is nullable');
+  assertDefined(tab3, 'tab3 is nullable');
+  paneStore.selectTab(pane1.id, tab2.id);
+  const activeTabIds: string[] = [];
+  const stopWatching = paneStore.$subscribe(
+    () => activeTabIds.push(getPaneValue(paneStore, pane1.id).activeTabId),
+    { flush: 'sync' },
+  );
+
+  await paneStore.moveTab(tab2.id, pane1.id, pane1.id, 2);
+  stopWatching();
+
+  const paneValue = getPaneValue(paneStore, pane1.id);
+  expect(Object.keys(paneValue.tabs.value)).toEqual([tab1.id, tab3.id, tab2.id]);
+  expect(paneValue.activeTabId).toBe(tab2.id);
+  expect(activeTabIds).not.toHaveLength(0);
+  expect(activeTabIds).not.toContain(tab1.id);
+});
+
+test('should keep router identity and persist order after reordering within the same pane', async () => {
+  setActivePinia(createPinia());
+  const paneStore = usePaneStore();
+
+  const pane1 = await paneStore.createPane();
+  const tab1 = await paneStore.addTab(pane1.id, { title: 'Tab 1' });
+  const tab2 = await paneStore.addTab(pane1.id, { title: 'Tab 2' });
+  assertDefined(tab1, 'tab1 is nullable');
+  assertDefined(tab2, 'tab2 is nullable');
+  const router = getPaneValue(paneStore, pane1.id).tabs.value[tab1.id]?.router;
+
+  await paneStore.moveTab(tab1.id, pane1.id, pane1.id, 1);
+
+  const reorderedTab = getPaneValue(paneStore, pane1.id).tabs.value[tab1.id];
+  const snapshot = paneStore.getPanesData().find((paneData) => paneData.id === pane1.id);
+  expect(reorderedTab?.router).toBe(router);
+  expect(snapshot?.tabs.map((tab) => tab.id)).toEqual([tab2.id, tab1.id]);
+});
+
 test('should activate moved tab in target pane', async () => {
   setActivePinia(createPinia());
   const paneStore = usePaneStore();
@@ -709,6 +778,29 @@ test('should handle moving last tab from pane with multiple panes', async () => 
   await paneStore.moveTab(tab1!.id, pane1.id, pane2.id);
 
   expect(paneStore.panes[pane1.id]).toBeUndefined();
+});
+
+test('should remove the emptied source pane when its last tab is inserted at an index', async () => {
+  setActivePinia(createPinia());
+  const paneStore = usePaneStore();
+
+  const pane1 = await paneStore.createPane();
+  const tab1 = await paneStore.addTab(pane1.id, { title: 'Tab 1' });
+  const pane2 = await paneStore.createPane();
+  const tab2 = await paneStore.addTab(pane2.id, { title: 'Tab 2' });
+  const tab3 = await paneStore.addTab(pane2.id, { title: 'Tab 3' });
+  assertDefined(tab1, 'tab1 is nullable');
+  assertDefined(tab2, 'tab2 is nullable');
+  assertDefined(tab3, 'tab3 is nullable');
+
+  await paneStore.moveTab(tab1.id, pane1.id, pane2.id, 1);
+
+  expect(paneStore.panes[pane1.id]).toBeUndefined();
+  expect(Object.keys(getPaneValue(paneStore, pane2.id).tabs.value)).toEqual([
+    tab2.id,
+    tab1.id,
+    tab3.id,
+  ]);
 });
 
 test('should remove source pane when empty and multiple panes exist', async () => {

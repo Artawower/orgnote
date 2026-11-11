@@ -397,6 +397,8 @@ body {
   --tab-active-hover-bg: var(--bg-hover);
   --tab-active-fg: var(--fg);
   --tab-active-bg: var(--bg);
+  --tab-drop-indicator-width: 2px;
+  --tab-drop-indicator-color: var(--accent);
 
   // Tab overview
   --tab-preview-active-border: 3px solid var(--accent);

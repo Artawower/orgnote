@@ -207,7 +207,9 @@ export const usePaneStore = defineStore<'panes', PaneStore>('panes', () => {
 
     removeTabFromPane(fromPane, tabId);
     addTabToPane(toPane, movedTab, index);
-    handleSourcePaneAfterMove(fromPane, fromPaneId, toPaneId, tabId, movedTab);
+    if (fromPaneId !== toPaneId) {
+      handleSourcePaneAfterMove(fromPane, fromPaneId, toPaneId, tabId, movedTab);
+    }
 
     activateTabInPane(toPaneId, movedTab.id);
 

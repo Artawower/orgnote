@@ -54,9 +54,16 @@ const SlotStub = defineComponent({
   template: '<div><slot /></div>',
 });
 
+let stripDropGapIndex = 0;
+
 const NavTabsStub = defineComponent({
+  emits: ['tab-drop'],
+  setup: (_, { emit }) => ({
+    emitStripDrop: () => emit('tab-drop', { gapIndex: stripDropGapIndex }),
+  }),
   template: `
     <div>
+      <button data-testid="strip-drop" @click="emitStripDrop" />
       <slot name="navigation" />
       <slot />
       <slot name="actions" />
@@ -93,6 +100,18 @@ const mountAppPane = () =>
     },
   });
 
+let draggedTabData = { paneId: 'source-pane', tabId: 'dragged-tab' };
+
+const createTab = (id: string) => ({
+  id,
+  paneId: 'target-pane',
+  router: { currentRoute: shallowRef({ fullPath: `/${id}`, params: {} }) },
+  title: id,
+});
+
+const createTargetTabs = (...ids: string[]) =>
+  Object.fromEntries(ids.map((id) => [id, createTab(id)]));
+
 const configurePaneApi = (
   moveTab: ReturnType<typeof vi.fn>,
   splitPaneInLayout: ReturnType<typeof vi.fn>,
@@ -109,7 +128,7 @@ const configurePaneApi = (
   apiMocks.usePane.mockReturnValue({
     ...paneActions,
     activePaneId,
-    draggedTabData: { paneId: 'source-pane', tabId: 'dragged-tab' },
+    draggedTabData,
     isDraggingTab: true,
     moveTab,
     panes: {
@@ -128,6 +147,8 @@ const configurePaneApi = (
 
 beforeEach(() => {
   vi.clearAllMocks();
+  stripDropGapIndex = 0;
+  draggedTabData = { paneId: 'source-pane', tabId: 'dragged-tab' };
   apiMocks.useScreenDetection.mockReturnValue({ tabletAbove: ref(true) });
   apiMocks.useRightSidebar.mockReturnValue({ opened: ref(false) });
 });
@@ -235,4 +256,56 @@ test('AppPane clears drag state and reports a failed split', async () => {
 
   expect(actions.stopDraggingTab).toHaveBeenCalledOnce();
   expect(apiMocks.reportError).toHaveBeenCalledWith(splitError);
+});
+
+test('AppPane reorders a tab dropped into its own tab strip', async () => {
+  draggedTabData = { paneId: 'target-pane', tabId: 'first' };
+  stripDropGapIndex = 3;
+  const moveTab = vi.fn().mockResolvedValue(createTab('first'));
+  const actions = configurePaneApi(moveTab, vi.fn(), createTargetTabs('first', 'second', 'third'));
+  const wrapper = mountAppPane();
+
+  await wrapper.get('[data-testid="strip-drop"]').trigger('click');
+  await flushPromises();
+
+  expect(moveTab).toHaveBeenCalledWith('first', 'target-pane', 'target-pane', 2);
+  expect(actions.stopDraggingTab).toHaveBeenCalledOnce();
+});
+
+test('AppPane skips the store when a tab is dropped back on its own position', async () => {
+  draggedTabData = { paneId: 'target-pane', tabId: 'second' };
+  stripDropGapIndex = 2;
+  const moveTab = vi.fn();
+  const actions = configurePaneApi(moveTab, vi.fn(), createTargetTabs('first', 'second', 'third'));
+  const wrapper = mountAppPane();
+
+  await wrapper.get('[data-testid="strip-drop"]').trigger('click');
+  await flushPromises();
+
+  expect(moveTab).not.toHaveBeenCalled();
+  expect(actions.stopDraggingTab).toHaveBeenCalledOnce();
+});
+
+test('AppPane inserts a tab from another pane at the strip gap', async () => {
+  stripDropGapIndex = 1;
+  const moveTab = vi.fn().mockResolvedValue(createTab('dragged-tab'));
+  configurePaneApi(moveTab, vi.fn(), createTargetTabs('first', 'second'));
+  const wrapper = mountAppPane();
+
+  await wrapper.get('[data-testid="strip-drop"]').trigger('click');
+  await flushPromises();
+
+  expect(moveTab).toHaveBeenCalledWith('dragged-tab', 'source-pane', 'target-pane', 1);
+});
+
+test('AppPane reports a failed strip drop and clears the drag state', async () => {
+  const moveError = new Error('move failed');
+  const actions = configurePaneApi(vi.fn().mockRejectedValue(moveError), vi.fn());
+  const wrapper = mountAppPane();
+
+  await wrapper.get('[data-testid="strip-drop"]').trigger('click');
+  await flushPromises();
+
+  expect(actions.stopDraggingTab).toHaveBeenCalledOnce();
+  expect(apiMocks.reportError).toHaveBeenCalledWith(moveError);
 });
