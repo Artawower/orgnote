@@ -3,6 +3,7 @@ import { computed, shallowRef, ref, watch } from 'vue';
 import { join, type FileMeta, type FileTask } from 'orgnote-api';
 import { to } from 'orgnote-api/utils';
 import { updateFileText } from 'src/utils/update-file-text';
+import { createTaskPredictions } from 'src/utils/task-predictions';
 import { api } from 'src/boot/api';
 import { reporter } from 'src/boot/report';
 import { createDirPath } from 'src/utils/create-dir-path';
@@ -80,7 +81,9 @@ const buildTotalsByFilter = (files: FileMeta[], now = new Date()): Record<Agenda
   files.reduce((acc, file) => countFileTasks(acc, file, now), emptyTotals());
 
 export const useAgendaTasksStore = defineStore('agendaTasks', () => {
-  const allFiles = shallowRef<FileMeta[]>([]);
+  const persistedFiles = shallowRef<FileMeta[]>([]);
+  const taskPredictions = createTaskPredictions();
+  const allFiles = computed(() => taskPredictions.apply(persistedFiles.value));
   const loading = ref(false);
   const taskSearchIndex = createAgendaTaskSearchIndex();
   let initialLoad: Promise<void> | undefined;
@@ -104,7 +107,7 @@ export const useAgendaTasksStore = defineStore('agendaTasks', () => {
       reporter.reportError(result.error);
       return;
     }
-    allFiles.value = result.value;
+    persistedFiles.value = result.value;
     taskSearchIndex.replace(buildSearchEntries(result.value));
   };
 
@@ -124,7 +127,7 @@ export const useAgendaTasksStore = defineStore('agendaTasks', () => {
 
   const ensureLoaded = async (): Promise<void> => {
     attachWatchersOnce();
-    if (allFiles.value.length > 0) return;
+    if (persistedFiles.value.length > 0) return;
     initialLoad ??= loadFiles().finally(() => {
       initialLoad = undefined;
     });
@@ -162,5 +165,6 @@ export const useAgendaTasksStore = defineStore('agendaTasks', () => {
     ensureLoaded,
     searchTaskIds,
     createTaskInFile,
+    predictTask: taskPredictions.predict,
   };
 });

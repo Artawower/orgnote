@@ -110,6 +110,7 @@ import {
 import { isOrgTaskRelatedChange } from './refresh-trigger';
 import { createTaskToggleRunner, type ToggleableTaskNode } from './task-toggle-runner';
 import { createTasksLoader } from './tasks-loader';
+import { createTaskPredictions } from 'src/utils/task-predictions';
 import { useI18n } from 'vue-i18n';
 
 interface UpdatedAtFilterOption {
@@ -136,19 +137,20 @@ const { opened } = storeToRefs(rightSidebar);
 const { isIndexing } = storeToRefs(fileSearch);
 const { t } = useI18n();
 
-const togglingTaskIds = ref<Set<string>>(new Set());
+const taskPredictions = createTaskPredictions();
+const visibleFiles = computed(() => taskPredictions.apply(filesWithTasks.value));
 
 let stopFileWatch: (() => void) | undefined;
 const { isInitialLoading, load: loadTasks } = createTasksLoader(
   () => fileMeta.getAll(),
   (files) => {
     filesWithTasks.value = files;
-    rebuildTree();
   },
 );
 const taskToggleRunner = createTaskToggleRunner({
   fileContent,
   loadTasks,
+  predict: taskPredictions.predict,
 });
 
 const showTree = computed(() => nodes.value.length > 0);
@@ -166,7 +168,7 @@ const updatedAtFilterOptions = computed<UpdatedAtFilterOption[]>(() => {
 const selectedUpdatedAtFilter = ref<UpdatedAtFilterOption>(updatedAtFilterOptions.value[0]!);
 
 const calendarDateMarkers = computed(() => {
-  return buildTaskDateMarkers(filesWithTasks.value, {
+  return buildTaskDateMarkers(visibleFiles.value, {
     includeCompletedTasks: includeCompletedTasks.value,
     updatedAtFilter: selectedUpdatedAtFilter.value.value,
   });
@@ -181,7 +183,7 @@ const selectedUpdatedAtDateLabel = computed(() => {
 });
 
 const rebuildTree = (): void => {
-  nodes.value = buildTasksTree(filesWithTasks.value, {
+  nodes.value = buildTasksTree(visibleFiles.value, {
     includeCompletedTasks: includeCompletedTasks.value,
     updatedAtFilter: selectedUpdatedAtFilter.value.value,
     selectedUpdatedAtDate: selectedUpdatedAtDate.value,
@@ -223,7 +225,7 @@ const isTaskToggleDisabled = (node: TaskTreeNode): boolean => {
   if (!isToggleableTaskNode(node)) {
     return true;
   }
-  return isInitialLoading.value || togglingTaskIds.value.has(node.id);
+  return isInitialLoading.value;
 };
 
 const scheduleReloadTasks = debounce(() => {
@@ -283,24 +285,16 @@ const handleNodeClick = async (node: TaskTreeNode, toggle?: () => void): Promise
   }
 };
 
-const withTaskToggleLock = async (node: ToggleableTaskNode): Promise<void> => {
-  togglingTaskIds.value = new Set(togglingTaskIds.value).add(node.id);
+const runTaskToggle = async (node: ToggleableTaskNode): Promise<void> => {
   const toggleResult = await to(() => taskToggleRunner.run(node), 'Failed to update task')();
-  const nextIds = new Set(togglingTaskIds.value);
-
-  nextIds.delete(node.id);
-  togglingTaskIds.value = nextIds;
-
-  if (toggleResult.isErr()) {
-    reporter.reportError(toggleResult.error);
-  }
+  if (toggleResult.isErr()) reporter.reportError(toggleResult.error);
 };
 
 const handleTaskToggle = async (node: TaskTreeNode): Promise<void> => {
   if (!isToggleableTaskNode(node) || isTaskToggleDisabled(node)) {
     return;
   }
-  await withTaskToggleLock(node);
+  await runTaskToggle(node);
 };
 
 const reloadTasksIfOpened = (isOpen: boolean): void => {
@@ -323,6 +317,7 @@ const reloadTasksAfterIndexing = (isIndexingNow: boolean, wasIndexing: boolean):
 watch(opened, reloadTasksIfOpened, { immediate: true });
 watch(isIndexing, reloadTasksAfterIndexing);
 watch(includeCompletedTasks, rebuildTree);
+watch(visibleFiles, rebuildTree);
 watch(selectedUpdatedAtFilter, rebuildTree);
 watch(selectedUpdatedAtDate, rebuildTree);
 watch(updatedAtFilterOptions, (options) => {

@@ -106,7 +106,13 @@ export const NEXT_TASK = {
   end: 300,
 };
 
-export const mockUint8 = new Uint8Array([104, 101, 108, 108, 111]);
+const TASK_LINE = '* TODO Test task';
+const NEXT_TASK_LINE = '* TODO Next task';
+
+export const createTaskFileContent = (fillerLength = 200 - TASK_LINE.length - 1): string =>
+  `${TASK_LINE}${' '.repeat(fillerLength)}\n${NEXT_TASK_LINE}\n`;
+
+export const mockUint8 = new TextEncoder().encode(createTaskFileContent());
 export const orgTaskContent = new TextEncoder().encode('* TODO Test task\n');
 
 export const setAgendaTask = (): void => {

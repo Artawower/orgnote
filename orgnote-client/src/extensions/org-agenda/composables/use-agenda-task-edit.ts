@@ -15,7 +15,7 @@ export const useAgendaTaskEdit = () => {
     mutateFn: (c: string) => string,
   ): Promise<void> => {
     if (task.start === undefined) return;
-    await applyAgendaFileMutation(api, filePath, mutateFn);
+    await applyAgendaFileMutation(api, filePath, mutateFn, { targetTask: task });
   };
 
   const saveTask = async (

@@ -76,7 +76,7 @@ const applyHabitMutation = async (
   habit: AgendaHabitView,
   mutation: (content: string) => string,
 ): Promise<void> => {
-  await applyAgendaFileMutation(api, habit.filePath, mutation);
+  await applyAgendaFileMutation(api, habit.filePath, mutation, { targetTask: habit });
 };
 
 const editHabitTitle = (habit: AgendaHabitView, title: string): Promise<void> => {

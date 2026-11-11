@@ -1,7 +1,6 @@
 import type { Command, CommandHandlerParams, OrgNoteApi } from 'orgnote-api';
-import { isNullable, to } from 'orgnote-api/utils';
-import { updateFileText } from 'src/utils/update-file-text';
-import { reporter } from 'src/boot/report';
+import { isNullable } from 'orgnote-api/utils';
+import { applyAgendaFileMutation } from '../services/apply-agenda-file-mutation';
 import { i18n } from 'src/boot/i18n';
 import { AGENDA_TASK_SET_PRIORITY_COMMAND } from '../constants';
 import { openOrgPriorityCompletion } from 'src/utils/org-priority-completion';
@@ -16,10 +15,12 @@ const handleSetTaskPriority = async (
   const task = params.data;
   const priority = await openOrgPriorityCompletion(api, i18n.global.t);
   if (isNullable(priority)) return;
-  const result = await to(updateFileText)(api.core.useFileContent(), task.filePath, (content) =>
-    changeTaskPriority(content, task.start ?? 0, priority || undefined),
+  await applyAgendaFileMutation(
+    api,
+    task.filePath,
+    (content) => changeTaskPriority(content, task.start ?? 0, priority || undefined),
+    { targetTask: task },
   );
-  if (result.isErr()) reporter.reportError(result.error);
 };
 
 export const setTaskPriorityCommand: Command = {

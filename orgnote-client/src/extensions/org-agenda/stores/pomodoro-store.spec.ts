@@ -1,5 +1,6 @@
 import { expect, test, vi } from 'vitest';
 import {
+  createTaskFileContent,
   mockFileRead,
   mockFileWrite,
   mockKvSet,
@@ -123,7 +124,7 @@ test('changeTask_blocksPauseUntilTaskTransitionCompletes', async () => {
 
   const changePromise = store.changeTask(NEXT_TASK);
   await store.pauseSession();
-  resolveRead!(new TextEncoder().encode('task'));
+  resolveRead!(new TextEncoder().encode(createTaskFileContent()));
   await changePromise;
 
   expect(vi.mocked(appendClock)).toHaveBeenCalledOnce();
@@ -148,7 +149,7 @@ test('changeTask_blocksStopUntilTaskTransitionCompletes', async () => {
 
   const changePromise = store.changeTask(NEXT_TASK);
   await store.stopSession();
-  resolveRead!(new TextEncoder().encode('task'));
+  resolveRead!(new TextEncoder().encode(createTaskFileContent()));
   await changePromise;
 
   expect(vi.mocked(appendClock)).toHaveBeenCalledOnce();
@@ -172,7 +173,7 @@ test('changeTask_whilePausedDoesNotWriteAnotherClock', async () => {
 
 test('changeTask_adjustsLaterTaskPositionAfterClockInsertion', async () => {
   const { appendClock } = await import('../mutations/clock');
-  const fileContent = 'x'.repeat(400);
+  const fileContent = createTaskFileContent();
   mockFileRead.mockResolvedValueOnce(new TextEncoder().encode(fileContent));
   vi.mocked(appendClock).mockImplementationOnce(
     (content) => `${content.slice(0, 100)}CLOCK${content.slice(100)}`,
@@ -203,7 +204,7 @@ test('changeTask_recoversTransitionStateWhenClockMutationThrows', async () => {
 
 test('changeTask_keepsCurrentTaskWhenClockWriteFails', async () => {
   const { appendClock } = await import('../mutations/clock');
-  const fileContent = 'x'.repeat(400);
+  const fileContent = createTaskFileContent();
   mockFileRead.mockResolvedValueOnce(new TextEncoder().encode(fileContent));
   mockFileWrite.mockRejectedValueOnce(new Error('write failed'));
   vi.mocked(appendClock).mockImplementationOnce(

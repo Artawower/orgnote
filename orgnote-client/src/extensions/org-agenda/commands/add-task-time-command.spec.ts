@@ -19,6 +19,7 @@ const task = {
   id: 'prepare-release',
   filePath: '/agenda/tasks.org',
   start: 0,
+  text: 'Prepare release',
 };
 
 const existingContent = `* TODO Prepare release

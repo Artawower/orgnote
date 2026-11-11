@@ -66,6 +66,8 @@ import LoadingDots from 'src/components/LoadingDots.vue';
 import AppBufferContent from 'src/components/AppBufferContent.vue';
 import { api } from 'src/boot/api';
 import { applyAgendaFileMutation } from './services/apply-agenda-file-mutation';
+import { predictAgendaToggle } from './services/agenda-task-prediction';
+import { useAgendaTasksStore } from './stores/agenda-tasks-store';
 import AgendaTaskGroup from './components/AgendaTaskGroup.vue';
 import AgendaTaskQueryBar from './components/AgendaTaskQueryBar.vue';
 import { useAgendaTasks } from './composables/use-agenda-tasks';
@@ -104,6 +106,7 @@ const props = defineProps<{
   viewState?: BufferViewStateHandle<AgendaTasksViewState>;
 }>();
 const { t } = useI18n({ useScope: 'global', inheritLocale: true });
+const tasksStore = useAgendaTasksStore();
 const dateFilter = computed(
   () => parseAgendaTaskBufferUri(props.buffer.uri) ?? DEFAULT_DATE_FILTER,
 );
@@ -155,7 +158,11 @@ const applyToggle = (task: AgendaTaskView, content: string): string => {
 
 const toggleTask = async (task: AgendaTaskView, filePath: string): Promise<void> => {
   if (task.start === undefined) return;
-  await applyAgendaFileMutation(api, filePath, (content) => applyToggle(task, content));
+  const releasePrediction = tasksStore.predictTask(task.id, predictAgendaToggle(task));
+  await applyAgendaFileMutation(api, filePath, (content) => applyToggle(task, content), {
+    targetTask: task,
+  });
+  releasePrediction();
 };
 
 const applyTaskMutation = async (
@@ -164,7 +171,7 @@ const applyTaskMutation = async (
   mutation: (content: string) => string,
 ): Promise<void> => {
   if (task.start === undefined) return;
-  await applyAgendaFileMutation(api, filePath, mutation);
+  await applyAgendaFileMutation(api, filePath, mutation, { targetTask: task });
 };
 
 const editTaskTitle = (task: AgendaTaskView, filePath: string, title: string): Promise<void> =>

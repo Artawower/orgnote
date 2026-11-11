@@ -3,8 +3,11 @@ import { expect, test, vi } from 'vitest';
 import { createAtomicFileContent } from '../../../../test/mocks/atomic-file-content';
 import { applyAgendaFileMutation } from './apply-agenda-file-mutation';
 
-const reportError = vi.hoisted(() => vi.fn());
-vi.mock('src/boot/report', () => ({ reporter: { reportError } }));
+const { reportError, reportWarning } = vi.hoisted(() => ({
+  reportError: vi.fn(),
+  reportWarning: vi.fn(),
+}));
+vi.mock('src/boot/report', () => ({ reporter: { reportError, reportWarning } }));
 
 const TASK_FILE = '/agenda/tasks.org';
 
@@ -45,4 +48,26 @@ test('applyAgendaFileMutation reports a failing mutation without writing', async
   expect(result).toEqual({ wasWritten: false });
   expect(fileContent.readText(TASK_FILE)).toBe('* TODO task\n');
   expect(reportError).toHaveBeenCalledWith(failure);
+});
+
+test('applyAgendaFileMutation rejects an edit whose target task moved before it was applied', async () => {
+  const fileContent = createAtomicFileContent({ [TASK_FILE]: '* TODO One\n* TODO Two\n* TODO Three\n' });
+  const api = createApi(fileContent);
+  const twoStart = '* TODO One\n'.length;
+
+  const results = await Promise.all([
+    applyAgendaFileMutation(api, TASK_FILE, (text) => text.replace('* TODO One\n', ''), {
+      targetTask: { start: 0, text: 'One' },
+    }),
+    applyAgendaFileMutation(
+      api,
+      TASK_FILE,
+      (text) => `${text.slice(0, twoStart)}* TODO Renamed\n${text.slice(twoStart + '* TODO Two\n'.length)}`,
+      { targetTask: { start: twoStart, text: 'Two' } },
+    ),
+  ]);
+
+  expect(results.map((result) => result.wasWritten)).toEqual([true, false]);
+  expect(fileContent.readText(TASK_FILE)).toBe('* TODO Two\n* TODO Three\n');
+  expect(reportWarning).toHaveBeenCalledOnce();
 });

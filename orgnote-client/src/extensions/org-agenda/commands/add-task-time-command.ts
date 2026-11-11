@@ -47,8 +47,12 @@ const handleAddTaskTime = async (
   const currentTime = new Date();
   const clockRange = createAgendaTaskClockRange(taskTime, currentTime);
   if (clockRange.endedAt > currentTime) return;
-  await applyAgendaFileMutation(api, params.data.filePath, (content) =>
-    appendClock(content, params.data.start ?? 0, clockRange.startedAt, clockRange.endedAt),
+  const task = params.data;
+  await applyAgendaFileMutation(
+    api,
+    task.filePath,
+    (content) => appendClock(content, task.start ?? 0, clockRange.startedAt, clockRange.endedAt),
+    { targetTask: task },
   );
 };
 

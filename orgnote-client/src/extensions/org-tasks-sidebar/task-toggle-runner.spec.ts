@@ -36,3 +36,31 @@ test('createTaskToggleRunner reloads tasks once after the update', async () => {
 
   expect(loadTasks).toHaveBeenCalledOnce();
 });
+
+test('createTaskToggleRunner shows the predicted state until the reloaded tasks arrive', async () => {
+  const fileContent = createAtomicFileContent({ [TASK_FILE]: '* TODO task\n' });
+  const events: string[] = [];
+  const runner = createTaskToggleRunner({
+    fileContent,
+    loadTasks: vi.fn(async () => {
+      events.push('reload');
+    }),
+    predict: (taskId, patch) => {
+      events.push(`predict ${taskId} ${patch.state}`);
+      return () => events.push('release');
+    },
+  });
+
+  await runner.run({ ...createTaskNode(), taskState: 'todo' });
+
+  expect(events).toEqual(['predict task done', 'reload', 'release']);
+});
+
+test('createTaskToggleRunner does not toggle another task that moved into the clicked position', async () => {
+  const fileContent = createAtomicFileContent({ [TASK_FILE]: '* TODO another\n' });
+  const runner = createTaskToggleRunner({ fileContent, loadTasks: vi.fn(async () => undefined) });
+
+  await runner.run(createTaskNode());
+
+  expect(fileContent.readText(TASK_FILE)).toBe('* TODO another\n');
+});

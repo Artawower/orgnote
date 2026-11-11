@@ -1,8 +1,6 @@
 import type { FileMeta, FileTask, OrgNoteApi } from 'orgnote-api';
-import { to } from 'orgnote-api/utils';
-import { updateFileText } from 'src/utils/update-file-text';
+import { applyAgendaFileMutation } from './apply-agenda-file-mutation';
 import { i18n } from 'src/boot/i18n';
-import { reporter } from 'src/boot/report';
 import { extensionI18nKeys as i18nKeys } from 'src/constants/extension-i18n-keys';
 import { completeRepeatingTask } from '../mutations/complete-repeating-task';
 import { completeTask } from '../mutations/complete-task';
@@ -83,14 +81,13 @@ const writeCompletedTask = async (
   task: SessionTask,
   completedAt: Date,
 ): Promise<boolean> => {
-  const result = await to(updateFileText, 'Failed to complete Pomodoro task')(
-    api.core.useFileContent(),
+  const result = await applyAgendaFileMutation(
+    api,
     task.filePath,
     (content) => completePomodoroTaskContent(content, task, completedAt),
+    { targetTask: task },
   );
-  if (result.isOk()) return result.value;
-  reporter.reportError(result.error);
-  return false;
+  return result.wasWritten;
 };
 
 export const completePomodoroTaskAfterConfirmation = async (

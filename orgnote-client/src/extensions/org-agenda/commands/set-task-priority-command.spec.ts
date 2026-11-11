@@ -17,7 +17,7 @@ test('setTaskPriorityCommand sets the priority through an atomic file update', a
 
   await setTaskPriorityCommand.handler(api, {
     meta: setTaskPriorityCommand,
-    data: { id: 'buy-milk', filePath: TASK_FILE, start: 0 },
+    data: { id: 'buy-milk', filePath: TASK_FILE, start: 0, text: 'Buy milk' },
   });
 
   expect(fileContent.readText(TASK_FILE)).toBe('* TODO [#A] Buy milk\n');

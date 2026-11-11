@@ -13,8 +13,12 @@ export const writeSessionClock = async (
   session: ActiveSession,
   endedAt: Date,
 ): Promise<ClockWriteResult> => {
-  const result = await applyAgendaFileMutation(api, session.filePath, (content) =>
-    appendClock(content, session.taskStart, new Date(session.segmentStartedAt), endedAt),
+  const result = await applyAgendaFileMutation(
+    api,
+    session.filePath,
+    (content) =>
+      appendClock(content, session.taskStart, new Date(session.segmentStartedAt), endedAt),
+    { targetTask: { start: session.taskStart, text: session.taskText } },
   );
   if (!result.wasWritten) return { wasWritten: false, insertion: null };
   return {

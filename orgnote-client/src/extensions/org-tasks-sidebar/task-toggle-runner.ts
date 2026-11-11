@@ -1,6 +1,7 @@
-import type { FileContent, FileTaskKind } from 'orgnote-api';
+import type { FileContent, FileTask, FileTaskKind } from 'orgnote-api';
 import { to } from 'orgnote-api/utils';
 import { updateFileText } from 'src/utils/update-file-text';
+import { isTaskLineAt } from 'src/utils/is-task-line-at';
 import { reporter } from 'src/boot/report';
 import { toggleTaskInContent } from './task-toggle';
 import type { TaskTreeNode } from './task-tree';
@@ -17,11 +18,18 @@ export interface ToggleableTaskNode extends TaskTreeNode {
 interface TaskToggleRunnerDeps {
   fileContent: FileContentStore;
   loadTasks: () => Promise<void>;
+  predict?: (taskId: string, patch: Partial<FileTask>) => () => void;
 }
+
+const TASK_MOVED_WARNING = 'Task changed before it could be toggled';
 
 const toggleTask =
   (node: ToggleableTaskNode) =>
   (content: string): string => {
+    if (!isTaskLineAt(content, node.start, node.label)) {
+      reporter.reportWarning(TASK_MOVED_WARNING);
+      return content;
+    }
     const nextContent = toggleTaskInContent(content, {
       taskKind: node.taskKind,
       start: node.start,
@@ -48,10 +56,14 @@ const persistToggledTask = async (
 };
 
 export const createTaskToggleRunner = (deps: TaskToggleRunnerDeps) => {
+  const predictToggle = (node: ToggleableTaskNode): (() => void) | undefined =>
+    deps.predict?.(node.id, { state: node.taskState === 'done' ? 'todo' : 'done' });
+
   const run = async (node: ToggleableTaskNode): Promise<void> => {
+    const releasePrediction = predictToggle(node);
     const isPersisted = await persistToggledTask(deps.fileContent, node);
-    if (!isPersisted) return;
-    await deps.loadTasks();
+    if (isPersisted) await deps.loadTasks();
+    releasePrediction?.();
   };
 
   return { run };

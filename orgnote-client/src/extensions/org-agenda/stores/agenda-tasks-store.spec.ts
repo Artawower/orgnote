@@ -126,3 +126,22 @@ test('loadFiles makes agenda tasks searchable through the task index', async () 
 
   expect(store.searchTaskIds('quarter')).toEqual(['/agenda/work.org\u0000task-1']);
 });
+
+test('agenda tasks store shows a predicted task state until the prediction is released', async () => {
+  mockGetAll.mockResolvedValue([
+    {
+      id: 'work',
+      filePath: ['work.org'],
+      tasks: [{ id: 'report', kind: 'headline-todo', state: 'todo', text: 'report', start: 0 }],
+    },
+  ]);
+  const store = useAgendaTasksStore();
+  await store.ensureLoaded();
+
+  const release = store.predictTask('report', { state: 'done' });
+  const predictedState = store.allFiles[0]?.tasks?.[0]?.state;
+  release();
+
+  expect(predictedState).toBe('done');
+  expect(store.allFiles[0]?.tasks?.[0]?.state).toBe('todo');
+});

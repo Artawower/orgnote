@@ -1,7 +1,5 @@
 import type { Command, CommandHandlerParams, OrgNoteApi } from 'orgnote-api';
-import { to } from 'orgnote-api/utils';
-import { updateFileText } from 'src/utils/update-file-text';
-import { reporter } from 'src/boot/report';
+import { applyAgendaFileMutation } from '../services/apply-agenda-file-mutation';
 import { AGENDA_TASK_DELETE_COMMAND } from '../constants';
 import { isAgendaTaskView } from '../utils/is-agenda-task-view';
 
@@ -9,10 +7,12 @@ const handleDeleteTask = async (api: OrgNoteApi, params: CommandHandlerParams): 
   if (!isAgendaTaskView(params.data)) return;
   const task = params.data;
   const { deleteTask } = await import('../mutations/delete-task');
-  const result = await to(updateFileText)(api.core.useFileContent(), task.filePath, (content) =>
-    deleteTask(content, task.start ?? 0),
+  await applyAgendaFileMutation(
+    api,
+    task.filePath,
+    (content) => deleteTask(content, task.start ?? 0),
+    { targetTask: task },
   );
-  if (result.isErr()) reporter.reportError(result.error);
 };
 
 export const deleteTaskCommand: Command = {

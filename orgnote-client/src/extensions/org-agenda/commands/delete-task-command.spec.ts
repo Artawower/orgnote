@@ -13,7 +13,7 @@ test('deleteTaskCommand removes the task through an atomic file update', async (
 
   await deleteTaskCommand.handler(api, {
     meta: deleteTaskCommand,
-    data: { id: 'buy-milk', filePath: TASK_FILE, start: 0 },
+    data: { id: 'buy-milk', filePath: TASK_FILE, start: 0, text: 'Buy milk' },
   });
 
   expect(fileContent.readText(TASK_FILE)).toBe('* TODO Walk dog\n');
