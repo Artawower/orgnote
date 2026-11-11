@@ -1,6 +1,6 @@
 import { beforeEach, expect, test, vi } from 'vitest';
 import { createPinia, setActivePinia } from 'pinia';
-import { nextTick, ref } from 'vue';
+import { computed, nextTick, ref } from 'vue';
 import { createAtomicFileContent } from '../../../../test/mocks/atomic-file-content';
 
 let fileContent = createAtomicFileContent({});
@@ -145,3 +145,22 @@ test('agenda tasks store shows a predicted task state until the prediction is re
   expect(predictedState).toBe('done');
   expect(store.allFiles[0]?.tasks?.[0]?.state).toBe('todo');
 });
+
+test('agenda search results follow reloaded task ids', async () => {
+  const createWorkFile = (taskId: string) => ({
+    id: 'work',
+    filePath: ['work.org'],
+    title: 'Work',
+    tasks: [{ id: taskId, kind: 'headline-todo', state: 'todo', text: 'Prepare review' }],
+  });
+  mockGetAll.mockResolvedValueOnce([createWorkFile('before')]).mockResolvedValue([createWorkFile('after')]);
+  const store = useAgendaTasksStore();
+  await store.loadFiles();
+  const matchingTaskIds = computed(() => store.searchTaskIds('review'));
+  expect(matchingTaskIds.value).toEqual(['/work.org\u0000before']);
+
+  await store.loadFiles(true);
+
+  expect(matchingTaskIds.value).toEqual(['/work.org\u0000after']);
+});
+

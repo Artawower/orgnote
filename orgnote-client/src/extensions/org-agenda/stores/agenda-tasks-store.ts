@@ -85,7 +85,11 @@ export const useAgendaTasksStore = defineStore('agendaTasks', () => {
   const taskPredictions = createTaskPredictions();
   const allFiles = computed(() => taskPredictions.apply(persistedFiles.value));
   const loading = ref(false);
-  const taskSearchIndex = createAgendaTaskSearchIndex();
+  const taskSearchIndex = computed(() => {
+    const index = createAgendaTaskSearchIndex();
+    index.replace(buildSearchEntries(persistedFiles.value));
+    return index;
+  });
   let initialLoad: Promise<void> | undefined;
   let watchersAttached = false;
 
@@ -108,10 +112,9 @@ export const useAgendaTasksStore = defineStore('agendaTasks', () => {
       return;
     }
     persistedFiles.value = result.value;
-    taskSearchIndex.replace(buildSearchEntries(result.value));
   };
 
-  const searchTaskIds = (query: string): string[] => taskSearchIndex.search(query);
+  const searchTaskIds = (query: string): string[] => taskSearchIndex.value.search(query);
 
   const attachWatchersOnce = (): void => {
     if (watchersAttached) return;

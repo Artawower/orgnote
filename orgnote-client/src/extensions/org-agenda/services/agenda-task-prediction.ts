@@ -18,7 +18,13 @@ const predictRepeatingToggle = (task: AgendaTaskView): Partial<FileTask> => {
   };
 };
 
+const predictCompletion = (task: AgendaTaskView): Partial<FileTask> => ({
+  state: 'done',
+  doneDates: [...(task.doneDates ?? []), toDayKey(task.viewDate)],
+});
+
 export const predictAgendaToggle = (task: AgendaTaskView): Partial<FileTask> => {
   if (hasRepeater(task)) return predictRepeatingToggle(task);
-  return { state: task.state === 'done' ? 'todo' : 'done' };
+  if (task.state === 'done') return { state: 'todo' };
+  return predictCompletion(task);
 };
