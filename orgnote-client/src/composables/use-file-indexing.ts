@@ -8,6 +8,7 @@ import {
   type DiskFile,
   type FileSystemChange,
 } from 'orgnote-api';
+import { to } from 'orgnote-api/utils';
 import { repositories } from 'src/boot/repositories';
 import { reporter } from 'src/boot/report';
 import { useCommandsStore } from 'src/stores/command';
@@ -27,7 +28,6 @@ export const useFileIndexing = (pinia: Pinia): void => {
   const fileSystemManager = useFileSystemManagerStore(pinia);
   const fileWatcher = useFileWatcherStore(pinia);
   const pendingChanges: FileSystemChange[] = [];
-  const { isIndexing } = storeToRefs(fileSearch);
   const { fsMounted } = storeToRefs(fileSystemManager);
   const { isWatching } = storeToRefs(fileWatcher);
 
@@ -99,16 +99,24 @@ export const useFileIndexing = (pinia: Pinia): void => {
     await fileSearch.processFile(change.path);
   };
 
+  let hasDrainedCurrentRun = false;
+
   const flushPendingChanges = async (): Promise<void> => {
     const change = pendingChanges.shift();
-    if (!change) return;
-    await processFileChange(change);
+    if (!change) {
+      hasDrainedCurrentRun = true;
+      return;
+    }
+    const result = await to(processFileChange)(change);
+    if (result.isErr()) reportIndexingError(result.error, 'Failed to process pending file changes');
     await flushPendingChanges();
   };
 
+  const shouldBufferChange = (): boolean => fileSearch.isIndexing && !hasDrainedCurrentRun;
+
   const handleFileChange = async (change: FileSystemChange): Promise<void> => {
     if (!affectsOrgIndex(change)) return;
-    if (fileSearch.isIndexing) {
+    if (shouldBufferChange()) {
       pendingChanges.push(change);
       return;
     }
@@ -119,12 +127,15 @@ export const useFileIndexing = (pinia: Pinia): void => {
     fileWatcher.watch('/', handleFileChange, { recursive: true });
   };
 
-  watch(isIndexing, (isCurrentlyIndexing) => {
-    if (isCurrentlyIndexing) return;
-    void flushPendingChanges().catch((error: unknown) => {
-      reportIndexingError(error, 'Failed to process pending file changes');
-    });
-  });
+  fileSearch.beforeIndexingSettled(flushPendingChanges);
+
+  watch(
+    () => fileSearch.isIndexing,
+    (isIndexingNow) => {
+      if (isIndexingNow) hasDrainedCurrentRun = false;
+    },
+    { flush: 'sync' },
+  );
 
   watch(
     fsMounted,

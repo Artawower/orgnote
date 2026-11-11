@@ -1181,3 +1181,47 @@ test('loadIndex restores search without reading file contents', async () => {
   const results = await freshStore.search('Guide');
   expect(results.length).toBeGreaterThan(0);
 });
+
+test('indexFiles stays active until changes deferred during indexing are processed', async () => {
+  const store = useFileSearchStore();
+  mockDirEntries.set('/', []);
+  let releaseDeferredChanges: () => void = () => undefined;
+  const deferredChanges = new Promise<void>((resolve) => {
+    releaseDeferredChanges = resolve;
+  });
+  store.beforeIndexingSettled(() => deferredChanges);
+
+  const indexing = store.indexFiles();
+  await new Promise((resolve) => setTimeout(resolve, 10));
+  const isIndexingWhileDeferred = store.isIndexing;
+  releaseDeferredChanges();
+  await indexing;
+
+  expect(isIndexingWhileDeferred).toBe(true);
+  expect(store.isIndexing).toBe(false);
+});
+
+test('indexFiles settles even when a settle hook throws synchronously', async () => {
+  const store = useFileSearchStore();
+  mockDirEntries.set('/', []);
+  const laterHook = vi.fn(async () => undefined);
+  store.beforeIndexingSettled(() => {
+    throw new Error('hook failed');
+  });
+  store.beforeIndexingSettled(laterHook);
+
+  await store.indexFiles();
+
+  expect(store.isIndexing).toBe(false);
+  expect(laterHook).toHaveBeenCalledOnce();
+});
+
+test('indexFiles settles when a settle hook rejects', async () => {
+  const store = useFileSearchStore();
+  mockDirEntries.set('/', []);
+  store.beforeIndexingSettled(() => Promise.reject(new Error('hook failed')));
+
+  await store.indexFiles();
+
+  expect(store.isIndexing).toBe(false);
+});

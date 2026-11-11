@@ -109,6 +109,7 @@ import {
 } from './task-tree';
 import { isOrgTaskRelatedChange } from './refresh-trigger';
 import { createTaskToggleRunner, type ToggleableTaskNode } from './task-toggle-runner';
+import { createTasksLoader } from './tasks-loader';
 import { useI18n } from 'vue-i18n';
 
 interface UpdatedAtFilterOption {
@@ -118,7 +119,6 @@ interface UpdatedAtFilterOption {
 
 const fileWatchDebounceMs = 350;
 
-const loading = ref(false);
 const selectedId = ref<string | number>();
 const nodes = ref<TaskTreeNode[]>([]);
 const filesWithTasks = ref<FileMeta[]>([]);
@@ -139,14 +139,20 @@ const { t } = useI18n();
 const togglingTaskIds = ref<Set<string>>(new Set());
 
 let stopFileWatch: (() => void) | undefined;
+const { isInitialLoading, load: loadTasks } = createTasksLoader(
+  () => fileMeta.getAll(),
+  (files) => {
+    filesWithTasks.value = files;
+    rebuildTree();
+  },
+);
 const taskToggleRunner = createTaskToggleRunner({
   fileContent,
-  fileSearch,
   loadTasks,
 });
 
 const showTree = computed(() => nodes.value.length > 0);
-const showEmptyState = computed(() => !loading.value && nodes.value.length === 0);
+const showEmptyState = computed(() => !isInitialLoading.value && nodes.value.length === 0);
 const updatedAtFilterOptions = computed<UpdatedAtFilterOption[]>(() => {
   return [
     { value: 'all', label: t(extensionI18nKeys.orgTasksSidebarUpdatedAtFilterAll) },
@@ -217,21 +223,8 @@ const isTaskToggleDisabled = (node: TaskTreeNode): boolean => {
   if (!isToggleableTaskNode(node)) {
     return true;
   }
-  return loading.value || togglingTaskIds.value.has(node.id);
+  return isInitialLoading.value || togglingTaskIds.value.has(node.id);
 };
-
-async function loadTasks(): Promise<void> {
-  loading.value = true;
-  const result = await to(() => fileMeta.getAll())();
-  if (result.isErr()) {
-    reporter.reportError(new Error('Failed to load tasks', { cause: result.error }));
-    loading.value = false;
-    return;
-  }
-  filesWithTasks.value = result.value;
-  rebuildTree();
-  loading.value = false;
-}
 
 const scheduleReloadTasks = debounce(() => {
   if (!opened.value) {

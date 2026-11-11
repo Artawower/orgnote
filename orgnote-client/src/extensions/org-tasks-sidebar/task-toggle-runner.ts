@@ -7,10 +7,6 @@ import type { TaskTreeNode } from './task-tree';
 
 type FileContentStore = Pick<FileContent, 'update'>;
 
-type FileSearchStore = {
-  processFile: (filePath: string) => Promise<void>;
-};
-
 export interface ToggleableTaskNode extends TaskTreeNode {
   kind: 'task';
   filePath: string;
@@ -20,7 +16,6 @@ export interface ToggleableTaskNode extends TaskTreeNode {
 
 interface TaskToggleRunnerDeps {
   fileContent: FileContentStore;
-  fileSearch: FileSearchStore;
   loadTasks: () => Promise<void>;
 }
 
@@ -52,26 +47,11 @@ const persistToggledTask = async (
   return updateResult.value;
 };
 
-const refreshTasksAfterUpdate = async (
-  fileSearch: FileSearchStore,
-  loadTasks: () => Promise<void>,
-  filePath: string,
-): Promise<void> => {
-  const refreshResult = await to(fileSearch.processFile, 'Failed to refresh task index')(filePath);
-
-  if (refreshResult.isErr()) {
-    reporter.reportError(refreshResult.error);
-    return;
-  }
-
-  await loadTasks();
-};
-
 export const createTaskToggleRunner = (deps: TaskToggleRunnerDeps) => {
   const run = async (node: ToggleableTaskNode): Promise<void> => {
     const isPersisted = await persistToggledTask(deps.fileContent, node);
     if (!isPersisted) return;
-    await refreshTasksAfterUpdate(deps.fileSearch, deps.loadTasks, node.filePath);
+    await deps.loadTasks();
   };
 
   return { run };

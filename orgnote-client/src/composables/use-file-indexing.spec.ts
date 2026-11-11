@@ -10,12 +10,17 @@ const processFile = vi.fn(async () => {});
 const removeFile = vi.fn(async () => {});
 const reportError = vi.fn();
 let watchedCallback: ((change: { path: string; type: 'modify' }) => Promise<void>) | undefined;
+let settleHook: (() => Promise<void>) | undefined;
 let scope: EffectScope;
 
 const fileSearchStore = reactive({
   isIndexing,
   processFile,
   removeFile,
+  beforeIndexingSettled: (hook: () => Promise<void>) => {
+    settleHook = hook;
+    return () => undefined;
+  },
 });
 
 vi.mock('src/stores/command', () => ({
@@ -56,6 +61,7 @@ beforeEach(() => {
   isIndexing.value = false;
   isWatching.value = false;
   watchedCallback = undefined;
+  settleHook = undefined;
   execute.mockReset();
   execute.mockResolvedValue(undefined);
   processFile.mockReset();
@@ -81,21 +87,6 @@ test('useFileIndexing initializes after every filesystem mount', async () => {
   expect(execute).toHaveBeenCalledTimes(2);
 });
 
-test('useFileIndexing processes buffered changes when indexing completes', async () => {
-  fsMounted.value = true;
-  isIndexing.value = true;
-  isWatching.value = true;
-  startFileIndexing();
-
-  await watchedCallback?.({ type: 'modify', path: '/notes/pending.org' });
-  expect(processFile).not.toHaveBeenCalled();
-
-  isIndexing.value = false;
-  await nextTick();
-
-  expect(processFile).toHaveBeenCalledWith('/notes/pending.org');
-});
-
 test('useFileIndexing discards buffered changes after filesystem unmount', async () => {
   fsMounted.value = true;
   isIndexing.value = true;
@@ -107,8 +98,7 @@ test('useFileIndexing discards buffered changes after filesystem unmount', async
 
   fsMounted.value = false;
   await nextTick();
-  isIndexing.value = false;
-  await nextTick();
+  await settleHook?.();
 
   expect(processFile).not.toHaveBeenCalled();
 });
@@ -134,7 +124,46 @@ test('useFileIndexing reports buffered change failures', async () => {
   startFileIndexing();
 
   await watchedCallback?.({ type: 'modify', path: '/notes/pending.org' });
+  await settleHook?.();
+
+  expect(reportError).toHaveBeenCalledWith(processingError);
+});
+
+test('useFileIndexing processes buffered changes before indexing settles', async () => {
+  fsMounted.value = true;
+  isIndexing.value = true;
+  isWatching.value = true;
+  startFileIndexing();
+
+  await watchedCallback?.({ type: 'modify', path: '/notes/pending.org' });
+  await settleHook?.();
+
+  expect(processFile).toHaveBeenCalledWith('/notes/pending.org');
+});
+
+test('useFileIndexing processes a change that arrives after the drain while indexing is still settling', async () => {
+  fsMounted.value = true;
+  isIndexing.value = true;
+  isWatching.value = true;
+  startFileIndexing();
+
+  await watchedCallback?.({ type: 'modify', path: '/notes/pending.org' });
+  await settleHook?.();
+  await watchedCallback?.({ type: 'modify', path: '/notes/late.org' });
+
+  expect(processFile).toHaveBeenCalledWith('/notes/late.org');
+});
+
+test('useFileIndexing buffers changes again when the next indexing run starts', async () => {
+  fsMounted.value = true;
+  isIndexing.value = true;
+  isWatching.value = true;
+  startFileIndexing();
+  await settleHook?.();
   isIndexing.value = false;
-  await nextTick();
-  await vi.waitFor(() => expect(reportError).toHaveBeenCalledWith(processingError));
+
+  isIndexing.value = true;
+  await watchedCallback?.({ type: 'modify', path: '/notes/next-run.org' });
+
+  expect(processFile).not.toHaveBeenCalledWith('/notes/next-run.org');
 });

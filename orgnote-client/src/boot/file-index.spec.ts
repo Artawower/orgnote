@@ -101,6 +101,7 @@ vi.mock('src/stores/file-search', () => ({
     isIndexing: searchState.isIndexing,
     processFile: searchState.processFile,
     removeFile: searchState.removeFile,
+    beforeIndexingSettled: vi.fn(() => () => undefined),
   })),
 }));
 

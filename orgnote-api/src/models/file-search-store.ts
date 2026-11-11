@@ -27,6 +27,7 @@ export interface FileSearchStore {
 
   indexFile(filePath: string): Promise<void>;
   indexFiles(): Promise<void>;
+  beforeIndexingSettled(hook: () => Promise<void>): () => void;
   processFile(filePath: string): Promise<void>;
   removeFile(target: { id: string } | { path: string[] }): Promise<void>;
 

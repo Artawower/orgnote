@@ -149,9 +149,26 @@ export const useFileSearchStore = defineStorageBoundStore<'fileSearch', FileSear
     await repositories.fileRepository.delete(id);
   };
 
+  const settleHooks = new Set<() => Promise<void>>();
+
+  const beforeIndexingSettled = (hook: () => Promise<void>): (() => void) => {
+    settleHooks.add(hook);
+    return () => settleHooks.delete(hook);
+  };
+
+  const runSettleHooks = async (): Promise<void> => {
+    const results = await Promise.allSettled(
+      [...settleHooks].map((hook) => Promise.resolve().then(hook)),
+    );
+    results
+      .filter((result): result is PromiseRejectedResult => result.status === 'rejected')
+      .forEach((result) => logger.error('Indexing settle hook failed', { error: result.reason }));
+  };
+
   const indexFiles = async (): Promise<void> => {
     isIndexing.value = true;
     const result = await to(scanner.scanAllFilesUntilQueueDrain)();
+    await runSettleHooks();
     isIndexing.value = false;
     processedCount = 0;
     if (result.isErr() && result.error.name !== 'AbortError') {
@@ -167,6 +184,7 @@ export const useFileSearchStore = defineStorageBoundStore<'fileSearch', FileSear
     search,
     indexFile: scanner.indexFile,
     indexFiles,
+    beforeIndexingSettled,
     processFile,
     removeFile,
     loadIndex: searchIndex.load,
