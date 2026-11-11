@@ -14,7 +14,7 @@
         "diff-match-patch": "^1.0.5",
         "neverthrow": "^8.2.0",
         "openpgp": "6.3.0",
-        "org-mode-ast": "0.13.5",
+        "org-mode-ast": "0.13.6",
         "partysocket": "1.1.6",
         "picomatch": "4.0.4",
         "smol-toml": "1.5.2",
@@ -148,7 +148,7 @@
         "medium-zoom": "1.1.0",
         "neverthrow": "8.2.0",
         "notiwind": "2.1.0",
-        "org-mode-ast": "0.13.5",
+        "org-mode-ast": "0.13.6",
         "orgnote-api": "workspace:*",
         "partysocket": "1.1.6",
         "pinia": "3.0.2",
@@ -2880,7 +2880,7 @@
 
     "ora": ["ora@5.4.1", "", { "dependencies": { "bl": "^4.1.0", "chalk": "^4.1.0", "cli-cursor": "^3.1.0", "cli-spinners": "^2.5.0", "is-interactive": "^1.0.0", "is-unicode-supported": "^0.1.0", "log-symbols": "^4.1.0", "strip-ansi": "^6.0.0", "wcwidth": "^1.0.1" } }, "sha512-5b6Y85tPxZZ7QytO+BQzysW31HJku27cRIlkbAXaNx+BdcVi+LlRFmVXzeF6a7JCwJpyw5c4b+YSVImQIrBpuQ=="],
 
-    "org-mode-ast": ["org-mode-ast@0.13.5", "", {}, "sha512-6mo3Q+LT5FpPMQX4o4jaG256mBV82Asl7mHdl2KKssPiaLBhWkYdzOOhSQ7qRETYXyZDgmadQcg8znDdraLpGQ=="],
+    "org-mode-ast": ["org-mode-ast@0.13.6", "", {}, "sha512-GLRCe71D82JM4YIhVfz1FZN7OhAsLPvU8Og3Y5/NrJHNTmO1mNb7GCEHE16Vzesme18LPtVrt1xGOWfesRKRlw=="],
 
     "orgnote-api": ["orgnote-api@workspace:orgnote-api"],
 

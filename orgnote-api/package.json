@@ -51,7 +51,7 @@
     "diff-match-patch": "^1.0.5",
     "neverthrow": "^8.2.0",
     "openpgp": "6.3.0",
-    "org-mode-ast": "0.13.5",
+    "org-mode-ast": "0.13.6",
     "partysocket": "1.1.6",
     "picomatch": "4.0.4",
     "smol-toml": "1.5.2"
