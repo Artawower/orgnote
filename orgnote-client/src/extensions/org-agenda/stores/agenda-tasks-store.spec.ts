@@ -1,10 +1,9 @@
 import { beforeEach, expect, test, vi } from 'vitest';
 import { createPinia, setActivePinia } from 'pinia';
 import { nextTick, ref } from 'vue';
-import { ErrorFileNotFound } from 'orgnote-api';
+import { createAtomicFileContent } from '../../../../test/mocks/atomic-file-content';
 
-const mockRead = vi.fn();
-const mockWrite = vi.fn();
+let fileContent = createAtomicFileContent({});
 const mockReportError = vi.fn();
 const mockGetAll = vi.fn();
 const mockIsIndexing = ref(false);
@@ -13,7 +12,7 @@ const mockGetExtensionConfig = vi.fn(() => ({ value: {} }));
 vi.mock('src/boot/api', () => ({
   api: {
     core: {
-      useFileContent: () => ({ read: mockRead, write: mockWrite }),
+      useFileContent: () => fileContent,
       useFileMeta: () => ({ getAll: mockGetAll }),
       useExtensions: () => ({ getExtensionConfig: mockGetExtensionConfig }),
       useFileWatcher: () => ({ watch: vi.fn() }),
@@ -37,36 +36,21 @@ beforeEach(() => {
   vi.clearAllMocks();
   mockGetAll.mockResolvedValue([]);
   mockIsIndexing.value = false;
-  mockWrite.mockResolvedValue(undefined);
+  fileContent = createAtomicFileContent({});
 });
 
-test('createTaskInFile_treatsFileNotFound_asEmptyFile', async () => {
-  mockRead.mockRejectedValue(new ErrorFileNotFound('/inbox.org'));
+test('createTaskInFile_missingInbox_createsItThroughAtomicUpdate', async () => {
   const store = useAgendaTasksStore();
 
   const ok = await store.createTaskInFile({ title: 'New task' });
 
   expect(ok).toBe(true);
-  expect(mockWrite).toHaveBeenCalledOnce();
-  const [, content] = mockWrite.mock.calls[0] as [string, Uint8Array];
-  const text = new TextDecoder().decode(content);
-  expect(text).toContain('* TODO New task');
+  expect(fileContent.update).toHaveBeenCalledOnce();
+  expect(fileContent.readText('/inbox.org')).toContain('* TODO New task');
 });
 
-test('createTaskInFile_abortsWrite_whenReadFailsWithUnknownError', async () => {
-  mockRead.mockRejectedValue(new Error('Permission denied'));
-  const store = useAgendaTasksStore();
-
-  const ok = await store.createTaskInFile({ title: 'New task' });
-
-  expect(ok).toBe(false);
-  expect(mockWrite).not.toHaveBeenCalled();
-  expect(mockReportError).toHaveBeenCalledOnce();
-});
-
-test('createTaskInFile_returnsFalse_whenWriteFails', async () => {
-  mockRead.mockRejectedValue(new ErrorFileNotFound('/inbox.org'));
-  mockWrite.mockRejectedValue(new Error('Disk full'));
+test('createTaskInFile_returnsFalse_whenUpdateFails', async () => {
+  fileContent.update.mockRejectedValueOnce(new Error('Disk full'));
   const store = useAgendaTasksStore();
 
   const ok = await store.createTaskInFile({ title: 'New task' });

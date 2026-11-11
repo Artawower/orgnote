@@ -10,7 +10,7 @@ vi.mock('src/boot/report', () => ({
 const mockRead = vi.fn();
 const mockWrite = vi.fn();
 
-const fileContent = { read: mockRead, write: mockWrite };
+const fileContent = { read: mockRead, write: mockWrite, update: vi.fn() };
 
 const { ensureFileExists } = await import('./ensure-file-exists');
 

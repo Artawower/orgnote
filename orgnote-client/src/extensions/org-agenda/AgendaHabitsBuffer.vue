@@ -45,7 +45,6 @@
 <script lang="ts" setup>
 import { useI18n } from 'vue-i18n';
 
-import { textToUint8Array, to, uint8ArrayToText } from 'orgnote-api/utils';
 import AppBufferContent from 'src/components/AppBufferContent.vue';
 import ContainerLayout from 'src/components/ContainerLayout.vue';
 import AppFlex from 'src/components/AppFlex.vue';
@@ -53,7 +52,7 @@ import CardWrapper from 'src/components/CardWrapper.vue';
 import LoadingDots from 'src/components/LoadingDots.vue';
 import EmptyState from 'src/components/EmptyState.vue';
 import { api } from 'src/boot/api';
-import { reporter } from 'src/boot/report';
+import { applyAgendaFileMutation } from './services/apply-agenda-file-mutation';
 import { extensionI18nKeys as i18nKeys } from 'src/constants/extension-i18n-keys';
 import AgendaHabitWeekStrip from './components/AgendaHabitWeekStrip.vue';
 import AgendaHabitRow from './components/AgendaHabitRow.vue';
@@ -73,49 +72,11 @@ const { t } = useI18n({ useScope: 'global', inheritLocale: true });
 const { loading, habits, weekDays, selectedDate, selectDay } = useHabits();
 const { agendaConfig, knownOrgFiles, quickAddLoading, resolvedInboxPath, submitQuickAdd } =
   useAgendaQuickAddSubmit({ toastKey: i18nKeys.orgAgendaQuickAddHabitToastAdded });
-const fileContent = api.core.useFileContent();
-const fileLocks = new Map<string, Promise<void>>();
-
-const runHabitMutation = async (
-  habit: AgendaHabitView,
-  mutation: (content: string) => string,
-): Promise<void> => {
-  const readResult = await to(fileContent.read, 'Failed to read habit file')(habit.filePath);
-  if (readResult.isErr()) {
-    reporter.reportError(readResult.error);
-    return;
-  }
-
-  const currentContent = uint8ArrayToText(readResult.value);
-  const mutationResult = to(mutation, 'Failed to apply habit mutation')(currentContent);
-  if (mutationResult.isErr()) {
-    reporter.reportError(mutationResult.error);
-    return;
-  }
-
-  const nextContent = mutationResult.value;
-  if (nextContent === currentContent) return;
-  const writeResult = await to(fileContent.write, 'Failed to write habit file')(
-    habit.filePath,
-    textToUint8Array(nextContent),
-  );
-  if (writeResult.isErr()) reporter.reportError(writeResult.error);
-};
-
 const applyHabitMutation = async (
   habit: AgendaHabitView,
   mutation: (content: string) => string,
 ): Promise<void> => {
-  const previous = fileLocks.get(habit.filePath) ?? Promise.resolve();
-  const next = previous.then(() => runHabitMutation(habit, mutation));
-  fileLocks.set(
-    habit.filePath,
-    next.then(
-      () => undefined,
-      () => undefined,
-    ),
-  );
-  await next;
+  await applyAgendaFileMutation(api, habit.filePath, mutation);
 };
 
 const editHabitTitle = (habit: AgendaHabitView, title: string): Promise<void> => {

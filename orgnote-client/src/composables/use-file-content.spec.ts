@@ -29,6 +29,15 @@ const mockFileSystem = {
     }
     await mockWriteFile(path, content, 'binary');
   },
+  updateFile: async (
+    path: string,
+    transform: (content: Uint8Array) => Promise<Uint8Array | undefined>,
+  ): Promise<boolean> => {
+    const nextContent = await transform(await mockReadFile(path, 'binary'));
+    if (!nextContent) return false;
+    await mockWriteFile(path, nextContent, 'binary');
+    return true;
+  },
 };
 
 vi.mock('src/boot/api', () => ({
@@ -180,4 +189,28 @@ test('write throws EncryptionConfigRequiredError for gpg file when encryption di
   await expect(fileContent.write('/notes/secret.org.gpg', content)).rejects.toThrow(
     EncryptionConfigRequiredError,
   );
+});
+
+test('useFileContent update transforms decrypted content and writes it encrypted', async () => {
+  mockReadFile.mockResolvedValue(new TextEncoder().encode('armored'));
+  const transform = vi.fn((content: Uint8Array) =>
+    new TextEncoder().encode(`${new TextDecoder().decode(content)} :urgent:`),
+  );
+
+  const isWritten = await useFileContent().update('/notes/work.org.gpg', transform);
+
+  expect(isWritten).toBe(true);
+  expect(new TextDecoder().decode(transform.mock.calls[0]![0])).toBe('decrypted content');
+  expect(mockEncrypt).toHaveBeenCalledWith('decrypted content :urgent:');
+  expect(new TextDecoder().decode(mockWriteFile.mock.calls[0]![1])).toBe('encrypted content');
+});
+
+test('useFileContent update skips writing when the transform returns nothing', async () => {
+  mockReadFile.mockResolvedValue(new TextEncoder().encode('* TODO task'));
+
+  const isWritten = await useFileContent().update('/notes/work.org', () => undefined);
+
+  expect(isWritten).toBe(false);
+  expect(mockWriteFile).not.toHaveBeenCalled();
+  expect(mockEncrypt).not.toHaveBeenCalled();
 });

@@ -1,5 +1,11 @@
 import { defineStore } from 'pinia';
-import type { FileSystemStore, DiskFile } from 'orgnote-api';
+import type {
+  FileSystemStore,
+  DiskFile,
+  FileSystemChange,
+  FileSystem,
+  FileSystemSession,
+} from 'orgnote-api';
 import {
   ErrorFileNotFound,
   ORGNOTE_EXTENSION_RUNTIME_ROOT_PATH,
@@ -21,13 +27,20 @@ import { reporter } from 'src/boot/report';
 import { to } from 'orgnote-api/utils';
 import { isNullable } from 'orgnote-api/utils';
 import { isPathInsideRoot } from 'src/utils/is-path-inside-root';
+import {
+  runExclusiveForFile,
+  runExclusiveForTrees,
+} from 'src/infrastructure/file-systems/file-lock';
+import { FileSystemChangedError } from 'src/infrastructure/file-systems/file-system-changed-error';
 
 const EXTENSION_RUNTIME_ROOT = `/${ORGNOTE_EXTENSION_RUNTIME_ROOT_PATH}`;
+const VAULT_ROOT = '/';
 
 export const useFileSystemStore = defineStore<'file-system', FileSystemStore>(
   'file-system',
   () => {
-    const { currentFs, currentFsInfo } = storeToRefs(useFileSystemManagerStore());
+    const fsManager = useFileSystemManagerStore();
+    const { currentFs, currentFsInfo, currentSession } = storeToRefs(fsManager);
     const fileWatcher = useFileWatcherStore();
 
     const safeFs = computed(() => {
@@ -87,21 +100,69 @@ export const useFileSystemStore = defineStore<'file-system', FileSystemStore>(
       return await safeFs.value.readFile(normalizedPath, encoding);
     };
 
+    type FileSystemTarget = { fs: FileSystem; session?: FileSystemSession };
+
+    const captureFileSystemTarget = (): FileSystemTarget => ({
+      fs: safeFs.value,
+      session: currentSession.value ?? undefined,
+    });
+
+    const assertCurrentTarget = (target: FileSystemTarget, path: string): FileSystem => {
+      const isSameTarget =
+        currentFs.value === target.fs && currentSession.value?.id === target.session?.id;
+      if (!isSameTarget) throw new FileSystemChangedError(path);
+      return target.fs;
+    };
+
+    const runOnTarget = async <T>(
+      target: FileSystemTarget,
+      path: string,
+      operation: (fs: FileSystem) => Promise<T>,
+    ): Promise<T> => {
+      const fs = assertCurrentTarget(target, path);
+      if (!target.session) return operation(fs);
+      const outcome = await fsManager.runWithMountedFileSystem(target.session, async (mountedFs) => ({
+        value: await operation(mountedFs),
+      }));
+      if (!outcome) throw new FileSystemChangedError(path);
+      return outcome.value;
+    };
+
+    const writeWith = async (
+      fs: FileSystem,
+      realPath: string,
+      content: string | Uint8Array,
+    ): Promise<FileSystemChange | undefined> => {
+      const isEncrypted = isOrgGpgFile(realPath);
+      const format = isEncrypted || content instanceof Uint8Array ? 'binary' : 'utf8';
+      await fs.writeFile(realPath, content, format);
+      if (isPathInsideRoot(realPath, EXTENSION_RUNTIME_ROOT)) return;
+      const info = await fs.fileInfo(realPath);
+      return { path: realPath, type: 'modify', mtime: info?.mtime };
+    };
+
+    const writeContent = (
+      realPath: string,
+      content: string | Uint8Array,
+      target: FileSystemTarget,
+    ): Promise<FileSystemChange | undefined> =>
+      runOnTarget(target, realPath, (fs) => writeWith(fs, realPath, content));
+
+    const notifyChange = async (change: FileSystemChange | undefined): Promise<void> => {
+      if (!change) return;
+      await fileWatcher.emitChange(change);
+    };
+
     const persistFile = async (
       path: string | string[],
       content: string | Uint8Array,
     ): Promise<void> => {
       const realPath = normalizePath(path);
-      const isEncrypted = isOrgGpgFile(realPath);
-      const format = isEncrypted || content instanceof Uint8Array ? 'binary' : 'utf8';
-      await safeFs.value.writeFile(realPath, content, format);
-      if (isPathInsideRoot(realPath, EXTENSION_RUNTIME_ROOT)) return;
-      const info = await safeFs.value.fileInfo(realPath);
-      await fileWatcher.emitChange({
-        path: realPath,
-        type: 'modify',
-        mtime: info?.mtime,
-      });
+      const target = captureFileSystemTarget();
+      const change = await runExclusiveForFile(realPath, () =>
+        writeContent(realPath, content, target),
+      );
+      await notifyChange(change);
     };
 
     const syncFile = async <T extends string | Uint8Array>(
@@ -135,7 +196,10 @@ export const useFileSystemStore = defineStore<'file-system', FileSystemStore>(
     const rename = async (path: string | string[], newPath: string | string[]): Promise<void> => {
       const previousPath = normalizePath(path);
       const realPath = normalizePath(newPath);
-      await currentFs.value!.rename(previousPath, realPath);
+      const target = captureFileSystemTarget();
+      await runExclusiveForTrees([previousPath, realPath], () =>
+        runOnTarget(target, previousPath, (fs) => fs.rename(previousPath, realPath)),
+      );
       const info = await safeFs.value.fileInfo(realPath);
       await fileWatcher.emitChange({
         path: realPath,
@@ -147,13 +211,21 @@ export const useFileSystemStore = defineStore<'file-system', FileSystemStore>(
 
     const deleteFile = async (path: string | string[]) => {
       const realPath = normalizePath(path);
-      await currentFs.value!.deleteFile(realPath);
+      const target = captureFileSystemTarget();
+      await runExclusiveForTrees([realPath], () =>
+        runOnTarget(target, realPath, (fs) => fs.deleteFile(realPath)),
+      );
       await fileWatcher.emitChange({ path: realPath, type: 'delete' });
     };
 
-    const removeAllFiles = async () => {
-      await mobileOnly(async () => await currentFs.value!.rmdir('/'))();
-      return await safeFs.value.wipe?.();
+    const removeAllFiles = () => {
+      const target = captureFileSystemTarget();
+      return runExclusiveForTrees([VAULT_ROOT], () =>
+        runOnTarget(target, VAULT_ROOT, async (fs) => {
+          await mobileOnly(async () => await fs.rmdir(VAULT_ROOT))();
+          return await fs.wipe?.();
+        }),
+      );
     };
 
     const initFolderForFile = async (filePath: string | string[], isDir = false): Promise<void> => {
@@ -181,7 +253,10 @@ export const useFileSystemStore = defineStore<'file-system', FileSystemStore>(
 
     const rmdir = async (path: string | string[]): Promise<void> => {
       const realPath = normalizePath(path);
-      await safeFs.value.rmdir(realPath);
+      const target = captureFileSystemTarget();
+      await runExclusiveForTrees([realPath], () =>
+        runOnTarget(target, realPath, (fs) => fs.rmdir(realPath)),
+      );
     };
 
     const fileInfo = async (path: string | string[]): Promise<DiskFile | undefined> => {
@@ -281,17 +356,57 @@ export const useFileSystemStore = defineStore<'file-system', FileSystemStore>(
       if (Platform.is.nativeMobile) {
         return;
       }
-      await currentFs.value?.rmdir('/');
+      if (!currentFs.value) return;
+      const target = captureFileSystemTarget();
+      await runExclusiveForTrees([VAULT_ROOT], () =>
+        runOnTarget(target, VAULT_ROOT, (fs) => fs.rmdir(VAULT_ROOT)),
+      );
     };
 
     const writeFile: FileSystemStore['writeFile'] = async (path, content) => {
       await persistFile(path, content);
     };
 
+    type FileTransformResult = { isWritten: boolean; change?: FileSystemChange };
+
+    const readContentOrEmpty = async (
+      fs: FileSystem,
+      realPath: string,
+    ): Promise<Uint8Array | undefined> => {
+      const result = await to(() => fs.readFile(realPath, 'binary'))();
+      if (result.isOk()) return result.value;
+      if (result.error instanceof ErrorFileNotFound) return;
+      throw result.error;
+    };
+
+    const transformContent = (
+      realPath: string,
+      transform: (content: Uint8Array) => Promise<Uint8Array | undefined>,
+      target: FileSystemTarget,
+    ): Promise<FileTransformResult> =>
+      runOnTarget(target, realPath, async (fs) => {
+        const content = await readContentOrEmpty(fs, realPath);
+        const nextContent = await transform(content ?? new Uint8Array());
+        if (!nextContent) return { isWritten: false };
+        if (!content) await initFolderForFile(realPath);
+        return { isWritten: true, change: await writeWith(fs, realPath, nextContent) };
+      });
+
+    const updateFile: FileSystemStore['updateFile'] = async (path, transform) => {
+      const realPath = normalizePath(path);
+      const target = captureFileSystemTarget();
+      const result = await runExclusiveForFile(realPath, () =>
+        transformContent(realPath, transform, target),
+      );
+      await notifyChange(result.change);
+      return result.isWritten;
+    };
+
     const store: FileSystemStore = {
       readFile: withSafeFolderCreation(readFile),
       writeFile: withSafeFolderCreation(writeFile),
       syncFile: withSafeFolderCreation(syncFile),
+      updateFile,
       rename: withSafeFolderCreation(rename),
       deleteFile: withSafeFolderCreation(deleteFile),
       removeAllFiles,

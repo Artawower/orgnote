@@ -1,12 +1,11 @@
 import { beforeEach, expect, test, vi } from 'vitest';
 import type { FileMeta, OrgNoteApi } from 'orgnote-api';
-import { textToUint8Array, uint8ArrayToText } from 'orgnote-api/utils';
+import { createAtomicFileContent } from '../../../../test/mocks/atomic-file-content';
 import { parse, withMetaInfo } from 'org-mode-ast';
 import { extractFileTasks } from 'src/utils/extract-file-tasks';
 import { completePomodoroTaskAfterConfirmation } from './pomodoro-task-completion';
 
-const readFile = vi.fn();
-const writeFile = vi.fn();
+let fileContent = createAtomicFileContent({});
 const confirmCompletion = vi.fn();
 const loadFiles = vi.fn();
 const tasksStore = {
@@ -38,7 +37,7 @@ const parseTasks = (content: string) =>
 
 const api = {
   core: {
-    useFileContent: () => ({ read: readFile, write: writeFile }),
+    useFileContent: () => fileContent,
   },
   ui: {
     useConfirmationModal: () => ({ confirm: confirmCompletion }),
@@ -50,10 +49,7 @@ beforeEach(() => {
   tasksStore.allFiles = [{ id: 'habits', filePath: ['habits.org'], tasks: [task] }];
   loadFiles.mockReset();
   loadFiles.mockResolvedValue(undefined);
-  readFile.mockReset();
-  readFile.mockResolvedValue(textToUint8Array(HABIT_CONTENT));
-  writeFile.mockReset();
-  writeFile.mockResolvedValue(undefined);
+  fileContent = createAtomicFileContent({ '/habits.org': HABIT_CONTENT });
   confirmCompletion.mockReset();
   confirmCompletion.mockResolvedValue(true);
 });
@@ -72,7 +68,7 @@ test('Pomodoro completion keeps a repeating task classified as a habit', async (
     new Date(2026, 4, 18, 12, 0),
   );
 
-  const writtenContent = uint8ArrayToText(writeFile.mock.calls[0]![1] as Uint8Array);
+  const writtenContent = fileContent.readText('/habits.org');
   const completedTask = parseTasks(writtenContent)[0];
 
   expect(result).toBe('completed');

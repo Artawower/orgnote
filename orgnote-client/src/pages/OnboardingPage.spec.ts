@@ -1,3 +1,4 @@
+import type * as OrgNoteApiUtils from 'orgnote-api/utils';
 import { test, expect, vi, beforeEach } from 'vitest';
 import { ref } from 'vue';
 import { flushPromises, shallowMount } from '@vue/test-utils';
@@ -69,7 +70,8 @@ vi.mock('orgnote-api', async () => {
   return { ...actual, I18N: {}, RouteNames: { Home: 'Home' } };
 });
 vi.mock('orgnote-api/constants', () => ({ RouteNames: { Home: 'Home' } }));
-vi.mock('orgnote-api/utils', () => ({
+vi.mock('orgnote-api/utils', async (importOriginal) => ({
+  createKeyedLock: (await importOriginal<typeof OrgNoteApiUtils>()).createKeyedLock,
   to: (fn: () => Promise<unknown>) => fn(),
   stringifyToml: () => '',
   parseToml: () => ({}),

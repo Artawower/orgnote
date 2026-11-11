@@ -1,4 +1,4 @@
-import type { FileContent } from 'orgnote-api';
+import type { FileContent, FileContentTransform } from 'orgnote-api';
 import { isOrgGpgFile } from 'orgnote-api';
 import { uint8ArrayToText, textToUint8Array, isArmoredPgp } from 'orgnote-api/utils';
 import { api } from 'src/boot/api';
@@ -32,6 +32,14 @@ const encryptContent = async (content: Uint8Array): Promise<Uint8Array> => {
   return textToUint8Array(encrypted);
 };
 
+const decodeStoredContent = async (path: string, raw: Uint8Array): Promise<Uint8Array> => {
+  if (!raw.length || !isOrgGpgFile(path)) return raw;
+  return decryptContent(raw);
+};
+
+const encodeContentForStorage = (path: string, content: Uint8Array): Promise<Uint8Array> =>
+  isOrgGpgFile(path) ? encryptContent(content) : Promise.resolve(content);
+
 export const useFileContent = (): FileContent => {
   const readFile = async (path: string): Promise<Uint8Array> => {
     const fm = api.core.useFileSystemManager();
@@ -39,19 +47,23 @@ export const useFileContent = (): FileContent => {
       throw new Error('No file system selected');
     }
     const raw = await fm.currentFs.readFile<'binary', Uint8Array>(path, 'binary');
-    if (!raw?.length || !isOrgGpgFile(path)) {
-      return raw ?? new Uint8Array();
-    }
-    return decryptContent(raw);
+    return decodeStoredContent(path, raw ?? new Uint8Array());
   };
 
   const writeFile = async (path: string, content: Uint8Array): Promise<void> => {
-    const toWrite = isOrgGpgFile(path) ? await encryptContent(content) : content;
-    await api.core.useFileSystem().writeFile(path, toWrite);
+    await api.core.useFileSystem().writeFile(path, await encodeContentForStorage(path, content));
   };
+
+  const updateFile = (path: string, transform: FileContentTransform): Promise<boolean> =>
+    api.core.useFileSystem().updateFile(path, async (raw) => {
+      const nextContent = await transform(await decodeStoredContent(path, raw));
+      if (!nextContent) return undefined;
+      return encodeContentForStorage(path, nextContent);
+    });
 
   return {
     read: readFile,
     write: writeFile,
+    update: updateFile,
   };
 };

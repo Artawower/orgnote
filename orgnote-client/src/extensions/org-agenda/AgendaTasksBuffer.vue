@@ -59,14 +59,13 @@ import type {
   Buffer as OrgBuffer,
   BufferViewStateHandle,
 } from 'orgnote-api';
-import { textToUint8Array, to, uint8ArrayToText } from 'orgnote-api/utils';
 import AppFlex from 'src/components/AppFlex.vue';
 import ContainerLayout from 'src/components/ContainerLayout.vue';
 import EmptyState from 'src/components/EmptyState.vue';
 import LoadingDots from 'src/components/LoadingDots.vue';
 import AppBufferContent from 'src/components/AppBufferContent.vue';
 import { api } from 'src/boot/api';
-import { reporter } from 'src/boot/report';
+import { applyAgendaFileMutation } from './services/apply-agenda-file-mutation';
 import AgendaTaskGroup from './components/AgendaTaskGroup.vue';
 import AgendaTaskQueryBar from './components/AgendaTaskQueryBar.vue';
 import { useAgendaTasks } from './composables/use-agenda-tasks';
@@ -123,7 +122,6 @@ const {
 const selectDate = async (selection: DatePickerSelection): Promise<void> => {
   await showAgendaTaskBuffer(api, createAgendaDateFilter(selection));
 };
-const fileContent = api.core.useFileContent();
 const AGENDA_GROUP_ITEM_SIZE = 128;
 const AGENDA_GROUP_SLICE_SIZE = 12;
 
@@ -157,23 +155,7 @@ const applyToggle = (task: AgendaTaskView, content: string): string => {
 
 const toggleTask = async (task: AgendaTaskView, filePath: string): Promise<void> => {
   if (task.start === undefined) return;
-  const readResult = await to(fileContent.read, 'Failed to read file')(filePath);
-  if (readResult.isErr()) {
-    reporter.reportError(readResult.error);
-    return;
-  }
-  const content = uint8ArrayToText(readResult.value);
-  const nextContent = to(applyToggle, 'Failed to apply agenda mutation')(task, content);
-  if (nextContent.isErr()) {
-    reporter.reportError(nextContent.error);
-    return;
-  }
-  if (nextContent.value === content) return;
-  const writeResult = await to(fileContent.write, 'Failed to write file')(
-    filePath,
-    textToUint8Array(nextContent.value),
-  );
-  if (writeResult.isErr()) reporter.reportError(writeResult.error);
+  await applyAgendaFileMutation(api, filePath, (content) => applyToggle(task, content));
 };
 
 const applyTaskMutation = async (
@@ -182,17 +164,7 @@ const applyTaskMutation = async (
   mutation: (content: string) => string,
 ): Promise<void> => {
   if (task.start === undefined) return;
-  const readResult = await to(fileContent.read, 'Failed to read file')(filePath);
-  if (readResult.isErr()) {
-    reporter.reportError(readResult.error);
-    return;
-  }
-  const next = mutation(uint8ArrayToText(readResult.value));
-  const writeResult = await to(fileContent.write, 'Failed to write file')(
-    filePath,
-    textToUint8Array(next),
-  );
-  if (writeResult.isErr()) reporter.reportError(writeResult.error);
+  await applyAgendaFileMutation(api, filePath, mutation);
 };
 
 const editTaskTitle = (task: AgendaTaskView, filePath: string, title: string): Promise<void> =>

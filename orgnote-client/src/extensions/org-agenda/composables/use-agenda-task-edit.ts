@@ -1,6 +1,5 @@
-import { textToUint8Array, to, uint8ArrayToText } from 'orgnote-api/utils';
 import { api } from 'src/boot/api';
-import { reporter } from 'src/boot/report';
+import { applyAgendaFileMutation } from '../services/apply-agenda-file-mutation';
 import { changeTaskTitle } from '../mutations/task-title';
 import { changeTaskPriority } from '../mutations/task-priority';
 import { changeTaskTags } from '../mutations/task-tags';
@@ -10,27 +9,13 @@ import type { AgendaTaskView } from './use-agenda-tasks';
 import type { AgendaTaskDraft } from '../types';
 
 export const useAgendaTaskEdit = () => {
-  const fileContent = api.core.useFileContent();
-
   const applyMutation = async (
     task: AgendaTaskView,
     filePath: string,
     mutateFn: (c: string) => string,
   ): Promise<void> => {
     if (task.start === undefined) return;
-    const readResult = await to(fileContent.read, 'Failed to read file')(filePath);
-    if (readResult.isErr()) {
-      reporter.reportError(readResult.error);
-      return;
-    }
-    const original = uint8ArrayToText(readResult.value);
-    const next = mutateFn(original);
-    if (next === original) return;
-    const writeResult = await to(fileContent.write, 'Failed to write file')(
-      filePath,
-      textToUint8Array(next),
-    );
-    if (writeResult.isErr()) reporter.reportError(writeResult.error);
+    await applyAgendaFileMutation(api, filePath, mutateFn);
   };
 
   const saveTask = async (

@@ -19,6 +19,10 @@ export interface FileSystemStore {
     time: number,
     encryptionConfig?: OrgNoteEncryption
   ): Promise<T | undefined>;
+  updateFile(
+    path: string | string[],
+    transform: (content: Uint8Array) => Promise<Uint8Array | undefined>
+  ): Promise<boolean>;
   rename(path: string | string[], newPath: string | string[]): Promise<void>;
   deleteFile(path: string | string[]): Promise<void>;
   removeAllFiles: () => Promise<void>;

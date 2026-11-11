@@ -1,5 +1,6 @@
 import type { FileMeta, FileTask, OrgNoteApi } from 'orgnote-api';
-import { isNullable, textToUint8Array, to, uint8ArrayToText } from 'orgnote-api/utils';
+import { to } from 'orgnote-api/utils';
+import { updateFileText } from 'src/utils/update-file-text';
 import { i18n } from 'src/boot/i18n';
 import { reporter } from 'src/boot/report';
 import { extensionI18nKeys as i18nKeys } from 'src/constants/extension-i18n-keys';
@@ -77,47 +78,19 @@ const completePomodoroTaskContent = (
   return completeTask(content, start, completedAt);
 };
 
-const readTaskFile = async (api: OrgNoteApi, task: SessionTask): Promise<string | null> => {
-  const fileContent = api.core.useFileContent();
-  const result = await to(fileContent.read, 'Failed to read Pomodoro task file')(task.filePath);
-  if (result.isOk()) return uint8ArrayToText(result.value);
-  reporter.reportError(result.error);
-  return null;
-};
-
-const writeTaskFile = async (
-  api: OrgNoteApi,
-  task: SessionTask,
-  content: string,
-): Promise<boolean> => {
-  const fileContent = api.core.useFileContent();
-  const result = await to(fileContent.write, 'Failed to write Pomodoro task file')(
-    task.filePath,
-    textToUint8Array(content),
-  );
-  if (result.isOk()) return true;
-  reporter.reportError(result.error);
-  return false;
-};
-
 const writeCompletedTask = async (
   api: OrgNoteApi,
   task: SessionTask,
   completedAt: Date,
 ): Promise<boolean> => {
-  const content = await readTaskFile(api, task);
-  if (isNullable(content)) return false;
-  const nextContent = to(completePomodoroTaskContent, 'Failed to complete Pomodoro task')(
-    content,
-    task,
-    completedAt,
+  const result = await to(updateFileText, 'Failed to complete Pomodoro task')(
+    api.core.useFileContent(),
+    task.filePath,
+    (content) => completePomodoroTaskContent(content, task, completedAt),
   );
-  if (nextContent.isErr()) {
-    reporter.reportError(nextContent.error);
-    return false;
-  }
-  if (nextContent.value === content) return false;
-  return writeTaskFile(api, task, nextContent.value);
+  if (result.isOk()) return result.value;
+  reporter.reportError(result.error);
+  return false;
 };
 
 export const completePomodoroTaskAfterConfirmation = async (

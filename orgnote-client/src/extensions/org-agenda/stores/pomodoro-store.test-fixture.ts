@@ -6,6 +6,16 @@ export const mockKvSet = vi.fn();
 export const mockKvDelete = vi.fn();
 export const mockFileRead = vi.fn();
 export const mockFileWrite = vi.fn();
+
+const updateThroughMocks = async (
+  path: string,
+  transform: (content: Uint8Array) => Uint8Array | undefined | Promise<Uint8Array | undefined>,
+): Promise<boolean> => {
+  const nextContent = await transform(await mockFileRead(path));
+  if (!nextContent) return false;
+  await mockFileWrite(path, nextContent);
+  return true;
+};
 export const mockConfirm = vi.fn();
 const mockLoadFiles = vi.fn();
 const mockAgendaTasksStore = {
@@ -19,7 +29,11 @@ export const mockGetExtensionConfig = vi.fn(() => ({
 vi.mock('src/boot/api', () => ({
   api: {
     core: {
-      useFileContent: () => ({ read: mockFileRead, write: mockFileWrite }),
+      useFileContent: () => ({
+        read: mockFileRead,
+        write: mockFileWrite,
+        update: updateThroughMocks,
+      }),
       useExtensions: () => ({ getExtensionConfig: mockGetExtensionConfig }),
       useNotifications: () => ({ notify: vi.fn() }),
     },

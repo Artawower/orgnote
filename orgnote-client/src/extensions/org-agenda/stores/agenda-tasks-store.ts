@@ -1,7 +1,8 @@
 import { defineStore, storeToRefs } from 'pinia';
 import { computed, shallowRef, ref, watch } from 'vue';
-import { ErrorFileNotFound, join, type FileMeta, type FileTask } from 'orgnote-api';
-import { textToUint8Array, to, uint8ArrayToText } from 'orgnote-api/utils';
+import { join, type FileMeta, type FileTask } from 'orgnote-api';
+import { to } from 'orgnote-api/utils';
+import { updateFileText } from 'src/utils/update-file-text';
 import { api } from 'src/boot/api';
 import { reporter } from 'src/boot/report';
 import { createDirPath } from 'src/utils/create-dir-path';
@@ -137,30 +138,18 @@ export const useAgendaTasksStore = defineStore('agendaTasks', () => {
     return join(basePath, AGENDA_DEFAULT_INBOX_FILENAME);
   };
 
-  const readFileOrEmpty = async (path: string): Promise<string | undefined> => {
-    const result = await to(api.core.useFileContent().read)(path);
-    if (result.isOk()) return uint8ArrayToText(result.value);
-    if (result.error instanceof ErrorFileNotFound) return '';
-    reporter.reportError(result.error);
-    return undefined;
-  };
-
   const createTaskInFile = async (
     input: CreateTaskInput & { targetFile?: string },
   ): Promise<boolean> => {
     const target = resolveInboxPath(input.targetFile);
-    const content = await readFileOrEmpty(target);
-    if (content === undefined) return false;
-    const nextContent = createTask(content, input);
-    const writeResult = await to(api.core.useFileContent().write, 'Failed to write task')(
+    const result = await to(updateFileText, 'Failed to write task')(
+      api.core.useFileContent(),
       target,
-      textToUint8Array(nextContent),
+      (content) => createTask(content, input),
     );
-    if (writeResult.isErr()) {
-      reporter.reportError(writeResult.error);
-      return false;
-    }
-    return true;
+    if (result.isOk()) return result.value;
+    reporter.reportError(result.error);
+    return false;
   };
 
   return {

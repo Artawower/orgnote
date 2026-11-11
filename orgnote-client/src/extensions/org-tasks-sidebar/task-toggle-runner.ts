@@ -1,13 +1,11 @@
-import type { FileTaskKind } from 'orgnote-api';
-import { textToUint8Array, to, uint8ArrayToText } from 'orgnote-api/utils';
+import type { FileContent, FileTaskKind } from 'orgnote-api';
+import { to } from 'orgnote-api/utils';
+import { updateFileText } from 'src/utils/update-file-text';
 import { reporter } from 'src/boot/report';
 import { toggleTaskInContent } from './task-toggle';
 import type { TaskTreeNode } from './task-tree';
 
-type FileContentStore = {
-  read: (filePath: string) => Promise<Uint8Array>;
-  write: (filePath: string, content: Uint8Array) => Promise<void>;
-};
+type FileContentStore = Pick<FileContent, 'update'>;
 
 type FileSearchStore = {
   processFile: (filePath: string) => Promise<void>;
@@ -26,49 +24,32 @@ interface TaskToggleRunnerDeps {
   loadTasks: () => Promise<void>;
 }
 
-const readTaskContent = async (
-  fileContent: FileContentStore,
-  filePath: string,
-): Promise<string | undefined> => {
-  const readResult = await to(fileContent.read, 'Failed to read task file')(filePath);
-  if (readResult.isErr()) {
-    reporter.reportError(readResult.error);
-    return undefined;
-  }
-
-  return uint8ArrayToText(readResult.value);
-};
-
-const buildToggledContent = (node: ToggleableTaskNode, content: string): string | undefined => {
-  const nextContent = toggleTaskInContent(content, {
-    taskKind: node.taskKind,
-    start: node.start,
-  });
-
-  if (!nextContent) {
+const toggleTask =
+  (node: ToggleableTaskNode) =>
+  (content: string): string => {
+    const nextContent = toggleTaskInContent(content, {
+      taskKind: node.taskKind,
+      start: node.start,
+    });
+    if (nextContent) return nextContent;
     reporter.reportWarning('Unable to toggle task in file content');
-    return undefined;
-  }
+    return content;
+  };
 
-  return nextContent === content ? undefined : nextContent;
-};
-
-const persistTaskContent = async (
+const persistToggledTask = async (
   fileContent: FileContentStore,
-  filePath: string,
-  content: string,
+  node: ToggleableTaskNode,
 ): Promise<boolean> => {
-  const writeResult = await to(fileContent.write, 'Failed to write task file')(
-    filePath,
-    textToUint8Array(content),
+  const updateResult = await to(updateFileText, 'Failed to update task file')(
+    fileContent,
+    node.filePath,
+    toggleTask(node),
   );
-
-  if (writeResult.isErr()) {
-    reporter.reportError(writeResult.error);
+  if (updateResult.isErr()) {
+    reporter.reportError(updateResult.error);
     return false;
   }
-
-  return true;
+  return updateResult.value;
 };
 
 const refreshTasksAfterUpdate = async (
@@ -88,24 +69,8 @@ const refreshTasksAfterUpdate = async (
 
 export const createTaskToggleRunner = (deps: TaskToggleRunnerDeps) => {
   const run = async (node: ToggleableTaskNode): Promise<void> => {
-    const content = await readTaskContent(deps.fileContent, node.filePath);
-
-    if (content === undefined) {
-      return;
-    }
-
-    const nextContent = buildToggledContent(node, content);
-
-    if (!nextContent) {
-      return;
-    }
-
-    const isPersisted = await persistTaskContent(deps.fileContent, node.filePath, nextContent);
-
-    if (!isPersisted) {
-      return;
-    }
-
+    const isPersisted = await persistToggledTask(deps.fileContent, node);
+    if (!isPersisted) return;
     await refreshTasksAfterUpdate(deps.fileSearch, deps.loadTasks, node.filePath);
   };
 

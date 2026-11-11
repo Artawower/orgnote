@@ -1,5 +1,6 @@
 import type { OrgNoteApi } from 'orgnote-api';
-import { textToUint8Array, to, uint8ArrayToText } from 'orgnote-api/utils';
+import { to } from 'orgnote-api/utils';
+import { updateFileText } from 'src/utils/update-file-text';
 import { reporter } from 'src/boot/report';
 
 export type AgendaFileMutationResult =
@@ -13,21 +14,16 @@ export const applyAgendaFileMutation = async (
   filePath: string,
   mutation: (content: string) => string,
 ): Promise<AgendaFileMutationResult> => {
-  const fileContent = api.core.useFileContent();
-  const readResult = await to(fileContent.read)(filePath);
-  if (readResult.isErr()) {
-    reporter.reportError(readResult.error);
+  let result: AgendaFileMutationResult = NOT_APPLIED;
+  const recordMutation = (content: string): string => {
+    const nextContent = mutation(content);
+    result = { wasWritten: true, previousContent: content, content: nextContent };
+    return nextContent;
+  };
+  const updateResult = await to(updateFileText)(api.core.useFileContent(), filePath, recordMutation);
+  if (updateResult.isErr()) {
+    reporter.reportError(updateResult.error);
     return NOT_APPLIED;
   }
-
-  const content = uint8ArrayToText(readResult.value);
-  const nextContent = mutation(content);
-  if (nextContent === content) return NOT_APPLIED;
-
-  const writeResult = await to(fileContent.write)(filePath, textToUint8Array(nextContent));
-  if (writeResult.isErr()) {
-    reporter.reportError(writeResult.error);
-    return NOT_APPLIED;
-  }
-  return { wasWritten: true, previousContent: content, content: nextContent };
+  return updateResult.value ? result : NOT_APPLIED;
 };

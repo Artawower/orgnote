@@ -1,5 +1,6 @@
 import type { Command, CommandHandlerParams, OrgNoteApi } from 'orgnote-api';
-import { isNullable, to, uint8ArrayToText, textToUint8Array } from 'orgnote-api/utils';
+import { isNullable, to } from 'orgnote-api/utils';
+import { updateFileText } from 'src/utils/update-file-text';
 import { reporter } from 'src/boot/report';
 import { i18n } from 'src/boot/i18n';
 import { AGENDA_TASK_SET_PRIORITY_COMMAND } from '../constants';
@@ -15,19 +16,10 @@ const handleSetTaskPriority = async (
   const task = params.data;
   const priority = await openOrgPriorityCompletion(api, i18n.global.t);
   if (isNullable(priority)) return;
-  const fileContent = api.core.useFileContent();
-  const readResult = await to(fileContent.read)(task.filePath);
-  if (readResult.isErr()) {
-    reporter.reportError(readResult.error);
-    return;
-  }
-  const next = changeTaskPriority(
-    uint8ArrayToText(readResult.value),
-    task.start ?? 0,
-    priority || undefined,
+  const result = await to(updateFileText)(api.core.useFileContent(), task.filePath, (content) =>
+    changeTaskPriority(content, task.start ?? 0, priority || undefined),
   );
-  const writeResult = await to(fileContent.write)(task.filePath, textToUint8Array(next));
-  if (writeResult.isErr()) reporter.reportError(writeResult.error);
+  if (result.isErr()) reporter.reportError(result.error);
 };
 
 export const setTaskPriorityCommand: Command = {
