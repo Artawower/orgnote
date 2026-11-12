@@ -1,14 +1,13 @@
 <template>
-  <q-virtual-scroll
+  <app-virtual-list
     v-if="candidatesAvailable"
     ref="scrollTarget"
-    :items-size="total"
-    :virtual-scroll-slice-size="config.completion.defaultCompletionLimit"
-    :virtual-scroll-item-size="itemHeight"
-    :items-fn="getPagedResult"
+    :count="total"
+    scroll-parent
+    :item-size="itemHeight"
     v-slot="{ index }"
-    scroll-target="scrollTarget"
     class="completion-scroll full-width flex-1"
+    @range="loadVisibleCandidates"
   >
     <async-item-container :items-list="displayModel.items" :index="index" :height="itemHeight">
       <template #default="{ item, index }">
@@ -20,7 +19,7 @@
         />
       </template>
     </async-item-container>
-  </q-virtual-scroll>
+  </app-virtual-list>
 </template>
 
 <script lang="ts" setup>
@@ -32,7 +31,8 @@ import CompletionResultItem from './CompletionResultItem.vue';
 import { to, type CompletionCandidate } from 'orgnote-api';
 import { computed, nextTick, ref, watch } from 'vue';
 import { DEFAULT_COMPLETION_ITEM_HEIGHT } from 'src/constants/completion-item';
-import type { QVirtualScroll } from 'quasar';
+import AppVirtualList from 'src/components/AppVirtualList.vue';
+import type { AppVirtualListExpose, VisibleRange } from 'src/components/app-virtual-list.types';
 import { buildCompletionDisplayModel } from './completion-grouping';
 
 interface CandidateRange {
@@ -48,16 +48,21 @@ const completion = api.core.useCompletion();
 const { config } = storeToRefs(api.core.useConfig());
 const { activeCompletion } = storeToRefs(completion);
 
-const scrollTarget = ref<QVirtualScroll | null>(null);
+const scrollTarget = ref<AppVirtualListExpose | null>(null);
 const pendingRanges = new Map<string, symbol>();
 
 const buildRangeKey = (range: CandidateRange): string => `${range.from}-${range.size}`;
 
 const resetPendingRanges = (): void => pendingRanges.clear();
 
+let lastVisibleRange: VisibleRange | undefined;
+
 watch(
   () => [activeCompletion.value, activeCompletion.value?.searchQuery],
-  () => resetPendingRanges(),
+  () => {
+    resetPendingRanges();
+    if (lastVisibleRange) loadVisibleCandidates(lastVisibleRange);
+  },
 );
 
 const itemHeight = computed(
@@ -126,13 +131,28 @@ const loadCandidateRange = async (range: CandidateRange): Promise<void> => {
   if (result.isErr()) reportRangeFailure(result.error, range);
 };
 
-const getPagedResult = (from: number, size: number) => {
-  const fakeRows = Object.freeze(new Array(size).fill(null));
-  if (isGroupingEnabled.value) return fakeRows;
-  const candidateRange = { from, size };
-  if (isRangeLoaded(candidateRange) || isRangePending(candidateRange)) return fakeRows;
-  loadCandidateRange(candidateRange);
-  return fakeRows;
+const resolvePageRange = (pageStart: number, total: number): CandidateRange => ({
+  from: pageStart,
+  size: Math.min(config.value.completion.defaultCompletionLimit, total - pageStart),
+});
+
+const collectVisiblePages = (range: VisibleRange, total: number): CandidateRange[] => {
+  const pageSize = config.value.completion.defaultCompletionLimit;
+  const firstPage = Math.floor(range.start / pageSize);
+  const lastPage = Math.floor(range.end / pageSize);
+  return Array.from({ length: lastPage - firstPage + 1 }, (_, offset) =>
+    resolvePageRange((firstPage + offset) * pageSize, total),
+  );
+};
+
+const shouldLoadRange = (range: CandidateRange): boolean =>
+  range.size > 0 && !isRangeLoaded(range) && !isRangePending(range);
+
+const loadVisibleCandidates = (range: VisibleRange): void => {
+  lastVisibleRange = range;
+  if (isGroupingEnabled.value) return;
+  const serverTotal = activeCompletion.value?.total ?? 0;
+  collectVisiblePages(range, serverTotal).filter(shouldLoadRange).forEach(loadCandidateRange);
 };
 
 const total = computed(() => {
@@ -150,7 +170,7 @@ const selectedDisplayIndex = computed(() => {
 watch(selectedDisplayIndex, async (displayIndex) => {
   if (typeof displayIndex !== 'number') return;
   await nextTick();
-  scrollTarget.value?.scrollTo(displayIndex);
+  scrollTarget.value?.scrollToIndex(displayIndex);
 });
 
 const candidatesAvailable = computed(() => {

@@ -51,12 +51,12 @@ vi.mock('./services/show-agenda-task-buffer', () => ({
 
 import AgendaTasksBuffer from './AgendaTasksBuffer.vue';
 
-const QVirtualScrollStub = defineComponent({
-  name: 'QVirtualScroll',
+const AppVirtualListStub = defineComponent({
+  name: 'AppVirtualList',
   props: { items: { type: Array, default: () => [] } },
-  emits: ['virtual-scroll'],
+  emits: ['range'],
   setup(props, { expose, slots }) {
-    expose({ scrollTo });
+    expose({ scrollToIndex: scrollTo });
     return () => h('div', props.items.flatMap((item) => slots.default?.({ item }) ?? []));
   },
 });
@@ -86,7 +86,7 @@ const globalStubs = {
   ContainerLayout: BodySlotStub,
   EmptyState: true,
   LoadingDots: true,
-  QVirtualScroll: QVirtualScrollStub,
+  AppVirtualList: AppVirtualListStub,
 };
 
 const mountBuffer = (viewState: BufferViewStateHandle<AgendaTasksViewState>) =>
@@ -116,7 +116,7 @@ test('AgendaTasksBuffer restores its group selection and virtual scroll anchor',
 
   expect(renderedGroups[0]?.props('expanded')).toBe(false);
   expect(renderedGroups[1]?.props('expandedTaskId')).toBe('project-task');
-  expect(scrollTo).toHaveBeenCalledWith(1, 'start-force');
+  expect(scrollTo).toHaveBeenCalledWith(1, 'start');
 });
 
 test('AgendaTasksBuffer saves its group selection and virtual scroll anchor', async () => {
@@ -130,7 +130,7 @@ test('AgendaTasksBuffer saves its group selection and virtual scroll anchor', as
   await flushPromises();
   const renderedGroups = wrapper.findAllComponents(AgendaTaskGroupStub);
 
-  wrapper.getComponent(QVirtualScrollStub).vm.$emit('virtual-scroll', { index: 1 });
+  wrapper.getComponent(AppVirtualListStub).vm.$emit('range', { start: 1, end: 2 });
   renderedGroups[0]?.vm.$emit('update:expanded', false);
   renderedGroups[1]?.vm.$emit('update:expandedTaskId', 'project-task');
   wrapper.unmount();
@@ -178,5 +178,5 @@ test('AgendaTasksBuffer switches view state with the concrete Agenda buffer', as
   expect(saveFirstState).toHaveBeenCalledOnce();
   expect(renderedGroups[0]?.props('expandedTaskId')).toBe('inbox-task');
   expect(renderedGroups[1]?.props('expanded')).toBe(false);
-  expect(scrollTo).toHaveBeenLastCalledWith(1, 'start-force');
+  expect(scrollTo).toHaveBeenLastCalledWith(1, 'start');
 });

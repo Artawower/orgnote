@@ -1,4 +1,3 @@
-import type { QVirtualScroll } from 'quasar';
 import type { BufferViewStateHandle } from 'orgnote-api';
 import { nextTick, onBeforeUnmount, ref, watch, type Ref } from 'vue';
 import type { AgendaTaskGroup } from './use-agenda-tasks';
@@ -14,6 +13,10 @@ export type AgendaTasksViewState = {
   readonly expandedTaskByFilePath: Readonly<Record<string, string>>;
 };
 
+export interface AgendaTasksScrollTarget {
+  scrollToIndex(index: number, align: 'start'): void;
+}
+
 interface UseAgendaTasksViewStateOptions {
   readonly groupsGetter: () => readonly AgendaTaskGroup[];
   readonly viewStateGetter: () => BufferViewStateHandle<AgendaTasksViewState> | undefined;
@@ -25,7 +28,7 @@ interface AgendaTasksSelectionState {
 }
 
 interface AgendaTasksScrollState {
-  readonly virtualScroll: Ref<QVirtualScroll | null>;
+  readonly virtualScroll: Ref<AgendaTasksScrollTarget | null>;
   readonly anchor: Ref<AgendaTasksScrollAnchor | undefined>;
   readonly pendingAnchor: Ref<AgendaTasksScrollAnchor | undefined>;
 }
@@ -48,7 +51,7 @@ const createSelectionState = (
 const createScrollState = (
   initialState: AgendaTasksViewState | undefined,
 ): AgendaTasksScrollState => ({
-  virtualScroll: ref<QVirtualScroll | null>(null),
+  virtualScroll: ref<AgendaTasksScrollTarget | null>(null),
   anchor: ref(initialState?.scrollAnchor),
   pendingAnchor: ref(initialState?.scrollAnchor ?? DEFAULT_SCROLL_ANCHOR),
 });
@@ -69,7 +72,7 @@ const restorePendingScroll = async (context: AgendaTasksViewStateContext): Promi
   const scroll = context.scroll.virtualScroll.value;
   const groups = context.options.groupsGetter();
   if (!scroll || !groups.length || context.scroll.pendingAnchor.value !== anchor) return;
-  scroll.scrollTo(resolveScrollIndex(groups, anchor), 'start-force');
+  scroll.scrollToIndex(resolveScrollIndex(groups, anchor), 'start');
   context.scroll.pendingAnchor.value = undefined;
 };
 
@@ -160,6 +163,6 @@ export const useAgendaTasksViewState = (options: UseAgendaTasksViewStateOptions)
       context.selection.expandedTaskByFilePath.value[filePath],
     setExpandedTaskId: (filePath: string, taskId: string | null) =>
       setExpandedTaskId(context.selection, filePath, taskId),
-    onVirtualScroll: ({ index }: { readonly index: number }) => recordScrollAnchor(context, index),
+    onVisibleRange: ({ start }: { readonly start: number }) => recordScrollAnchor(context, start),
   };
 };

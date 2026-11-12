@@ -1,16 +1,16 @@
 import { flushPromises, mount } from '@vue/test-utils';
-import { defineComponent, h, nextTick, reactive, ref, type PropType } from 'vue';
+import { defineComponent, h, nextTick, reactive, ref, watchEffect } from 'vue';
 import { beforeEach, expect, test, vi } from 'vitest';
 import type { Completion, CompletionCandidate } from 'orgnote-api';
 
-type ItemsGetter = (from: number, size: number) => readonly unknown[];
+type RangeEmitter = (start: number, end: number) => void;
 
 const scrollTo = vi.fn();
 const search = vi.fn<(limit?: number, offset?: number) => Promise<void>>();
 const logError = vi.fn();
 const activeCompletion = ref<Completion<unknown>>();
 const showGroup = ref(false);
-let getItems: ItemsGetter | undefined;
+let emitRange: RangeEmitter | undefined;
 let itemsSize: number | undefined;
 
 const completionStore = reactive({
@@ -40,16 +40,18 @@ vi.mock('src/boot/logger', () => ({
   logger: { error: logError },
 }));
 
-const QVirtualScrollStub = defineComponent({
-  name: 'QVirtualScroll',
+const AppVirtualListStub = defineComponent({
+  name: 'AppVirtualList',
   props: {
-    itemsFn: { type: Function as PropType<ItemsGetter>, required: true },
-    itemsSize: { type: Number, required: true },
+    count: { type: Number, required: true },
   },
-  setup(props, { expose }) {
-    getItems = props.itemsFn;
-    itemsSize = props.itemsSize;
-    expose({ scrollTo });
+  emits: ['range'],
+  setup(props, { emit, expose }) {
+    emitRange = (start, end) => emit('range', { start, end });
+    watchEffect(() => {
+      itemsSize = props.count;
+    });
+    expose({ scrollToIndex: scrollTo });
     return () => h('div');
   },
 });
@@ -66,7 +68,7 @@ const mountCompletionResult = async () => {
   return mount(CompletionResult, {
     global: {
       stubs: {
-        QVirtualScroll: QVirtualScrollStub,
+        AppVirtualList: AppVirtualListStub,
         AsyncItemContainer: true,
         CompletionResultItem: true,
       },
@@ -79,7 +81,7 @@ beforeEach(() => {
   search.mockReset();
   search.mockResolvedValue(undefined);
   logError.mockClear();
-  getItems = undefined;
+  emitRange = undefined;
   itemsSize = undefined;
   showGroup.value = false;
   const candidates = createCandidates(25);
@@ -162,14 +164,14 @@ test('CompletionResult retries an unloaded range after its request settles', asy
   search.mockReturnValueOnce(pendingSearch);
   const wrapper = await mountCompletionResult();
 
-  getItems?.(20, 5);
-  getItems?.(20, 5);
+  emitRange?.(20, 24);
+  emitRange?.(20, 24);
   expect(search).toHaveBeenCalledTimes(1);
 
   resolveSearch?.();
   await pendingSearch;
   await flushPromises();
-  getItems?.(20, 5);
+  emitRange?.(20, 24);
 
   expect(search).toHaveBeenCalledTimes(2);
   wrapper.unmount();
@@ -191,14 +193,14 @@ test('CompletionResult keeps a newer pending request when an older request settl
   search.mockReturnValueOnce(firstSearch).mockReturnValueOnce(secondSearch);
   const wrapper = await mountCompletionResult();
 
-  getItems?.(20, 5);
+  emitRange?.(20, 24);
   activeCompletion.value!.searchQuery = 'next';
   await nextTick();
-  getItems?.(20, 5);
+  emitRange?.(20, 24);
   resolveFirstSearch?.();
   await firstSearch;
   await flushPromises();
-  getItems?.(20, 5);
+  emitRange?.(20, 24);
 
   expect(search).toHaveBeenCalledTimes(2);
   resolveSecondSearch?.();
@@ -223,9 +225,9 @@ test('CompletionResult retries an unloaded range after its request fails', async
   search.mockRejectedValueOnce(searchError);
   const wrapper = await mountCompletionResult();
 
-  getItems?.(20, 5);
+  emitRange?.(20, 24);
   await flushPromises();
-  getItems?.(20, 5);
+  emitRange?.(20, 24);
 
   expect(search).toHaveBeenCalledTimes(2);
   expect(logError).toHaveBeenCalledWith('Completion range search failed', {
@@ -361,5 +363,40 @@ test('CompletionResult accounts for group headers when scrolling to a candidate'
   await nextTick();
 
   expect(scrollTo).toHaveBeenCalledWith(3);
+  wrapper.unmount();
+});
+
+test('CompletionResult loads every unloaded page that the visible range touches', async () => {
+  const sparseCandidates = createCandidates(1);
+  sparseCandidates.length = 45;
+  activeCompletion.value!.candidates = [...sparseCandidates];
+  activeCompletion.value!.total = sparseCandidates.length;
+  const wrapper = await mountCompletionResult();
+
+  emitRange?.(15, 24);
+  emitRange?.(16, 25);
+
+  expect(search.mock.calls).toEqual([
+    [20, 0],
+    [20, 20],
+  ]);
+  wrapper.unmount();
+});
+
+test('CompletionResult reloads the visible page after the search query changes', async () => {
+  const sparseCandidates = createCandidates(1);
+  sparseCandidates.length = 45;
+  activeCompletion.value!.candidates = [...sparseCandidates];
+  activeCompletion.value!.total = sparseCandidates.length;
+  const wrapper = await mountCompletionResult();
+  emitRange?.(20, 24);
+  await flushPromises();
+  search.mockClear();
+
+  activeCompletion.value!.candidates = [...sparseCandidates];
+  activeCompletion.value!.searchQuery = 'next';
+  await nextTick();
+
+  expect(search).toHaveBeenCalledWith(20, 20);
   wrapper.unmount();
 });

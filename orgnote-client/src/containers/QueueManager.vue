@@ -53,21 +53,21 @@
     <template #body>
       <card-wrapper class="queue-tasks">
         <empty-state v-if="tasks.length === 0" :title="$t(i18n.NOT_FOUND)" />
-        <q-virtual-scroll
+        <app-virtual-list
           v-else
           :items="tasks"
-          :virtual-scroll-item-size="64"
-          :virtual-scroll-slice-size="20"
+          :item-size="QUEUE_TASK_ITEM_SIZE"
+          :item-key="getQueueTaskKey"
           v-slot="{ item }"
           class="full-height"
         >
           <QueueTaskComponent
-            :key="item.id"
+            v-if="item"
             :task="item"
             @cancel="cancelTask"
             @select="selectTask"
           />
-        </q-virtual-scroll>
+        </app-virtual-list>
       </card-wrapper>
     </template>
 
@@ -87,6 +87,7 @@ import { api } from 'src/boot/api';
 import type { QueueTask, QueueStats } from 'orgnote-api';
 import { I18N, i18n } from 'orgnote-api';
 import CardWrapper from 'src/components/CardWrapper.vue';
+import AppVirtualList from 'src/components/AppVirtualList.vue';
 import MenuGroup from 'src/components/MenuGroup.vue';
 import ActionButton from 'src/components/ActionButton.vue';
 import AppDropdown from 'src/components/AppDropdown.vue';
@@ -100,6 +101,11 @@ import AppFlex from 'src/components/AppFlex.vue';
 import EmptyState from 'src/components/EmptyState.vue';
 import { tasksToReport } from 'src/utils/tasks-to-report';
 import { useInteractiveClipboard } from 'src/composables/use-interactive-clipboard';
+
+const QUEUE_TASK_ITEM_SIZE = 64;
+
+const getQueueTaskKey = (task: QueueTask | undefined, index: number): string | number =>
+  task?.id ?? index;
 
 const queueStore = api.core.useQueue();
 const { safeCopyToClipboard } = useInteractiveClipboard();

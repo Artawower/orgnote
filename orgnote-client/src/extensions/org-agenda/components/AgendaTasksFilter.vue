@@ -44,14 +44,14 @@
         </app-flex>
       </template>
       <template #body>
-        <q-virtual-scroll
+        <app-virtual-list
           :items="fileFilterItems"
-          :virtual-scroll-item-size="AGENDA_FILE_ITEM_SIZE_ESTIMATE"
-          :virtual-scroll-slice-size="AGENDA_FILE_SLICE_SIZE"
+          :item-size="AGENDA_FILE_ITEM_SIZE_ESTIMATE"
+          :item-key="getFileListItemKey"
           class="files-scroll"
           v-slot="{ item }"
         >
-          <div :key="item.key" class="file-filter-row">
+          <div v-if="item" class="file-filter-row">
             <menu-item
               :active="isFileItemActive(item)"
               @click="onFileItemClick(item)"
@@ -74,7 +74,7 @@
               </template>
             </menu-item>
           </div>
-        </q-virtual-scroll>
+        </app-virtual-list>
       </template>
     </app-spoiler>
   </app-flex>
@@ -91,6 +91,7 @@ import AppIcon from 'src/components/AppIcon.vue';
 import AppBadge from 'src/components/AppBadge.vue';
 import AppSpoiler from 'src/components/AppSpoiler.vue';
 import OverflowLine from 'src/components/OverflowLine.vue';
+import AppVirtualList from 'src/components/AppVirtualList.vue';
 import { extensionI18nKeys } from 'src/constants/extension-i18n-keys';
 import { api } from 'src/boot/api';
 import { parseAgendaTaskBufferUri } from '../utils/agenda-task-buffer-uri';
@@ -128,7 +129,9 @@ type AgendaFileListItem =
   | { readonly kind: 'file'; readonly key: string; readonly file: AgendaFileFilterOption };
 
 const AGENDA_FILE_ITEM_SIZE_ESTIMATE = 36;
-const AGENDA_FILE_SLICE_SIZE = 30;
+
+const getFileListItemKey = (item: AgendaFileListItem | undefined, index: number): string | number =>
+  item?.key ?? index;
 
 const onFileItemClick = (item: AgendaFileListItem): void => {
   if (item.kind === 'all') {

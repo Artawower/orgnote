@@ -20,19 +20,18 @@
             :title="t(extensionI18nKeys.orgAgendaNoTasksTitle)"
             :description="t(extensionI18nKeys.orgAgendaNoTasksDescription)"
           />
-          <q-virtual-scroll
+          <app-virtual-list
             v-else
             ref="virtualScroll"
             :items="groups"
-            :virtual-scroll-item-size="AGENDA_GROUP_ITEM_SIZE"
-            :virtual-scroll-slice-size="AGENDA_GROUP_SLICE_SIZE"
+            :item-size="AGENDA_GROUP_ITEM_SIZE"
+            :item-key="getGroupKey"
             class="groups-scroll"
             v-slot="{ item: group }"
-            @virtual-scroll="onVirtualScroll"
+            @range="onVisibleRange"
           >
-            <div class="group-item">
+            <div v-if="group" class="group-item">
               <agenda-task-group
-                :key="group.filePath"
                 :group="group"
                 :expanded="isGroupExpanded(group.filePath)"
                 :expanded-task-id="expandedTaskId(group.filePath)"
@@ -46,7 +45,7 @@
                 @task-edit-save="editTaskSave"
               />
             </div>
-          </q-virtual-scroll>
+          </app-virtual-list>
         </app-flex>
       </template>
     </container-layout>
@@ -64,6 +63,7 @@ import ContainerLayout from 'src/components/ContainerLayout.vue';
 import EmptyState from 'src/components/EmptyState.vue';
 import LoadingDots from 'src/components/LoadingDots.vue';
 import AppBufferContent from 'src/components/AppBufferContent.vue';
+import AppVirtualList from 'src/components/AppVirtualList.vue';
 import { api } from 'src/boot/api';
 import { applyAgendaFileMutation } from './services/apply-agenda-file-mutation';
 import { predictAgendaToggle } from './services/agenda-task-prediction';
@@ -71,7 +71,10 @@ import { useAgendaTasksStore } from './stores/agenda-tasks-store';
 import AgendaTaskGroup from './components/AgendaTaskGroup.vue';
 import AgendaTaskQueryBar from './components/AgendaTaskQueryBar.vue';
 import { useAgendaTasks } from './composables/use-agenda-tasks';
-import type { AgendaTaskView } from './composables/use-agenda-tasks';
+import type {
+  AgendaTaskGroup as AgendaTaskGroupView,
+  AgendaTaskView,
+} from './composables/use-agenda-tasks';
 import { completeTask } from './mutations/complete-task';
 import { completeRepeatingTask } from './mutations/complete-repeating-task';
 import { reopenTask } from './mutations/reopen-task';
@@ -117,7 +120,7 @@ const {
   setGroupExpanded,
   expandedTaskId,
   setExpandedTaskId,
-  onVirtualScroll,
+  onVisibleRange,
 } = useAgendaTasksViewState({
   groupsGetter: () => groups.value,
   viewStateGetter: () => props.viewState,
@@ -126,7 +129,9 @@ const selectDate = async (selection: DatePickerSelection): Promise<void> => {
   await showAgendaTaskBuffer(api, createAgendaDateFilter(selection));
 };
 const AGENDA_GROUP_ITEM_SIZE = 128;
-const AGENDA_GROUP_SLICE_SIZE = 12;
+
+const getGroupKey = (group: AgendaTaskGroupView | undefined, index: number): string | number =>
+  group?.filePath ?? index;
 
 const isSameLocalDay = (left: Date, right: Date): boolean =>
   left.getFullYear() === right.getFullYear() &&

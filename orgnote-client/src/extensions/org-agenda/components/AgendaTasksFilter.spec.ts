@@ -18,12 +18,12 @@ const AppSpoilerStub = defineComponent({
   template: '<section><slot name="body" /></section>',
 });
 
-const QVirtualScrollStub = defineComponent({
-  name: 'QVirtualScroll',
+const AppVirtualListStub = defineComponent({
+  name: 'AppVirtualList',
   props: {
     items: { type: Array, required: true },
-    virtualScrollItemSize: Number,
-    virtualScrollSliceSize: Number,
+    itemSize: Number,
+    itemKey: Function,
   },
   template: '<div />',
 });
@@ -47,14 +47,14 @@ test('AgendaTasksFilter virtualizes the complete file filter list', () => {
     global: {
       stubs: {
         AppSpoiler: AppSpoilerStub,
-        QVirtualScroll: QVirtualScrollStub,
+        AppVirtualList: AppVirtualListStub,
       },
     },
   });
 
-  const virtualScroll = wrapper.getComponent(QVirtualScrollStub);
+  const virtualScroll = wrapper.getComponent(AppVirtualListStub);
   expect(virtualScroll.props('items')).toHaveLength(501);
   expect(virtualScroll.props('items')[0]).toEqual({ kind: 'all', key: 'all' });
-  expect(virtualScroll.props('virtualScrollItemSize')).toBe(36);
-  expect(virtualScroll.props('virtualScrollSliceSize')).toBe(30);
+  expect(virtualScroll.props('itemSize')).toBe(36);
+  expect(virtualScroll.props('itemKey')?.({ kind: 'all', key: 'all' }, 0)).toBe('all');
 });
