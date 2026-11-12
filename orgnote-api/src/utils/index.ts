@@ -17,3 +17,4 @@ export * from './run-with-concurrency';
 export * from './hook-store-actions';
 export * from './org-edit';
 export * from './keyed-lock';
+export * from './update-file-text';

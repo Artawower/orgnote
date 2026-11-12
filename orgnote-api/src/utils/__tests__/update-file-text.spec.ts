@@ -1,6 +1,6 @@
-import type { FileContent, FileContentTransform } from 'orgnote-api';
+import type { FileContent, FileContentTransform } from '../../models/file-content';
 import { expect, test, vi } from 'vitest';
-import { updateFileText } from './update-file-text';
+import { updateFileText } from '../update-file-text';
 
 const createFileContent = (initialText: string) => {
   let stored = new TextEncoder().encode(initialText);

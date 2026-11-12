@@ -1,8 +1,6 @@
 import type { OrgNoteApi } from 'orgnote-api';
-import { to } from 'orgnote-api/utils';
-import { updateFileText } from 'src/utils/update-file-text';
+import { isTaskLineAt, to, updateFileText } from 'orgnote-api/utils';
 import { reporter } from 'src/boot/report';
-import { isTaskLineAt } from 'src/utils/is-task-line-at';
 
 export type AgendaFileMutationResult =
   | { wasWritten: false }

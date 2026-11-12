@@ -1,8 +1,7 @@
 import { defineStore, storeToRefs } from 'pinia';
 import { computed, shallowRef, ref, watch } from 'vue';
 import { join, type FileMeta, type FileTask } from 'orgnote-api';
-import { to } from 'orgnote-api/utils';
-import { updateFileText } from 'src/utils/update-file-text';
+import { to, updateFileText } from 'orgnote-api/utils';
 import { createTaskPredictions } from 'src/utils/task-predictions';
 import { api } from 'src/boot/api';
 import { reporter } from 'src/boot/report';

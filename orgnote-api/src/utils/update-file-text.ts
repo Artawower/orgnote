@@ -1,5 +1,5 @@
-import type { FileContent } from 'orgnote-api';
-import { textToUint8Array, uint8ArrayToText } from 'orgnote-api/utils';
+import type { FileContent } from '../models/file-content';
+import { textToUint8Array, uint8ArrayToText } from './binary';
 
 export type TextMutation = (text: string) => string;
 

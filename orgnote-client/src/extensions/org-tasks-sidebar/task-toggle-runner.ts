@@ -1,7 +1,5 @@
 import type { FileContent, FileTask, FileTaskKind } from 'orgnote-api';
-import { to } from 'orgnote-api/utils';
-import { updateFileText } from 'src/utils/update-file-text';
-import { isTaskLineAt } from 'src/utils/is-task-line-at';
+import { isTaskLineAt, to, updateFileText } from 'orgnote-api/utils';
 import { reporter } from 'src/boot/report';
 import { toggleTaskInContent } from './task-toggle';
 import type { TaskTreeNode } from './task-tree';
