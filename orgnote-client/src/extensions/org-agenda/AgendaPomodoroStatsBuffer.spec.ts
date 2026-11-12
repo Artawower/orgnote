@@ -41,8 +41,8 @@ import AgendaPomodoroStatsBuffer from './AgendaPomodoroStatsBuffer.vue';
 const CalendarStub = defineComponent({
   name: 'AppCalendarHeatmapChart',
   props: ['entries', 'labels', 'locale', 'month', 'selectedDate', 'view', 'year'],
-  emits: ['select-date'],
-  template: '<button class="select-date" @click="$emit(\'select-date\', \'2026-07-30\')" />',
+  emits: ['selectDate'],
+  template: '<button class="select-date" @click="$emit(\'selectDate\', \'2026-07-30\')" />',
 });
 
 const TimeRangeStub = defineComponent({

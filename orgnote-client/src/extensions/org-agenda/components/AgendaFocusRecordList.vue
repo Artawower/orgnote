@@ -14,7 +14,7 @@
             :key="`${record.taskStart}:${record.startTime}`"
             :capitalize="false"
             flat
-            @click="emit('select-record', record, group.filePath)"
+            @click="emit('selectRecord', record, group.filePath)"
           >
             <app-flex column align-start gap="xxs" class="record-content">
               <overflow-line class="record-title">{{ record.taskText }}</overflow-line>
@@ -46,7 +46,7 @@ import type {
 defineProps<AgendaFocusRecordListProps>();
 
 const emit = defineEmits<{
-  'select-record': [record: AgendaFocusRecordItem, filePath: string];
+  selectRecord: [record: AgendaFocusRecordItem, filePath: string];
 }>();
 </script>
 

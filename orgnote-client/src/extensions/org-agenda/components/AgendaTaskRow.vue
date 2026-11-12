@@ -32,7 +32,7 @@
           class="expand-btn"
           :class="{ 'expand-btn--open': props.expanded }"
           :aria-label="t(i18nKeys.orgAgendaQuickAddBodyPlaceholder)"
-          @click="$emit('edit-expand')"
+          @click="$emit('editExpand')"
         />
       </app-flex>
     </template>
@@ -63,13 +63,13 @@ import { getActiveDate, hasRepeater, isCompletedOn } from '../utils/agenda-filte
 const props = defineProps<{ task: AgendaTaskView; expanded?: boolean }>();
 const emit = defineEmits<{
   toggle: [];
-  'edit-title': [newTitle: string];
-  'edit-priority': [priority: string | undefined];
-  'edit-tags': [tags: string[]];
-  'edit-scheduled': [schedule: AgendaScheduleDraft | undefined];
-  'edit-expand': [];
-  'open-task': [];
-  'title-editing': [isEditing: boolean];
+  editTitle: [newTitle: string];
+  editPriority: [priority: string | undefined];
+  editTags: [tags: string[]];
+  editScheduled: [schedule: AgendaScheduleDraft | undefined];
+  editExpand: [];
+  openTask: [];
+  titleEditing: [isEditing: boolean];
 }>();
 
 const { t } = useI18n({ useScope: 'global', inheritLocale: true });
@@ -79,10 +79,10 @@ const localTitle = ref(buildTaskEditorTitle(props.task.text, props.task.priority
 const isEditingTitle = ref(false);
 const titleInputRef = ref<InstanceType<typeof OrgInlineEditor> | null>(null);
 
-watch(isEditingTitle, (isEditing) => emit('title-editing', isEditing));
+watch(isEditingTitle, (isEditing) => emit('titleEditing', isEditing));
 
 onBeforeUnmount(() => {
-  if (isEditingTitle.value) emit('title-editing', false);
+  if (isEditingTitle.value) emit('titleEditing', false);
 });
 const taskSchedule = (): AgendaScheduleDraft | undefined => {
   const date = getActiveDate(props.task);
@@ -107,7 +107,7 @@ watch(
   localSchedule,
   (schedule) => {
     if (JSON.stringify(schedule) === JSON.stringify(taskSchedule())) return;
-    emit('edit-scheduled', schedule);
+    emit('editScheduled', schedule);
   },
   { deep: true },
 );
@@ -131,7 +131,7 @@ const onCheckboxChange = (): void => emit('toggle');
 
 const onTitleClick = async (): Promise<void> => {
   if (tabletBelow.value) {
-    emit('open-task');
+    emit('openTask');
     return;
   }
   isEditingTitle.value = true;
@@ -144,8 +144,8 @@ const onTitleSubmit = (): void => {
   const cleanTitle = removePriorityFromTitle(trimmed);
   const extractedPriority = extractPriorityFromTitle(trimmed)?.letter;
 
-  if (cleanTitle && cleanTitle !== props.task.text) emit('edit-title', cleanTitle);
-  if (extractedPriority !== props.task.priority) emit('edit-priority', extractedPriority);
+  if (cleanTitle && cleanTitle !== props.task.text) emit('editTitle', cleanTitle);
+  if (extractedPriority !== props.task.priority) emit('editPriority', extractedPriority);
   isEditingTitle.value = false;
 };
 </script>

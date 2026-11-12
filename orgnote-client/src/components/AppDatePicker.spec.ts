@@ -25,7 +25,7 @@ const QDateStub = defineComponent({
     flat: { type: Boolean, default: false },
     bordered: { type: Boolean, default: false },
   },
-  emits: ['update:model-value', 'navigation', 'range-start', 'range-end'],
+  emits: ['update:model-value', 'navigation', 'rangeStart', 'rangeEnd'],
   setup(_, { expose }) {
     expose({
       setToday: () => {},
@@ -193,7 +193,7 @@ test('AppDatePicker emits navigate on QDate navigation', async () => {
 test('AppDatePicker emits rangeSelect on QDate range-end', async () => {
   const wrapper = createWrapper({ mode: 'range' });
   const qDate = wrapper.findComponent(QDateStub);
-  await qDate.vm.$emit('range-end', {
+  await qDate.vm.$emit('rangeEnd', {
     from: { year: 2025, month: 3, day: 1 },
     to: { year: 2025, month: 3, day: 15 },
   });

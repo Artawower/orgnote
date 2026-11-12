@@ -22,11 +22,11 @@ withDefaults(
 );
 
 const emit = defineEmits<{
-  'resize-start': [e: MouseEvent];
+  resizeStart: [e: MouseEvent];
 }>();
 
 const onMouseDown = (e: MouseEvent): void => {
-  emit('resize-start', e);
+  emit('resizeStart', e);
 };
 </script>
 

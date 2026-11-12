@@ -109,7 +109,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   select: [filter: AgendaFilter];
-  'select-file': [filePath?: string];
+  selectFile: [filePath?: string];
 }>();
 
 const onFilterClick = (filter: AgendaFilter): void => {
@@ -117,11 +117,11 @@ const onFilterClick = (filter: AgendaFilter): void => {
 };
 
 const onFileClick = (filePath: string): void => {
-  emit('select-file', props.selectedFilePath === filePath ? undefined : filePath);
+  emit('selectFile', props.selectedFilePath === filePath ? undefined : filePath);
 };
 
 const onClearFileClick = (): void => {
-  emit('select-file');
+  emit('selectFile');
 };
 
 type AgendaFileListItem =

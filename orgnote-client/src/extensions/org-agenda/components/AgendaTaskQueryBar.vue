@@ -58,7 +58,7 @@ import { useAgendaFilterStore } from '../stores/agenda-filter-store';
 import type { AgendaDateFilter } from '../models/agenda-task-query';
 
 const props = defineProps<{ dateFilter: AgendaDateFilter; resultCount: number }>();
-const emit = defineEmits<{ 'select-date': [selection: DatePickerSelection] }>();
+const emit = defineEmits<{ selectDate: [selection: DatePickerSelection] }>();
 const filterStore = useAgendaFilterStore();
 const { t } = useI18n({ useScope: 'global', inheritLocale: true });
 
@@ -66,7 +66,7 @@ const pickerSelection = computed<DatePickerSelection>(() =>
   resolveAgendaDateSelection(props.dateFilter),
 );
 const applyDateSelection = (selection: DatePickerSelection): void => {
-  emit('select-date', selection);
+  emit('selectDate', selection);
 };
 
 const formatDate = (date: string): string => format(parseISO(date), 'MMM d, yyyy');

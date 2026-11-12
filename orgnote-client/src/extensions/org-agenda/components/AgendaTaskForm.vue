@@ -26,7 +26,7 @@
         class="body-area"
         @submit="$emit('submit')"
         @escape="$emit('cancel')"
-        @blur="$emit('body-blur')"
+        @blur="$emit('bodyBlur')"
       />
       <app-flex row align-start justify="between" class="toolbar">
         <app-flex row align-start gap="xs">
@@ -100,7 +100,7 @@ defineEmits<{
   submit: [];
   cancel: [];
   expand: [];
-  'body-blur': [];
+  bodyBlur: [];
   'update:title': [string];
 }>();
 

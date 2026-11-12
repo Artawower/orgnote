@@ -15,7 +15,7 @@ import AgendaFocusRecord from './AgendaFocusRecord.vue';
 const AgendaFocusRecordListStub = defineComponent({
   name: 'AgendaFocusRecordList',
   props: { groups: Array },
-  emits: ['select-record'],
+  emits: ['selectRecord'],
   template: '<div />',
 });
 
@@ -64,7 +64,7 @@ test('focus record opens the selected source task', async () => {
   const list = wrapper.getComponent(AgendaFocusRecordListStub);
   const record = (list.props('groups') as AgendaFocusRecordGroup[])[0]
     ?.records[0] as AgendaFocusRecordItem;
-  list.vm.$emit('select-record', record, '/notes/project.org');
+  list.vm.$emit('selectRecord', record, '/notes/project.org');
   await vi.waitFor(() => {
     expect(navigation.openNoteAtPosition).toHaveBeenCalledWith({}, '/notes/project.org', 42);
   });

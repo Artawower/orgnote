@@ -90,12 +90,12 @@ const mountTabStrip = (tabDragActive = ref(true), tabIds = TAB_IDS) => {
       components: { NavTabs },
       setup: () => ({ tabDragActive, tabIds, NAV_TAB_ID_ATTRIBUTE }),
       template: `
-        <nav-tabs :tab-drag-active="tabDragActive" @tab-drop="$emit('tab-drop', $event)">
+        <nav-tabs :tab-drag-active="tabDragActive" @tab-drop="$emit('tabDrop', $event)">
           <template #navigation><button class="history-back">Back</button></template>
           <div v-for="tab in tabIds" :key="tab" v-bind="{ [NAV_TAB_ID_ATTRIBUTE]: tab }">{{ tab }}</div>
         </nav-tabs>
       `,
-      emits: ['tab-drop'],
+      emits: ['tabDrop'],
     }),
   );
   wrapper.findAll(NAV_TAB_ID_SELECTOR).forEach((tab, index) =>
@@ -115,7 +115,7 @@ test('NavTabs emits the gap index of a tab dropped between tabs', async () => {
 
   await wrapper.get('.drop-area').trigger('drop', { clientX: 160, dataTransfer: tabDataTransfer });
 
-  expect(wrapper.emitted('tab-drop')).toEqual([[{ gapIndex: 2 }]]);
+  expect(wrapper.emitted('tabDrop')).toEqual([[{ gapIndex: 2 }]]);
 });
 
 test('NavTabs treats the trailing strip area as the last gap', async () => {
@@ -123,7 +123,7 @@ test('NavTabs treats the trailing strip area as the last gap', async () => {
 
   await wrapper.get('.drop-area').trigger('drop', { clientX: 900, dataTransfer: tabDataTransfer });
 
-  expect(wrapper.emitted('tab-drop')).toEqual([[{ gapIndex: TAB_IDS.length }]]);
+  expect(wrapper.emitted('tabDrop')).toEqual([[{ gapIndex: TAB_IDS.length }]]);
 });
 
 test('NavTabs ignores drags that do not carry a tab', async () => {
@@ -134,7 +134,7 @@ test('NavTabs ignores drags that do not carry a tab', async () => {
   await wrapper.get('.drop-area').trigger('drop', { clientX: 160, dataTransfer: fileTransfer });
 
   expect(wrapper.find('.drop-indicator').exists()).toBe(false);
-  expect(wrapper.emitted('tab-drop')).toBeUndefined();
+  expect(wrapper.emitted('tabDrop')).toBeUndefined();
 });
 
 test('NavTabs does not accept tab drags over the navigation buttons', async () => {
@@ -210,7 +210,7 @@ test('NavTabs auto-scrolls an overflowing strip and recomputes the drop gap', as
 
   expect(indicatorBeforeScroll).toBe('300px');
   expect(indicatorAfterScroll).toBe('400px');
-  expect(wrapper.emitted('tab-drop')).toEqual([[{ gapIndex: 4 }]]);
+  expect(wrapper.emitted('tabDrop')).toEqual([[{ gapIndex: 4 }]]);
   expect(content.scrollLeft).toBe(scrolledLeft);
   vi.unstubAllGlobals();
 });

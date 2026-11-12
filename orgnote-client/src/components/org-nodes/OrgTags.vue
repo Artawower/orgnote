@@ -26,7 +26,7 @@ import AppBadge from 'src/components/AppBadge.vue';
 import AppFlex from 'src/components/AppFlex.vue';
 import { computed } from 'vue';
 
-const emit = defineEmits<{ 'tag-click': [tag: string] }>();
+const emit = defineEmits<{ tagClick: [tag: string] }>();
 
 const props = withDefaults(
   defineProps<{
@@ -61,7 +61,7 @@ const overflowCount = computed(() =>
 
 const onTagClick = (tag: string) => {
   if (!props.clickable) return;
-  emit('tag-click', tag);
+  emit('tagClick', tag);
   if (props.searchOnClick)
     api.core.useCommands().execute(DefaultCommands.SEARCH, { searchText: tag });
 };

@@ -40,7 +40,7 @@ import { useTabStripDrop } from 'src/composables/use-tab-strip-drop';
 const props = withDefaults(defineProps<{ activeTabId?: string; tabDragActive?: boolean }>(), {
   tabDragActive: false,
 });
-const emit = defineEmits<{ (event: 'tab-drop', payload: { gapIndex: number }): void }>();
+const emit = defineEmits<{ (event: 'tabDrop', payload: { gapIndex: number }): void }>();
 const contentRef = ref<InstanceType<typeof AppFlex>>();
 const dropAreaRef = ref<InstanceType<typeof AppFlex>>();
 
@@ -51,7 +51,7 @@ const { indicatorOffset, handleDragOver, handleDragLeave, handleDrop } = useTabS
   dropArea: computed(() => toElement(dropAreaRef.value)),
   scrollContainer: computed(() => toElement(contentRef.value)),
   isDragActive: toRef(props, 'tabDragActive'),
-  onTabDrop: (gapIndex) => emit('tab-drop', { gapIndex }),
+  onTabDrop: (gapIndex) => emit('tabDrop', { gapIndex }),
 });
 
 const scrollActiveTabIntoView = async (tabId?: string): Promise<void> => {

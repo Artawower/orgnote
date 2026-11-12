@@ -77,7 +77,7 @@ test('focus record list groups intervals by file using the flat Agenda surface',
 test('focus record list keeps repeated intervals and emits the selected record', async () => {
   const wrapper = mountList();
   await wrapper.findAll('.record-stub')[1]?.trigger('click');
-  expect(wrapper.emitted('select-record')).toEqual([[groups[0]?.records[1], '/notes/project.org']]);
+  expect(wrapper.emitted('selectRecord')).toEqual([[groups[0]?.records[1], '/notes/project.org']]);
 });
 
 test('focus record list renders nothing when there are no records', () => {

@@ -64,7 +64,7 @@ test('AgendaTaskQueryBar requests a concrete selected day buffer', async () => {
 
   await wrapper.findComponent(DatePickerPopoverStub).vm.$emit('confirm', '2026-05-18');
 
-  expect(wrapper.emitted('select-date')).toEqual([['2026-05-18']]);
+  expect(wrapper.emitted('selectDate')).toEqual([['2026-05-18']]);
 });
 
 test('AgendaTaskQueryBar restores a day from its buffer-local filter', async () => {
@@ -81,7 +81,7 @@ test('AgendaTaskQueryBar requests the selected range buffer', async () => {
   await picker.vm.$emit('confirm', selection);
 
   expect(picker.props('selectionMode')).toBe('both');
-  expect(wrapper.emitted('select-date')).toEqual([[selection]]);
+  expect(wrapper.emitted('selectDate')).toEqual([[selection]]);
 });
 
 test('AgendaTaskQueryBar shows its buffer-local range and clear command', async () => {

@@ -57,9 +57,9 @@ const SlotStub = defineComponent({
 let stripDropGapIndex = 0;
 
 const NavTabsStub = defineComponent({
-  emits: ['tab-drop'],
+  emits: ['tabDrop'],
   setup: (_, { emit }) => ({
-    emitStripDrop: () => emit('tab-drop', { gapIndex: stripDropGapIndex }),
+    emitStripDrop: () => emit('tabDrop', { gapIndex: stripDropGapIndex }),
   }),
   template: `
     <div>

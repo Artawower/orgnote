@@ -37,8 +37,8 @@ const emit = defineEmits<{
   submit: [];
   escape: [];
   expand: [];
-  'tag-click': [{ tag: string; replaceWith: (newText: string) => void }];
-  'priority-click': [];
+  tagClick: [{ tag: string; replaceWith: (newText: string) => void }];
+  priorityClick: [];
 }>();
 
 const { createWidgetBuilder } = useWidgetBuilder();
@@ -130,8 +130,8 @@ const buildExtensions = () => {
     placeholder: props.placeholder,
     readonly: props.readonly,
     inlineWidgets: props.singleLine ? undefined : inlineWidgets,
-    onTagClick: (tag, replaceWith) => emit('tag-click', { tag, replaceWith }),
-    onPriorityClick: () => emit('priority-click'),
+    onTagClick: (tag, replaceWith) => emit('tagClick', { tag, replaceWith }),
+    onPriorityClick: () => emit('priorityClick'),
   });
 
   const singleLineKeymap = props.singleLine ? [buildSingleLineKeymap()] : [];

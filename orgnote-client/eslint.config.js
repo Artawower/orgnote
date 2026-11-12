@@ -107,6 +107,7 @@ export default [
         rules: {
             'prefer-promise-reject-errors': 'off',
             '@typescript-eslint/consistent-type-imports': ['error', { prefer: 'type-imports' }],
+            'vue/custom-event-name-casing': ['error', 'camelCase'],
 
             // allow debugger during development only
             'no-debugger': process.env.NODE_ENV === 'production' ? 'error' : 'off',

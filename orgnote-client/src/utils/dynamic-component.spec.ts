@@ -367,13 +367,13 @@ test('useDynamicComponent handles component emitting events', () => {
   const eventHandler = vi.fn();
 
   const TestComponent = defineComponent({
-    emits: ['custom-event'],
+    emits: ['customEvent'],
     setup(_, { emit }) {
       return () =>
         h(
           'button',
           {
-            onClick: () => emit('custom-event', 'payload'),
+            onClick: () => emit('customEvent', 'payload'),
           },
           'Click me'
         );

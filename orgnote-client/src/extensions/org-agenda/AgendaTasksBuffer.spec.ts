@@ -81,7 +81,7 @@ const AgendaTaskItemStub = defineComponent({
     filePath: String,
     expanded: Boolean,
   },
-  emits: ['update:expanded', 'title-editing'],
+  emits: ['update:expanded', 'titleEditing'],
   template: '<div class="agenda-task-item-stub" />',
 });
 
@@ -229,11 +229,11 @@ test('AgendaTasksBuffer keeps a task row mounted while its title is being edited
   await flushPromises();
   const inboxTask = wrapper.findAllComponents(AgendaTaskItemStub)[0];
 
-  inboxTask?.vm.$emit('title-editing', true);
+  inboxTask?.vm.$emit('titleEditing', true);
   await flushPromises();
   expect(wrapper.getComponent(AppVirtualListStub).props('pinnedIndexes')).toEqual([1]);
 
-  inboxTask?.vm.$emit('title-editing', false);
+  inboxTask?.vm.$emit('titleEditing', false);
   await flushPromises();
   expect(wrapper.getComponent(AppVirtualListStub).props('pinnedIndexes')).toEqual([]);
 });

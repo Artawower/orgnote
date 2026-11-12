@@ -27,15 +27,15 @@ vi.mock('../composables/use-agenda-mini-editor', () => ({
 const AgendaTaskRowStub = defineComponent({
   name: 'AgendaTaskRow',
   props: { task: Object },
-  emits: ['edit-expand', 'toggle', 'title-editing'],
+  emits: ['editExpand', 'toggle', 'titleEditing'],
   template:
-    '<button class="agenda-task-row-stub" @click="$emit(\'edit-expand\')">{{ task.text }}</button>',
+    '<button class="agenda-task-row-stub" @click="$emit(\'editExpand\')">{{ task.text }}</button>',
 });
 
 const AgendaTaskFormStub = defineComponent({
   name: 'AgendaTaskForm',
   props: { title: String, body: String },
-  emits: ['update:title', 'update:body', 'body-blur'],
+  emits: ['update:title', 'update:body', 'bodyBlur'],
   template: '<div class="agenda-task-form-stub">{{ title }}</div>',
 });
 
@@ -85,17 +85,17 @@ test('AgendaTaskItem forwards a toggle with its file path', async () => {
 
   wrapper.getComponent(AgendaTaskRowStub).vm.$emit('toggle');
 
-  expect(wrapper.emitted('task-toggle')).toEqual([[task, '/inbox.org']]);
+  expect(wrapper.emitted('taskToggle')).toEqual([[task, '/inbox.org']]);
 });
 
 test('AgendaTaskItem reports when its title editor opens and closes', () => {
   const wrapper = mountTaskItem();
   const row = wrapper.getComponent(AgendaTaskRowStub);
 
-  row.vm.$emit('title-editing', true);
-  row.vm.$emit('title-editing', false);
+  row.vm.$emit('titleEditing', true);
+  row.vm.$emit('titleEditing', false);
 
-  expect(wrapper.emitted('title-editing')).toEqual([[true], [false]]);
+  expect(wrapper.emitted('titleEditing')).toEqual([[true], [false]]);
 });
 
 test('AgendaTaskItem saves the edited draft on body blur', async () => {
@@ -105,9 +105,9 @@ test('AgendaTaskItem saves the edited draft on body blur', async () => {
   form.vm.$emit('update:title', 'Renamed task');
   form.vm.$emit('update:body', 'Some notes');
   await wrapper.vm.$nextTick();
-  form.vm.$emit('body-blur');
+  form.vm.$emit('bodyBlur');
 
-  expect(wrapper.emitted('task-edit-save')?.[0]).toEqual([
+  expect(wrapper.emitted('taskEditSave')?.[0]).toEqual([
     task,
     '/inbox.org',
     {

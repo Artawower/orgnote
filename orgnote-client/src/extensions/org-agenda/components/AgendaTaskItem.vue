@@ -3,14 +3,14 @@
     <agenda-task-row
       :task="task"
       :expanded="expanded"
-      @toggle="$emit('task-toggle', task, filePath)"
-      @edit-title="(title) => $emit('task-edit-title', task, filePath, title)"
-      @edit-priority="(priority) => $emit('task-edit-priority', task, filePath, priority)"
-      @edit-tags="(tags) => $emit('task-edit-tags', task, filePath, tags)"
-      @edit-scheduled="(schedule) => $emit('task-edit-scheduled', task, filePath, schedule)"
+      @toggle="$emit('taskToggle', task, filePath)"
+      @edit-title="(title) => $emit('taskEditTitle', task, filePath, title)"
+      @edit-priority="(priority) => $emit('taskEditPriority', task, filePath, priority)"
+      @edit-tags="(tags) => $emit('taskEditTags', task, filePath, tags)"
+      @edit-scheduled="(schedule) => $emit('taskEditScheduled', task, filePath, schedule)"
       @open-task="onTaskOpen"
       @edit-expand="onEditExpand"
-      @title-editing="(isEditing) => $emit('title-editing', isEditing)"
+      @title-editing="(isEditing) => $emit('titleEditing', isEditing)"
     />
     <div v-if="expanded" class="edit-form">
       <agenda-task-form
@@ -40,17 +40,17 @@ import { reporter } from 'src/boot/report';
 const props = defineProps<{ task: AgendaTaskView; filePath: string }>();
 const expanded = defineModel<boolean>('expanded', { default: false });
 const emit = defineEmits<{
-  'task-toggle': [task: AgendaTaskView, filePath: string];
-  'task-edit-title': [task: AgendaTaskView, filePath: string, title: string];
-  'task-edit-priority': [task: AgendaTaskView, filePath: string, priority: string | undefined];
-  'task-edit-tags': [task: AgendaTaskView, filePath: string, tags: string[]];
-  'task-edit-scheduled': [
+  taskToggle: [task: AgendaTaskView, filePath: string];
+  taskEditTitle: [task: AgendaTaskView, filePath: string, title: string];
+  taskEditPriority: [task: AgendaTaskView, filePath: string, priority: string | undefined];
+  taskEditTags: [task: AgendaTaskView, filePath: string, tags: string[]];
+  taskEditScheduled: [
     task: AgendaTaskView,
     filePath: string,
     schedule: AgendaScheduleDraft | undefined,
   ];
-  'task-edit-save': [task: AgendaTaskView, filePath: string, draft: AgendaTaskDraft];
-  'title-editing': [isEditing: boolean];
+  taskEditSave: [task: AgendaTaskView, filePath: string, draft: AgendaTaskDraft];
+  titleEditing: [isEditing: boolean];
 }>();
 
 const { openEdit } = useAgendaMiniEditor();
@@ -114,7 +114,7 @@ const onEditExpand = (): void => {
 };
 
 const onBodyBlur = (): void => {
-  emit('task-edit-save', props.task, props.filePath, { ...editDraft.value });
+  emit('taskEditSave', props.task, props.filePath, { ...editDraft.value });
 };
 </script>
 

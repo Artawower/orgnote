@@ -64,7 +64,7 @@ test('AgendaTaskRow reports an opened title editor', async () => {
 
   await openTitleEditor(wrapper);
 
-  expect(wrapper.emitted('title-editing')).toEqual([[true]]);
+  expect(wrapper.emitted('titleEditing')).toEqual([[true]]);
 });
 
 test('AgendaTaskRow reports a closed title editor after submit', async () => {
@@ -74,7 +74,7 @@ test('AgendaTaskRow reports a closed title editor after submit', async () => {
   wrapper.getComponent(OrgInlineEditorStub).vm.$emit('submit');
   await flushPromises();
 
-  expect(wrapper.emitted('title-editing')).toEqual([[true], [false]]);
+  expect(wrapper.emitted('titleEditing')).toEqual([[true], [false]]);
 });
 
 test('AgendaTaskRow reports a closed title editor when unmounted mid-edit', async () => {

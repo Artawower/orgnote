@@ -53,9 +53,9 @@ import type { AgendaHabitView } from '../types';
 const props = defineProps<{ habit: AgendaHabitView; selectedDate: string }>();
 const emit = defineEmits<{
   toggle: [];
-  'edit-title': [newTitle: string];
-  'edit-priority': [priority: string | undefined];
-  'open-habit': [];
+  editTitle: [newTitle: string];
+  editPriority: [priority: string | undefined];
+  openHabit: [];
 }>();
 
 const { t } = useI18n({ useScope: 'global', inheritLocale: true });
@@ -89,7 +89,7 @@ const toggleLabel = computed(() => {
 
 const onTitleClick = async (): Promise<void> => {
   if (tabletBelow.value) {
-    emit('open-habit');
+    emit('openHabit');
     return;
   }
   isEditingTitle.value = true;
@@ -102,8 +102,8 @@ const onTitleSubmit = (): void => {
   const cleanTitle = removePriorityFromTitle(trimmed);
   const extractedPriority = extractPriorityFromTitle(trimmed)?.letter;
 
-  if (cleanTitle && cleanTitle !== props.habit.text) emit('edit-title', cleanTitle);
-  if (extractedPriority !== props.habit.priority) emit('edit-priority', extractedPriority);
+  if (cleanTitle && cleanTitle !== props.habit.text) emit('editTitle', cleanTitle);
+  if (extractedPriority !== props.habit.priority) emit('editPriority', extractedPriority);
   isEditingTitle.value = false;
 };
 </script>
