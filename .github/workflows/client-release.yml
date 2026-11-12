@@ -1,0 +1,348 @@
+name: Client release
+
+on:
+  workflow_call:
+    inputs:
+      ci_checks_passed:
+        required: false
+        type: boolean
+        default: false
+        description: 'Caller already depends on the reusable CI checks workflow'
+      environment:
+        required: true
+        type: string
+      tag_prefix:
+        required: false
+        type: string
+        default: ''
+      version_suffix:
+        required: false
+        type: string
+        default: ''
+      release_name_prefix:
+        required: false
+        type: string
+        default: 'OrgNote '
+      prerelease:
+        required: false
+        type: boolean
+        default: false
+      publish_google_play:
+        required: false
+        type: boolean
+        default: false
+        description: 'Publish the stable Android bundle to Google Play production'
+      update_channel:
+        required: false
+        type: string
+        default: latest
+      enable_devtools:
+        required: false
+        type: boolean
+        default: false
+      cleanup_old_dev_releases:
+        required: false
+        type: boolean
+        default: false
+      skip_existing:
+        required: false
+        type: boolean
+        default: true
+      force:
+        required: false
+        type: boolean
+        default: false
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: GitHub environment used by release builds
+        required: true
+        type: choice
+        options:
+          - deploy
+          - dev
+        default: deploy
+      tag_prefix:
+        description: Prefix added to the package version in the release tag
+        required: false
+        type: string
+        default: ''
+      version_suffix:
+        description: Suffix added to the package version and artifact names
+        required: false
+        type: string
+        default: ''
+      release_name_prefix:
+        description: Prefix added to the package version in the release name
+        required: false
+        type: string
+        default: 'OrgNote '
+      prerelease:
+        description: Publish as a prerelease
+        required: false
+        type: boolean
+        default: false
+      publish_google_play:
+        description: 'PRODUCTION WARNING: publish the stable Android bundle directly to Google Play production'
+        required: false
+        type: boolean
+        default: false
+      update_channel:
+        description: Electron update channel
+        required: true
+        type: choice
+        options:
+          - latest
+          - dev
+        default: latest
+      enable_devtools:
+        description: Enable Electron DevTools in packaged builds
+        required: false
+        type: boolean
+        default: false
+      cleanup_old_dev_releases:
+        description: Delete old dev prereleases after publishing
+        required: false
+        type: boolean
+        default: false
+      skip_existing:
+        description: Skip when the target release or tag already exists
+        required: false
+        type: boolean
+        default: true
+      force:
+        description: Build even when package.json version did not change
+        required: false
+        type: boolean
+        default: true
+
+permissions:
+  contents: write
+
+concurrency:
+  group: client-release-${{ inputs.tag_prefix }}-${{ inputs.version_suffix }}
+  cancel-in-progress: false
+
+jobs:
+  ci-checks:
+    name: CI checks
+    if: ${{ github.event_name == 'workflow_dispatch' || !inputs.ci_checks_passed }}
+    uses: ./.github/workflows/ci-client.yml
+
+  prepare:
+    name: Prepare release
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: orgnote-client
+    outputs:
+      artifact_version: ${{ steps.release.outputs.artifact_version }}
+      release_name: ${{ steps.release.outputs.release_name }}
+      should_release: ${{ steps.release.outputs.should_release }}
+      tag: ${{ steps.release.outputs.tag }}
+      version: ${{ steps.release.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Resolve release version
+        id: release
+        env:
+          BASE_SHA: ${{ github.event.before }}
+          EVENT_NAME: ${{ github.event_name }}
+          FORCE_RELEASE: ${{ inputs.force }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_NAME_PREFIX: ${{ inputs.release_name_prefix }}
+          SKIP_EXISTING: ${{ inputs.skip_existing }}
+          TAG_PREFIX: ${{ inputs.tag_prefix }}
+          VERSION_SUFFIX: ${{ inputs.version_suffix }}
+        run: |
+          VERSION="$(jq -er '.version | select(type == "string" and length > 0)' package.json)"
+          ARTIFACT_VERSION="${VERSION}${VERSION_SUFFIX}"
+          TAG="${TAG_PREFIX}${ARTIFACT_VERSION}"
+          RELEASE_NAME="${RELEASE_NAME_PREFIX}${VERSION}"
+          CHANGED=false
+
+          if [ "$FORCE_RELEASE" = 'true' ]; then
+            CHANGED=true
+          elif [ "$EVENT_NAME" = 'push' ] \
+            && [ -n "$BASE_SHA" ] \
+            && [ "$BASE_SHA" != '0000000000000000000000000000000000000000' ] \
+            && PREVIOUS_VERSION="$(git show "${BASE_SHA}:orgnote-client/package.json" 2>/dev/null | jq -er '.version')"; then
+            if [ "$PREVIOUS_VERSION" != "$VERSION" ]; then
+              CHANGED=true
+            fi
+          elif PREVIOUS_VERSION="$(git show HEAD^:orgnote-client/package.json 2>/dev/null | jq -er '.version')"; then
+            if [ "$PREVIOUS_VERSION" != "$VERSION" ]; then
+              CHANGED=true
+            fi
+          else
+            CHANGED=true
+          fi
+
+          RELEASE_EXISTS=false
+          TAG_EXISTS=false
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            RELEASE_EXISTS=true
+          fi
+          if git ls-remote --exit-code --tags origin "refs/tags/$TAG" >/dev/null 2>&1; then
+            TAG_EXISTS=true
+          fi
+
+          SHOULD_RELEASE="$CHANGED"
+          if [ "$SKIP_EXISTING" = 'true' ] && { [ "$RELEASE_EXISTS" = 'true' ] || [ "$TAG_EXISTS" = 'true' ]; }; then
+            SHOULD_RELEASE=false
+            echo "Release skipped: tag or release '$TAG' already exists."
+          elif [ "$CHANGED" != 'true' ]; then
+            echo 'Release skipped: package.json version did not change.'
+          fi
+
+          {
+            echo "artifact_version=$ARTIFACT_VERSION"
+            echo "release_name=$RELEASE_NAME"
+            echo "should_release=$SHOULD_RELEASE"
+            echo "tag=$TAG"
+            echo "version=$VERSION"
+          } >> "$GITHUB_OUTPUT"
+
+          {
+            echo "### Release preparation"
+            echo "- Version: $VERSION"
+            echo "- Tag: $TAG"
+            echo "- Version changed: $CHANGED"
+            echo "- Release exists: $RELEASE_EXISTS"
+            echo "- Tag exists: $TAG_EXISTS"
+            echo "- Will publish: $SHOULD_RELEASE"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  build-android:
+    name: Build Android artifacts
+    needs: [prepare, ci-checks]
+    if: >-
+      always() &&
+      needs.prepare.outputs.should_release == 'true' &&
+      (needs.ci-checks.result == 'success' ||
+      (inputs.ci_checks_passed && needs.ci-checks.result == 'skipped'))
+    uses: ./.github/workflows/client-build-android.yml
+    with:
+      environment: ${{ inputs.environment }}
+      version: ${{ needs.prepare.outputs.artifact_version }}
+      prerelease: ${{ inputs.prerelease }}
+    secrets: inherit
+
+  build-electron:
+    name: Build Electron macOS
+    needs: [prepare, ci-checks]
+    if: >-
+      always() &&
+      needs.prepare.outputs.should_release == 'true' &&
+      (needs.ci-checks.result == 'success' ||
+      (inputs.ci_checks_passed && needs.ci-checks.result == 'skipped'))
+    uses: ./.github/workflows/client-build-electron-macos.yml
+    with:
+      environment: ${{ inputs.environment }}
+      version: ${{ needs.prepare.outputs.artifact_version }}
+      prerelease: ${{ inputs.prerelease }}
+      update_channel: ${{ inputs.update_channel }}
+      enable_devtools: ${{ inputs.enable_devtools }}
+    secrets: inherit
+
+  build-electron-linux:
+    name: Build Electron Linux
+    needs: [prepare, ci-checks]
+    if: >-
+      always() &&
+      needs.prepare.outputs.should_release == 'true' &&
+      (needs.ci-checks.result == 'success' ||
+      (inputs.ci_checks_passed && needs.ci-checks.result == 'skipped'))
+    uses: ./.github/workflows/client-build-electron-linux.yml
+    with:
+      environment: ${{ inputs.environment }}
+      version: ${{ needs.prepare.outputs.artifact_version }}
+      prerelease: ${{ inputs.prerelease }}
+      update_channel: ${{ inputs.update_channel }}
+      enable_devtools: ${{ inputs.enable_devtools }}
+    secrets: inherit
+
+  publish:
+    name: Publish release
+    needs: [prepare, build-android, build-electron, build-electron-linux]
+    if: >-
+      !cancelled() &&
+      needs.prepare.outputs.should_release == 'true' &&
+      needs.build-android.result == 'success' &&
+      needs.build-electron.result == 'success' &&
+      needs.build-electron-linux.result == 'success'
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    steps:
+      - name: Download Android artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: orgnote-${{ needs.prepare.outputs.artifact_version }}.apk
+          path: ./release-assets
+
+      - name: Download Android App Bundle
+        uses: actions/download-artifact@v4
+        with:
+          name: orgnote-${{ needs.prepare.outputs.artifact_version }}.aab
+          path: ./release-assets
+
+      - name: Download Electron macOS artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: orgnote-macos-${{ needs.prepare.outputs.artifact_version }}
+          path: ./release-assets/macos
+
+      - name: Download Electron Linux artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: orgnote-linux-${{ needs.prepare.outputs.artifact_version }}
+          path: ./release-assets/linux
+
+      - name: Create or update release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.prepare.outputs.tag }}
+          target_commitish: ${{ github.sha }}
+          name: ${{ needs.prepare.outputs.release_name }}
+          prerelease: ${{ inputs.prerelease }}
+          make_latest: ${{ inputs.prerelease && 'false' || 'true' }}
+          generate_release_notes: true
+          overwrite_files: true
+          fail_on_unmatched_files: true
+          files: |
+            ./release-assets/orgnote-${{ needs.prepare.outputs.artifact_version }}.apk
+            ./release-assets/orgnote-${{ needs.prepare.outputs.artifact_version }}.aab
+            ./release-assets/macos/*
+            ./release-assets/linux/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Delete old dev releases
+        if: inputs.cleanup_old_dev_releases
+        uses: dev-drprasad/delete-older-releases@v0.3.2
+        with:
+          keep_latest: 5
+          delete_tag_pattern: -dev
+          delete_tags: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  publish-google-play:
+    name: Publish Android to Google Play
+    needs: [prepare, build-android, publish]
+    if: >-
+      !cancelled() &&
+      needs.publish.result == 'success' &&
+      needs.prepare.outputs.should_release == 'true' &&
+      inputs.publish_google_play &&
+      !inputs.prerelease &&
+      inputs.environment == 'deploy' &&
+      github.ref == 'refs/heads/master'
+    uses: ./.github/workflows/client-publish-google-play.yml
+    with:
+      environment: ${{ inputs.environment }}
+      artifact_version: ${{ needs.prepare.outputs.artifact_version }}
+    secrets: inherit

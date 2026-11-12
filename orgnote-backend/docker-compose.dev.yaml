@@ -1,0 +1,80 @@
+services:
+  orgnote-backend-dev:
+    container_name: orgnote-backend-dev
+    restart: always
+    depends_on:
+      - orgnote-mongo-dev
+      - orgnote-minio-dev
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SUBSCRIPTION_SCHEMA_URL: ${SUBSCRIPTION_SCHEMA_URL:?SUBSCRIPTION_SCHEMA_URL is required for backend Docker build}
+    networks:
+      - orgnote-dev-network
+      - traefik-network
+
+    volumes:
+      - ./media/dev:/workspace/media
+    env_file:
+      - .env.dev
+    environment:
+      - MONGO_URL=orgnote-mongo-dev
+      - MONGO_PORT=27017
+      - APP_ADDRESS=0.0.0.0:3000
+      - S3_ENDPOINT=orgnote-minio-dev:9000
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.backend-dev.rule=Host(`dev.org-note.com`) && PathPrefix(`/api`)"
+      - "traefik.http.routers.backend-dev.entrypoints=websecure"
+      - "traefik.http.routers.backend-dev.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.backend-dev.priority=100"
+      - "traefik.http.routers.backend-dev.middlewares=backend-dev-strip"
+      - "traefik.http.middlewares.backend-dev-strip.stripprefix.prefixes=/api"
+      - "traefik.http.services.backend-dev.loadbalancer.server.port=3000"
+      - "traefik.docker.network=traefik-network"
+
+  orgnote-cors-dev:
+    image: bassetts/warp-cors
+    container_name: orgnote-cors-dev
+    restart: always
+    networks:
+      - orgnote-dev-network
+      - traefik-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.cors-dev.rule=Host(`dev.org-note.com`) && PathPrefix(`/cors`)"
+      - "traefik.http.routers.cors-dev.entrypoints=websecure"
+      - "traefik.http.routers.cors-dev.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.cors-dev.middlewares=cors-dev-strip"
+      - "traefik.http.middlewares.cors-dev-strip.stripprefix.prefixes=/cors"
+      - "traefik.http.services.cors-dev.loadbalancer.server.port=3030"
+      - "traefik.docker.network=traefik-network"
+
+  orgnote-client-dev:
+    image: orgnote/client:dev
+    container_name: orgnote-client-dev
+    restart: always
+    environment:
+      - DISABLE_LOGGER=0
+      - DEBUG=true
+      - DEBUGGING=true
+    networks:
+      - orgnote-dev-network
+      - traefik-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.client-dev.rule=Host(`dev.org-note.com`)"
+      - "traefik.http.routers.client-dev.entrypoints=websecure"
+      - "traefik.http.routers.client-dev.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.client-dev.priority=1"
+      - "traefik.http.services.client-dev.loadbalancer.server.port=3000"
+      - "traefik.docker.network=traefik-network"
+
+networks:
+  orgnote-dev-network:
+    name: orgnote-dev-network
+    driver: bridge
+  traefik-network:
+    external: true
+    name: traefik-network

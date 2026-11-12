@@ -1,0 +1,6 @@
+*
+!dist
+README.org
+LICENSE
+*.spec.*
+__tests__/*

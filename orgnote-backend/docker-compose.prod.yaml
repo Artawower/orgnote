@@ -1,0 +1,76 @@
+services:
+  orgnote-backend-prod:
+    container_name: orgnote-backend-prod
+    restart: always
+    depends_on:
+      - orgnote-mongo-prod
+      - orgnote-minio-prod
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SUBSCRIPTION_SCHEMA_URL: ${SUBSCRIPTION_SCHEMA_URL:?SUBSCRIPTION_SCHEMA_URL is required for backend Docker build}
+    networks:
+      - orgnote-prod-network
+      - traefik-network
+
+    volumes:
+      - ./media/prod:/workspace/media
+    env_file:
+      - .env.prod
+    environment:
+      - MONGO_URL=orgnote-mongo-prod
+      - MONGO_PORT=27017
+      - APP_ADDRESS=0.0.0.0:3000
+      - S3_ENDPOINT=orgnote-minio-prod:9000
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.backend-prod.rule=Host(`org-note.com`) && PathPrefix(`/api`)"
+      - "traefik.http.routers.backend-prod.entrypoints=websecure"
+      - "traefik.http.routers.backend-prod.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.backend-prod.middlewares=backend-prod-strip"
+      - "traefik.http.middlewares.backend-prod-strip.stripprefix.prefixes=/api"
+      - "traefik.http.services.backend-prod.loadbalancer.server.port=3000"
+      - "traefik.docker.network=traefik-network"
+
+  orgnote-cors-prod:
+    image: bassetts/warp-cors
+    container_name: orgnote-cors-prod
+    restart: always
+    networks:
+      - orgnote-prod-network
+      - traefik-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.cors-prod.rule=Host(`org-note.com`) && PathPrefix(`/cors`)"
+      - "traefik.http.routers.cors-prod.entrypoints=websecure"
+      - "traefik.http.routers.cors-prod.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.cors-prod.middlewares=cors-prod-strip"
+      - "traefik.http.middlewares.cors-prod-strip.stripprefix.prefixes=/cors"
+      - "traefik.http.services.cors-prod.loadbalancer.server.port=3030"
+      - "traefik.docker.network=traefik-network"
+
+  orgnote-client-prod:
+    image: orgnote/client:latest
+    container_name: orgnote-client-prod
+    restart: always
+    environment:
+      - DISABLE_LOGGER=1
+    networks:
+      - orgnote-prod-network
+      - traefik-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.client-prod.rule=Host(`org-note.com`)"
+      - "traefik.http.routers.client-prod.entrypoints=websecure"
+      - "traefik.http.routers.client-prod.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.client-prod.priority=1"
+      - "traefik.http.services.client-prod.loadbalancer.server.port=3000"
+      - "traefik.docker.network=traefik-network"
+
+networks:
+  orgnote-prod-network:
+    name: orgnote-prod-network
+  traefik-network:
+    external: true
+    name: traefik-network

@@ -1,0 +1,104 @@
+{
+  "name": "orgnote-api",
+  "version": "0.67.2",
+  "description": "Official API for creating extensions for OrgNote app",
+  "type": "module",
+  "main": "./dist/index.js",
+  "scripts": {
+    "test": "vitest",
+    "test:ci": "vitest run",
+    "build": "npm run clear && tspc --project tsconfig.json",
+    "clear": "rm -rf dist",
+    "lint": "eslint -c ./eslint.config.js \"./src*/**/*.{ts,js,cjs,mjs}\"",
+    "codegen:api": "openapi-generator-cli generate --generator-key api",
+    "codegen:api:local": "openapi-generator-cli generate --generator-key api-local",
+    "codegen:css-doc": "node collect-css-variables.cjs --docs",
+    "codegen:css-types": "node collect-css-variables.cjs --types",
+    "fix-esm-imports": "fix-esm-import-path ./dist",
+    "prepub": "bun run build && bun run fix-esm-imports",
+    "pub": "bun run prepub && npm publish",
+    "docs:dev": "cd docs && bun run dev",
+    "docs:build": "cd docs && bun run build",
+    "docs:preview": "cd docs && bun run preview"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Artawower/orgnote.git",
+    "directory": "orgnote-api"
+  },
+  "exports": {
+    ".": "./dist/index.js",
+    "./remote-api": "./dist/remote-api/index.js",
+    "./encryption": "./dist/encryption/index.js",
+    "./utils": "./dist/utils/index.js",
+    "./mappers": "./dist/mappers/index.js",
+    "./commands": "./dist/commands/index.js",
+    "./constants": "./dist/constants/index.js",
+    "./sync": "./dist/sync/index.js"
+  },
+  "files": ["dist"],
+  "types": "./dist/index.d.ts",
+  "keywords": ["orgnote", "org-mode", "org-roam", "api", "extensions"],
+  "author": "darkawower <app.orgnote@gmail.com> (https://org-note.com)",
+  "license": "GPL-3.0-or-later",
+  "bugs": {
+    "url": "https://github.com/artawower/orgnote-api/issues"
+  },
+  "homepage": "https://github.com/artawower/orgnote-api#readme",
+  "dependencies": {
+    "axios": "1.8.4",
+    "date-fns": "2.30.0",
+    "diff-match-patch": "^1.0.5",
+    "neverthrow": "^8.2.0",
+    "openpgp": "6.3.0",
+    "org-mode-ast": "0.13.6",
+    "partysocket": "1.1.6",
+    "picomatch": "4.0.4",
+    "smol-toml": "1.5.2"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@openapitools/openapi-generator-cli": "2.19.1",
+    "@rollup/rollup-linux-arm64-gnu": "4.14.2",
+    "@types/diff-match-patch": "^1.0.36",
+    "@types/node": "22.14.1",
+    "@types/picomatch": "4.0.3",
+    "eslint": "10.4.0",
+    "eslint-plugin-sonarjs": "4.0.3",
+    "fix-esm-import-path": "1.10.1",
+    "globals": "16.0.0",
+    "ts-patch": "3.3.0",
+    "typescript": "5.8.3",
+    "typescript-eslint": "8.59.3",
+    "typescript-transform-paths": "3.5.5",
+    "typescript-transformer-esm": "1.1.0",
+    "vitest": "3.1.2"
+  },
+  "peerDependencies": {
+    "@capacitor/filesystem": ">=6.0.0",
+    "@codemirror/state": "6.5.3",
+    "@codemirror/view": "6.39.5",
+    "@faker-js/faker": ">=9.0.0",
+    "pinia": ">=2.0.0",
+    "quasar": ">=2.0.0",
+    "valibot": ">=1.0.0",
+    "vue": ">=3.0.0",
+    "vue-router": ">=4.0.0"
+  },
+  "peerDependenciesMeta": {
+    "pinia": {
+      "optional": true
+    }
+  },
+  "typesVersions": {
+    "*": {
+      "dist/*": [
+        "dist/*"
+      ],
+      "*": [
+        "dist/*",
+        "dist/*/index.d.ts"
+      ]
+    }
+  }
+}

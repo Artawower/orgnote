@@ -1,0 +1,83 @@
+:PROPERTIES:
+:ID: orgnote-client
+:END:
+
+#+html: <div align='center'>
+#+html: <img align='center' src='./images/image.png' width='256px' height='256px'>
+#+html: </div>
+#+html: &nbsp;
+
+
+#+TITLE: ✨ Org Note client.
+#+html: <div align='center'>
+#+html: <span class='badge-buymeacoffee'>
+#+html: <a href='https://www.paypal.me/darkawower' title='Paypal' target='_blank'><img src='https://img.shields.io/badge/paypal-donate-blue.svg' alt='Buy Me A Coffee donate button' /></a>
+#+html: </span>
+#+html: <span class='badge-patreon'>
+#+html: <a href='https://patreon.com/artawower' target='_blank' title='Donate to this project using Patreon'><img src='https://img.shields.io/badge/patreon-donate-orange.svg' alt='Patreon donate button' /></a>
+#+html: </span>
+#+html: </div>
+#+html: <div align='center'>
+#+html: <a href="https://twitter.com/org_note" target="_blank"><img src="https://img.shields.io/twitter/follow/org_note" alt="Twitter link" /></a>
+#+html: <a href="https://emacs.ch/@orgnote" target="_blank"><img alt="Mastodon Follow" src="https://img.shields.io/mastodon/follow/113090697216193319?domain=https%3A%2F%2Ffosstodon.org&style=social"></a>
+#+html: <a href="https://discord.com/invite/SFpUb2vSDm" target="_blank"><img src="https://img.shields.io/discord/1161751315324604417" alt="Discord"></a>
+#+html: <a href="https://www.youtube.com/@OrgNote" target="_blank"><img alt="YouTube Channel Views" src="https://img.shields.io/youtube/channel/views/UCN14DUE5umdrlEm7odW3gOw"></a>
+#+html: </div>
+#+html: <div align='center'>
+#+html: <a href="https://play.google.com/store/apps/details?id=org.note.app" target="_blank">
+#+html: <img src="./images/google-play.svg" width="140px" height="auto">
+#+html: </a>
+#+html: <a href="https://apt.izzysoft.de/packages/org.note.app" target="_blank">
+#+html: <img src="https://gitlab.com/IzzyOnDroid/repo/-/raw/master/assets/IzzyOnDroidButtonGreyBorder_nofont.png" width="140px" height="auto">
+#+html: </a>
+#+html: </div>
+
+
+* Introduction
+#+html: <div align='center'>
+#+html: <img src='./images/app.png' width='100%' height='auto'>
+#+html: </div>
+#+html: &nbsp;
+This project is part of [[https://github.com/Artawower/orgnote][Org Note project]]. This is client side based on the [[https://quasar.dev/][Quasar]] framework. It's include ios/android/pwa and desktop build.
+It's a proof of concept solution, in the future I have plan to migrate this repo into native app or Flutter.
+
+* Connected links
+- [[https://github.com/Artawower/orgnote][Main repo]]
+- [[https://github.com/Artawower/orgnote/wiki][WIKI]] 
+- [[https://github.com/Artawower/orgnote/tree/master/orgnote-backend][Org Note backend]]
+- [[https://github.com/Artawower/orgnote-extensions][List of extensions and themes]]
+- [[https://github.com/Artawower/orgnote/tree/master/orgnote-api][Create your own plugin!]]
+- [[https://en.wikipedia.org/wiki/Zettelkasten][About Zettelkasten approach]] 
+- [[https://quasar.dev/][Quasar]]  
+- [[./VARIABLES.org][List of all css variables for theme tooling]] 
+
+* Install
+** Local development
+Clone repo
+#+BEGIN_SRC bash
+git clone git@github.com:Artawower/orgnote.git && cd orgnote/orgnote-client
+#+END_SRC
+
+Install dependencies (as alternative you can use ~npm~)
+#+BEGIN_SRC bash
+bun install
+#+END_SRC
+
+Start development
+#+BEGIN_SRC bash :tangle file
+bun run dev
+#+END_SRC
+** Environment variables
+~API_URL~ - url to api server
+~VITE_WS_URL~ - url to websocket events channel
+
+* 🍩 Contribute guide
+
+Any contribution is very much appreciated! Please read the [[https://github.com/Artawower/orgnote/wiki/Contribution-guide][style guide]] before contributing to avoid misunderstandings!
+I would also appreciate it if you would consider becoming my [[https://www.patreon.com/artawower][patron]]
+
+
+** Debug PWA
+#+BEGIN_SRC bash
+npm run build:pwa && docker compose -f docker-compose.pwa.yaml up
+#+END_SRC

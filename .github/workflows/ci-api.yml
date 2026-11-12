@@ -1,0 +1,45 @@
+name: CI api
+
+on:
+  pull_request:
+    paths: &paths
+      - orgnote-api/**
+      - package.json
+      - bun.lock
+      - bunfig.toml
+      - .github/actions/setup-workspace/**
+      - .github/workflows/ci-api.yml
+  push:
+    branches: [master, dev]
+    paths: *paths
+  workflow_call:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-api-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+defaults:
+  run:
+    working-directory: orgnote-api
+
+jobs:
+  check:
+    name: Lint, test, build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-workspace
+        with:
+          build-api: 'false'
+      - name: Lint
+        run: bun run lint
+      - name: Test
+        run: bun run test:ci
+      - name: Build package
+        run: bun run prepub
+      - name: Pack package
+        run: bun pm pack --dry-run

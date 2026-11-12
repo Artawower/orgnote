@@ -1,0 +1,79 @@
+---
+title: Extension Manifest
+description: Complete reference for OrgNote extension manifest fields
+---
+
+import { Tabs, TabItem, Aside } from '@astrojs/starlight/components';
+
+Every extension must export a `manifest` constant that describes its metadata. OrgNote uses this to display the extension in the registry, manage versions, and enforce permissions.
+
+## Manifest format
+
+<Tabs>
+  <TabItem label="Minimal">
+    ```typescript
+    import type { ExtensionManifest } from 'orgnote-api';
+
+    export const manifest: ExtensionManifest = {
+      name: 'my-extension',
+      version: '1.0.0',
+      category: 'extension',
+      sourceType: 'git',
+    };
+    ```
+  </TabItem>
+  <TabItem label="Full">
+    ```typescript
+    import type { ExtensionManifest } from 'orgnote-api';
+
+    export const manifest: ExtensionManifest = {
+      name: 'my-extension',
+      version: '1.0.0',
+      category: 'extension',
+      sourceType: 'git',
+      sourceUrl: 'https://github.com/user/my-extension',
+      author: 'Your Name',
+      description: 'What this extension does',
+      keywords: ['productivity', 'notes'],
+      permissions: ['files'],
+      apiVersion: '0.41.0',
+      icon: 'https://example.com/icon.png',
+      reloadRequired: false,
+    };
+    ```
+  </TabItem>
+</Tabs>
+
+## Fields
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `name` | `string` | Yes | Unique identifier in the extension registry |
+| `version` | `string` | Yes | Semver version string |
+| `category` | `'theme' \| 'extension' \| 'language pack' \| 'other'` | Yes | Extension category |
+| `sourceType` | `'git' \| 'file' \| 'builtin'` | Yes | How the extension is distributed |
+| `sourceUrl` | `string` | No | Repository URL |
+| `author` | `string` | No | Author name |
+| `description` | `string` | No | Short description |
+| `keywords` | `string[]` | No | Search keywords |
+| `permissions` | `Array<'files' \| 'personal info' \| '*' \| 'third party'>` | No | Required permissions |
+| `apiVersion` | `string` | No | Minimum OrgNote API version (semver) |
+| `icon` | `string` | No | Extension icon URL |
+| `reloadRequired` | `boolean` | No | Whether OrgNote needs to reload after install |
+| `readmeFilePath` | `string` | No | Path to README file (default: `README.org`) |
+| `development` | `boolean` | No | Mark as development-only |
+| `sponsor` | `string[]` | No | Sponsor links |
+
+<Aside type="note">
+  The `name` field must be unique across the [official extension registry](https://github.com/Artawower/orgnote-extensions).
+</Aside>
+
+## Publishing
+
+To publish your extension to the official registry, add a recipe file to the [orgnote-extensions](https://github.com/Artawower/orgnote-extensions) repository:
+
+```
+recipes/my-extension.json
+```
+
+The recipe file contains your `ExtensionManifest` data.

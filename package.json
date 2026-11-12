@@ -1,0 +1,6 @@
+{
+  "name": "orgnote",
+  "private": true,
+  "packageManager": "bun@1.4.4",
+  "workspaces": ["orgnote-api", "orgnote-client", "orgnote-cli"]
+}

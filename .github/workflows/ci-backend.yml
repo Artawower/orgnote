@@ -1,0 +1,64 @@
+name: CI backend
+
+on:
+  pull_request:
+    paths: &paths
+      - orgnote-backend/**
+      - .github/workflows/ci-backend.yml
+  push:
+    branches: [master, dev]
+    paths: *paths
+  workflow_call:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-backend-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+defaults:
+  run:
+    working-directory: orgnote-backend
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: orgnote-backend/go.mod
+          cache-dependency-path: orgnote-backend/go.sum
+      - uses: golangci/golangci-lint-action@v6
+        with:
+          version: latest
+          working-directory: orgnote-backend
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: orgnote-backend/go.mod
+          cache-dependency-path: orgnote-backend/go.sum
+      - name: Build
+        run: go build ./app/main.go
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: orgnote-backend/go.mod
+          cache-dependency-path: orgnote-backend/go.sum
+      - name: Test
+        run: go test -race ./...

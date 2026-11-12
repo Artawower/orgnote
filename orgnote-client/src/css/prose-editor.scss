@@ -1,0 +1,68 @@
+@mixin prose-editor-base {
+  height: 100%;
+  font-family: var(--editor-font-family-main);
+
+  &.cm-focused {
+    outline: none;
+  }
+
+  .cm-cursor,
+  .cm-dropCursor {
+    border-left-color: var(--editor-cursor-color) !important;
+    border-left-width: var(--editor-cursor-width) !important;
+  }
+
+  .cm-selectionBackground,
+  &.cm-focused > .cm-scroller > .cm-selectionLayer .cm-selectionBackground {
+    background-color: var(--editor-selection-bg) !important;
+  }
+
+  .cm-activeLine {
+    background-color: var(--editor-active-line-bg);
+  }
+
+  .cm-scroller {
+    overflow: auto;
+    max-width: 100%;
+    font-family: var(--editor-font-family-main);
+  }
+
+  .cm-content {
+    padding: var(--editor-padding);
+    max-width: var(--editor-max-width);
+    margin: auto;
+    padding-top: calc(var(--content-top-offset, 0px) + var(--padding-xl));
+    padding-bottom: var(--floating-padding-bottom);
+    min-width: 0;
+    caret-color: var(--editor-cursor-color);
+  }
+
+  .cm-gutters,
+  .cm-gutter {
+    background: transparent;
+    background-color: transparent !important;
+    border-right: 0 !important;
+  }
+
+  .cm-line {
+    padding: 0 0 0 var(--editor-line-left-padding);
+    letter-spacing: 0.5px;
+    white-space: pre-wrap;
+    font-size: var(--paragraph-font-size);
+    font-family: var(--main-font-family);
+    color: var(--fg);
+    -webkit-font-smoothing: auto;
+    line-height: var(--editor-line-height);
+  }
+
+  .cm-foldPlaceholder {
+    padding-left: var(--padding-sm);
+    border: none;
+    font-weight: inherit;
+    background: transparent;
+    color: var(--fg-muted);
+    font-size: inherit;
+    line-height: inherit;
+    vertical-align: baseline;
+  }
+}

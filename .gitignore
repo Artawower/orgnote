@@ -3,31 +3,21 @@
 .AppleDouble
 .LSOverride
 node_modules/
-.pnpm-debug.log
 node_modules/*
-moonbrain/.DS_Store
-index.js
 dist/*
-second-brian-parser/dist
 .env
 
-backend/app/media/*
-# Frontend build directory
-frontend/*
-
-orgnote-client/
-orgnote-client-master/
 org-mode-ast/
-orgnote-backend/
-orgnote-cli/
-orgnote-api/
-org-mode-ast/
-orgnote-el/
-orgnote.el/
-orgnote-old/
+rust-org-mode-ast
 orgnote-extensions/
-subscrumber-repo
-web-roam/
+subscrumber/
+orgnote.el/
 
 plans
 .serena
+.pi-lens
+.certs
+.claude/settings.local.json
+WORKFLOW.md
+log/*
+BUGS.org

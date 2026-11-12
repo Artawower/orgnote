@@ -1,0 +1,24 @@
+:PROPERTIES:
+:ID: orgnote-contribution
+:END:
+
+#+TITLE: Contribution guide
+#+FILETAGS: :orgnote:contribution:
+#+STARTUP: content
+
+
+* Intall certificates to work with HTTPS locally
+
+Macos:
+#+BEGIN_SRC bash
+    brew install mkcert
+    mkcert -install
+    mkdir .certs
+    mkcert -cert-file .certs/cert.pem -key-file .certs/key.pem 192.168.1.2
+ #+END_SRC
+
+ Move root cert to ios emulator
+
+ #+BEGIN_SRC bash
+xcrun simctl keychain booted add-root-cert "$(mkcert -CAROOT)/rootCA.pem"
+#+END_SRC

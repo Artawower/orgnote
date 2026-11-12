@@ -1,0 +1,11 @@
+
+[TestChangelogShouldBeFormatted - 1]
+0.17.0
+ability to upload GPG keys from files
+include encryption info to debug page
+actions block alignment for raw editor block widgets
+line class decorations for complex blocks inside quote block
+encryption using orgnote api
+GPG encryption
+build main action toolbar from commands (#22)
+---

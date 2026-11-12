@@ -1,0 +1,8 @@
+@import 'mixins';
+
+@include mobile {
+  .notification {
+    width: calc(100% - var(--padding-md) * 2);
+    max-width: unset;
+  }
+}

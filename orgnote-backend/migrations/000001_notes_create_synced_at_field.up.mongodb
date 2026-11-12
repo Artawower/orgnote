@@ -1,0 +1,21 @@
+[
+  {
+    "update": "notes",
+    "updates": [
+      {
+        "q": {
+          "$or": [
+            { "lastSyncAt": null },
+            { "lastSyncAt": { "$exists": false } }
+          ]
+        },
+        "u": {
+          "$set": {
+            "lastSyncAt": { "$date": { "$numberLong": "0" } }
+          }
+        },
+        "multi": true
+      }
+    ]
+  }
+]

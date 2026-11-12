@@ -1,0 +1,17 @@
+export const ELECTRON_FS_CHANNELS = {
+  selectDirectory: 'electron-fs:select-directory',
+  mountRoot: 'electron-fs:mount-root',
+  readFile: 'electron-fs:read-file',
+  writeFile: 'electron-fs:write-file',
+  readDir: 'electron-fs:read-dir',
+  fileInfo: 'electron-fs:file-info',
+  rename: 'electron-fs:rename',
+  deleteFile: 'electron-fs:delete-file',
+  rmdir: 'electron-fs:rmdir',
+  mkdir: 'electron-fs:mkdir',
+  utime: 'electron-fs:utime',
+  copyFile: 'electron-fs:copy-file',
+  watchStart: 'electron-fs:watch-start',
+  watchStop: 'electron-fs:watch-stop',
+  watchEvent: 'electron-fs:watch-event',
+} as const;
