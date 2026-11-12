@@ -1,8 +1,19 @@
 import type { BufferViewStateHandle } from 'orgnote-api';
-import { nextTick, onBeforeUnmount, ref, watch, type Ref } from 'vue';
+import {
+  computed,
+  nextTick,
+  onBeforeUnmount,
+  ref,
+  shallowRef,
+  watch,
+  type ComputedRef,
+  type Ref,
+} from 'vue';
 import type { AgendaTaskGroup } from './use-agenda-tasks';
+import { buildAgendaTaskRows, type AgendaTaskListRow } from '../utils/agenda-task-rows';
 
 export type AgendaTasksScrollAnchor = {
+  readonly rowKey?: string;
   readonly filePath?: string;
   readonly fallbackIndex: number;
 };
@@ -35,6 +46,7 @@ interface AgendaTasksScrollState {
 
 interface AgendaTasksViewStateContext {
   readonly options: UseAgendaTasksViewStateOptions;
+  readonly rows: ComputedRef<AgendaTaskListRow[]>;
   readonly selection: AgendaTasksSelectionState;
   readonly scroll: AgendaTasksScrollState;
 }
@@ -57,12 +69,14 @@ const createScrollState = (
 });
 
 const resolveScrollIndex = (
-  groups: readonly AgendaTaskGroup[],
+  rows: readonly AgendaTaskListRow[],
   anchor: AgendaTasksScrollAnchor,
 ): number => {
-  const anchoredIndex = groups.findIndex(({ filePath }) => filePath === anchor.filePath);
-  if (anchoredIndex >= 0) return anchoredIndex;
-  return Math.min(Math.max(anchor.fallbackIndex, 0), groups.length - 1);
+  const rowIndex = anchor.rowKey ? rows.findIndex(({ key }) => key === anchor.rowKey) : -1;
+  if (rowIndex >= 0) return rowIndex;
+  const fileIndex = rows.findIndex(({ filePath }) => filePath === anchor.filePath);
+  if (fileIndex >= 0) return fileIndex;
+  return Math.min(Math.max(anchor.fallbackIndex, 0), rows.length - 1);
 };
 
 const restorePendingScroll = async (context: AgendaTasksViewStateContext): Promise<void> => {
@@ -70,9 +84,9 @@ const restorePendingScroll = async (context: AgendaTasksViewStateContext): Promi
   if (!anchor) return;
   await nextTick();
   const scroll = context.scroll.virtualScroll.value;
-  const groups = context.options.groupsGetter();
-  if (!scroll || !groups.length || context.scroll.pendingAnchor.value !== anchor) return;
-  scroll.scrollToIndex(resolveScrollIndex(groups, anchor), 'start');
+  const rows = context.rows.value;
+  if (!scroll || !rows.length || context.scroll.pendingAnchor.value !== anchor) return;
+  scroll.scrollToIndex(resolveScrollIndex(rows, anchor), 'start');
   context.scroll.pendingAnchor.value = undefined;
 };
 
@@ -108,7 +122,7 @@ const setupViewStateLifecycle = (context: AgendaTasksViewStateContext): void => 
     restoreViewState(context, current?.get());
   });
   watch(
-    [context.options.groupsGetter, context.scroll.virtualScroll],
+    [context.rows, context.scroll.virtualScroll],
     () => void restorePendingScroll(context),
     { flush: 'post' },
   );
@@ -138,25 +152,58 @@ const setExpandedTaskId = (
 };
 
 const recordScrollAnchor = (context: AgendaTasksViewStateContext, index: number): void => {
+  const row = context.rows.value[index];
   context.scroll.anchor.value = {
-    filePath: context.options.groupsGetter()[index]?.filePath,
+    rowKey: row?.key,
+    filePath: row?.filePath,
     fallbackIndex: index,
   };
 };
 
+const isGroupExpandedIn =
+  (selection: AgendaTasksSelectionState) =>
+  (filePath: string): boolean =>
+    !selection.collapsedFilePaths.value.includes(filePath);
+
+const isExpandedTaskRow = (selection: AgendaTasksSelectionState, row: AgendaTaskListRow): boolean =>
+  row.kind === 'task' && selection.expandedTaskByFilePath.value[row.filePath] === row.task.id;
+
+const collectPinnedRowIndexes = (
+  rows: readonly AgendaTaskListRow[],
+  isPinned: (row: AgendaTaskListRow) => boolean,
+): number[] => rows.flatMap((row, index) => (isPinned(row) ? [index] : []));
+
+const toggleRowKey = (keys: ReadonlySet<string>, rowKey: string, isIncluded: boolean): Set<string> => {
+  const nextKeys = new Set(keys);
+  if (isIncluded) nextKeys.add(rowKey);
+  else nextKeys.delete(rowKey);
+  return nextKeys;
+};
+
 export const useAgendaTasksViewState = (options: UseAgendaTasksViewStateOptions) => {
   const initialState = options.viewStateGetter()?.get();
+  const selection = createSelectionState(initialState);
+  const isGroupExpanded = isGroupExpandedIn(selection);
+  const rows = computed(() => buildAgendaTaskRows(options.groupsGetter(), isGroupExpanded));
   const context: AgendaTasksViewStateContext = {
     options,
-    selection: createSelectionState(initialState),
+    rows,
+    selection,
     scroll: createScrollState(initialState),
   };
+  const titleEditingRowKeys = shallowRef<ReadonlySet<string>>(new Set());
+  const isPinnedRow = (row: AgendaTaskListRow): boolean =>
+    isExpandedTaskRow(selection, row) || titleEditingRowKeys.value.has(row.key);
   setupViewStateLifecycle(context);
 
   return {
+    rows,
+    pinnedRowIndexes: computed(() => collectPinnedRowIndexes(rows.value, isPinnedRow)),
+    setTitleEditing: (rowKey: string, isEditing: boolean) => {
+      titleEditingRowKeys.value = toggleRowKey(titleEditingRowKeys.value, rowKey, isEditing);
+    },
     virtualScroll: context.scroll.virtualScroll,
-    isGroupExpanded: (filePath: string) =>
-      !context.selection.collapsedFilePaths.value.includes(filePath),
+    isGroupExpanded,
     setGroupExpanded: (filePath: string, isExpanded: boolean) =>
       setGroupExpanded(context.selection, filePath, isExpanded),
     expandedTaskId: (filePath: string) =>

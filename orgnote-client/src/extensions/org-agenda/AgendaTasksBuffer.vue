@@ -23,20 +23,28 @@
           <app-virtual-list
             v-else
             ref="virtualScroll"
-            :items="groups"
-            :item-size="AGENDA_GROUP_ITEM_SIZE"
-            :item-key="getGroupKey"
+            :items="rows"
+            :item-size="AGENDA_ROW_ITEM_SIZE"
+            :item-key="getRowKey"
+            :pinned-indexes="pinnedRowIndexes"
             class="groups-scroll"
-            v-slot="{ item: group }"
+            v-slot="{ item: row }"
             @range="onVisibleRange"
           >
-            <div v-if="group" class="group-item">
-              <agenda-task-group
-                :group="group"
-                :expanded="isGroupExpanded(group.filePath)"
-                :expanded-task-id="expandedTaskId(group.filePath)"
-                @update:expanded="setGroupExpanded(group.filePath, $event)"
-                @update:expanded-task-id="setExpandedTaskId(group.filePath, $event)"
+            <div v-if="row" class="agenda-row" :class="[`${row.kind}-row`, { 'group-end': row.isGroupEnd }]">
+              <agenda-task-group-header
+                v-if="row.kind === 'group'"
+                :group="row.group"
+                :expanded="isGroupExpanded(row.filePath)"
+                @update:expanded="setGroupExpanded(row.filePath, $event)"
+              />
+              <agenda-task-item
+                v-else
+                :task="row.task"
+                :file-path="row.filePath"
+                :expanded="expandedTaskId(row.filePath) === row.task.id"
+                @update:expanded="setExpandedTaskId(row.filePath, $event ? row.task.id : null)"
+                @title-editing="setTitleEditing(row.key, $event)"
                 @task-toggle="toggleTask"
                 @task-edit-title="editTaskTitle"
                 @task-edit-priority="editTaskPriority"
@@ -68,13 +76,12 @@ import { api } from 'src/boot/api';
 import { applyAgendaFileMutation } from './services/apply-agenda-file-mutation';
 import { predictAgendaToggle } from './services/agenda-task-prediction';
 import { useAgendaTasksStore } from './stores/agenda-tasks-store';
-import AgendaTaskGroup from './components/AgendaTaskGroup.vue';
+import AgendaTaskGroupHeader from './components/AgendaTaskGroupHeader.vue';
+import AgendaTaskItem from './components/AgendaTaskItem.vue';
+import type { AgendaTaskListRow } from './utils/agenda-task-rows';
 import AgendaTaskQueryBar from './components/AgendaTaskQueryBar.vue';
 import { useAgendaTasks } from './composables/use-agenda-tasks';
-import type {
-  AgendaTaskGroup as AgendaTaskGroupView,
-  AgendaTaskView,
-} from './composables/use-agenda-tasks';
+import type { AgendaTaskView } from './composables/use-agenda-tasks';
 import { completeTask } from './mutations/complete-task';
 import { completeRepeatingTask } from './mutations/complete-repeating-task';
 import { reopenTask } from './mutations/reopen-task';
@@ -115,6 +122,9 @@ const dateFilter = computed(
 );
 const { loading, groups, filteredTaskCount } = useAgendaTasks(dateFilter);
 const {
+  rows,
+  pinnedRowIndexes,
+  setTitleEditing,
   virtualScroll,
   isGroupExpanded,
   setGroupExpanded,
@@ -128,10 +138,10 @@ const {
 const selectDate = async (selection: DatePickerSelection): Promise<void> => {
   await showAgendaTaskBuffer(api, createAgendaDateFilter(selection));
 };
-const AGENDA_GROUP_ITEM_SIZE = 128;
+const AGENDA_ROW_ITEM_SIZE = 44;
 
-const getGroupKey = (group: AgendaTaskGroupView | undefined, index: number): string | number =>
-  group?.filePath ?? index;
+const getRowKey = (row: AgendaTaskListRow | undefined, index: number): string | number =>
+  row?.key ?? index;
 
 const isSameLocalDay = (left: Date, right: Date): boolean =>
   left.getFullYear() === right.getFullYear() &&
@@ -246,7 +256,11 @@ const editTaskSave = async (
   min-height: 0;
 }
 
-.group-item {
+.task-row {
+  padding-bottom: var(--menu-group-items-gap);
+}
+
+.group-end {
   padding-bottom: var(--gap-sm);
 }
 </style>

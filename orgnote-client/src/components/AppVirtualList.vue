@@ -17,7 +17,7 @@
 
 <script lang="ts" setup generic="T">
 import { computed, onMounted, ref, watch, type ComponentPublicInstance } from 'vue';
-import { useVirtualizer } from '@tanstack/vue-virtual';
+import { defaultRangeExtractor, useVirtualizer, type Range } from '@tanstack/vue-virtual';
 import type { AppVirtualListExpose, ScrollAlign, VisibleRange } from './app-virtual-list.types';
 
 const DEFAULT_OVERSCAN = 5;
@@ -30,6 +30,7 @@ const props = withDefaults(
     overscan?: number;
     itemKey?: (item: T | undefined, index: number) => string | number;
     scrollParent?: boolean;
+    pinnedIndexes?: readonly number[];
   }>(),
   {
     items: undefined,
@@ -37,6 +38,7 @@ const props = withDefaults(
     overscan: DEFAULT_OVERSCAN,
     itemKey: undefined,
     scrollParent: false,
+    pinnedIndexes: () => [],
   },
 );
 
@@ -83,6 +85,13 @@ const createItemKeyResolver = (
   itemKey: ((item: T | undefined, index: number) => string | number) | undefined,
 ) => (index: number): string | number => (itemKey ? itemKey(items?.[index], index) : index);
 
+const createRangeExtractor = (pinnedIndexes: readonly number[]) => (range: Range): number[] => {
+  const pinnedInRange = pinnedIndexes.filter((index) => index >= 0 && index < range.count);
+  if (!pinnedInRange.length) return defaultRangeExtractor(range);
+  const indexes = new Set([...defaultRangeExtractor(range), ...pinnedInRange]);
+  return [...indexes].sort((left, right) => left - right);
+};
+
 const virtualizer = useVirtualizer(
   computed(() => ({
     count: itemCount.value,
@@ -92,6 +101,7 @@ const virtualizer = useVirtualizer(
     useAnimationFrameWithResizeObserver: true,
     getItemKey: createItemKeyResolver(props.items, props.itemKey),
     scrollMargin: scrollMargin.value,
+    rangeExtractor: createRangeExtractor(props.pinnedIndexes),
   })),
 );
 

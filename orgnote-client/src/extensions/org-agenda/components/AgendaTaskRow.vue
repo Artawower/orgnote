@@ -40,7 +40,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, nextTick, ref, watch } from 'vue';
+import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import AppFlex from 'src/components/AppFlex.vue';
@@ -69,6 +69,7 @@ const emit = defineEmits<{
   'edit-scheduled': [schedule: AgendaScheduleDraft | undefined];
   'edit-expand': [];
   'open-task': [];
+  'title-editing': [isEditing: boolean];
 }>();
 
 const { t } = useI18n({ useScope: 'global', inheritLocale: true });
@@ -77,6 +78,12 @@ const { tabletBelow } = api.ui.useScreenDetection();
 const localTitle = ref(buildTaskEditorTitle(props.task.text, props.task.priority));
 const isEditingTitle = ref(false);
 const titleInputRef = ref<InstanceType<typeof OrgInlineEditor> | null>(null);
+
+watch(isEditingTitle, (isEditing) => emit('title-editing', isEditing));
+
+onBeforeUnmount(() => {
+  if (isEditingTitle.value) emit('title-editing', false);
+});
 const taskSchedule = (): AgendaScheduleDraft | undefined => {
   const date = getActiveDate(props.task);
   if (!date) return undefined;

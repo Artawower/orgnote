@@ -176,3 +176,14 @@ test('AppVirtualList keeps row state with its key when items are reordered', asy
   expect(wrapper.findAll('.stateful-row').map((row) => row.text())).toEqual(['b:b', 'a:a']);
   wrapper.unmount();
 });
+
+test('AppVirtualList keeps pinned rows mounted outside the viewport', async () => {
+  const wrapper = mountList({ pinnedIndexes: [500, 2000] });
+  await nextTick();
+
+  const indexes = renderedRows(wrapper).map((row) => row.attributes('data-index'));
+  expect(indexes).toContain('500');
+  expect(indexes).not.toContain('2000');
+  expect(indexes.length).toBeLessThan(50);
+  wrapper.unmount();
+});
