@@ -1,0 +1,34 @@
+{
+  "name": "capacitor-webview-background",
+  "version": "1.0.0",
+  "description": "Capacitor plugin to dynamically set WebView background color",
+  "main": "dist/plugin.cjs.js",
+  "module": "dist/esm/index.js",
+  "types": "dist/esm/index.d.ts",
+  "scripts": {
+    "build": "tsc"
+  },
+  "capacitor": {
+    "ios": {
+      "src": "ios"
+    },
+    "android": {
+      "src": "android"
+    }
+  },
+  "peerDependencies": {
+    "@capacitor/core": "^7.0.0"
+  },
+  "files": [
+    "dist/",
+    "ios/",
+    "android/"
+  ],
+  "keywords": [
+    "capacitor",
+    "plugin",
+    "webview",
+    "background"
+  ],
+  "license": "MIT"
+}

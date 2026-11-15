@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: panes
+:END:
+
+#+TITLE: Documentation about panes
+#+STARTUP: content
+
+* Structure
+Each application can have multiple panes. Typicall panes structure
+1. Panes
+2. Pages (routing here)
+3. Nested components inside each page.
+   
+   
+
+* Scheme
+[[excalidraw:./layout.excalidraw.svg]]

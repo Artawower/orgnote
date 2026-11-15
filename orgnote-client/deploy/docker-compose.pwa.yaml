@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  nginx:
+    build:
+      context: .
+      dockerfile: Dockerfile.pwa
+    container_name: frontend-nginx
+    ports:
+      # - '9000:80'
+      - '0.0.0.0:9000:80'
+    volumes:
+      - ../dist:/var/www
+    restart: always

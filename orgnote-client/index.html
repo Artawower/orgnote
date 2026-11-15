@@ -1,0 +1,445 @@
+<!doctype html>
+<html>
+  <head>
+    <title><%= productName %></title>
+
+    <meta charset="utf-8" />
+    <meta name="description" content="<%= productDescription %>" />
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="msapplication-tap-highlight" content="no" />
+    <meta
+      name="viewport"
+      content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width<% if (ctx.mode.cordova || ctx.mode.capacitor || ctx.mode.pwa) { %>, viewport-fit=cover<% } %>"
+    />
+
+    <link rel="icon" type="image/png" sizes="128x128" href="icons/favicon-128x128.png" />
+    <link rel="icon" type="image/png" sizes="96x96" href="icons/favicon-96x96.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="icons/favicon-16x16.png" />
+    <link rel="icon" type="image/ico" href="favicon.ico" />
+    <% if (ctx.mode.pwa) { %>
+    <meta name="theme-color" content="<%= pwaManifest.theme_color %>" />
+    <link
+      rel="mask-icon"
+      href="icons/safari-pinned-tab.svg"
+      color="<%= pwaManifest.theme_color %>"
+    />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="msapplication-TileImage" content="icons/ms-icon-144x144.png" />
+    <meta name="msapplication-TileColor" content="#000000" />
+    <meta name="apple-mobile-web-app-title" content="<%= pwaManifest.name %>" />
+    <link rel="apple-touch-icon" href="icons/apple-icon-120x120.png" />
+    <link rel="apple-touch-icon" sizes="152x152" href="icons/apple-icon-152x152.png" />
+    <link rel="apple-touch-icon" sizes="167x167" href="icons/apple-icon-167x167.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-icon-180x180.png" />
+    <% } %>
+    <link
+      rel="preload"
+      href="src/css/fonts/JetBrainsMono-Regular.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="src/css/fonts/Menlo-Regular.ttf"
+      as="font"
+      type="font/ttf"
+      crossorigin
+    />
+  </head>
+  <body style="background-color: var(--bg, #9356e8)">
+    <script>
+      window.__orgnoteStartup = {
+        htmlInlineScriptAt: performance.now(),
+      };
+    </script>
+    <script>
+      function toReadableMessage(value, fallback) {
+        if (value === null || value === undefined) return fallback || 'Unknown error';
+        if (value instanceof Error) {
+          return (value.name || 'Error') + ': ' + (value.message || 'Unknown error');
+        }
+        if (typeof value === 'string') return value;
+        if (typeof value === 'object' && typeof value.message === 'string') {
+          var name = typeof value.name === 'string' ? value.name : 'Error';
+          return name + ': ' + (value.message || 'Unknown error');
+        }
+        try {
+          return JSON.stringify(value);
+        } catch {
+          return String(value);
+        }
+      }
+
+      window.__errorBuffer = (function () {
+        const errors = [];
+        const MAX_ERRORS = 50;
+
+        const serializeError = function (error) {
+          return toReadableMessage(error);
+        };
+
+        return {
+          capture: function (error, type, meta) {
+            errors.unshift({
+              timestamp: Date.now(),
+              message: serializeError(error),
+              stack: error?.stack,
+              type: type,
+              meta: meta,
+            });
+            if (errors.length > MAX_ERRORS) errors.pop();
+          },
+          getAll: function () {
+            return errors.slice();
+          },
+          clear: function () {
+            errors.length = 0;
+          },
+          exportAsText: function () {
+            if (errors.length === 0) return 'No errors recorded';
+            return errors
+              .map(function (e, i) {
+                const date = new Date(e.timestamp).toISOString();
+                let text = '\n[' + (errors.length - i) + '] ' + date + ' - ' + e.type.toUpperCase();
+                text += '\n' + e.message;
+                if (e.stack) text += '\n' + e.stack;
+                if (e.meta) text += '\nMeta: ' + JSON.stringify(e.meta, null, 2);
+                return text;
+              })
+              .join('\n---\n');
+          },
+        };
+      })();
+
+      let errorScreenMounted = false;
+
+      function buildRecoveryUrl() {
+        var url = new URL('/', window.location.origin);
+        url.searchParams.set('orgnote-recover', String(Date.now()));
+        return url.toString();
+      }
+
+      function isSameOriginUrl(url) {
+        if (!url) return false;
+        try {
+          return new URL(url, window.location.href).origin === window.location.origin;
+        } catch {
+          return false;
+        }
+      }
+
+      function clearRecoveryUrlMarker() {
+        var url = new URL(window.location.href);
+        var recoveryTimestamp = url.searchParams.get('orgnote-recover');
+        if (!recoveryTimestamp) return;
+        url.searchParams.delete('orgnote-recover');
+        window.history.replaceState(window.history.state, document.title, url.pathname + url.search + url.hash);
+        console.info('[FALLBACK] Startup recovery marker cleared:', recoveryTimestamp);
+      }
+
+      clearRecoveryUrlMarker();
+
+      function deleteOriginCachesForStartupRecovery() {
+        if (!window.caches) return Promise.resolve();
+        return caches.keys().then(function (keys) {
+          return Promise.all(
+            keys.map(function (key) {
+              return caches.delete(key);
+            }),
+          );
+        });
+      }
+
+      function unregisterStartupServiceWorkers() {
+        if (!navigator.serviceWorker) return Promise.resolve();
+        return navigator.serviceWorker.getRegistrations().then(function (registrations) {
+          return Promise.all(
+            registrations.map(function (registration) {
+              return registration.unregister();
+            }),
+          );
+        });
+      }
+
+      function reloadAfterStartupRecovery() {
+        window.location.replace(buildRecoveryUrl());
+      }
+
+      window.__recoverFromStartupFailure = function () {
+        Promise.all([deleteOriginCachesForStartupRecovery(), unregisterStartupServiceWorkers()]).then(
+          reloadAfterStartupRecovery,
+          function (error) {
+            console.error('[FALLBACK] Startup recovery failed:', error);
+            reloadAfterStartupRecovery();
+          },
+        );
+      };
+
+      function isRecoverableStartupError(details) {
+        if (!details || details.type !== 'resource_error') return false;
+        if (!details.meta || details.meta.tagName !== 'SCRIPT') return false;
+        return isSameOriginUrl(details.meta.src);
+      }
+
+      function buildUpdateAppButton(details) {
+        if (!isRecoverableStartupError(details)) return '';
+        return '\
+                <button onclick="window.__recoverFromStartupFailure()" style="\
+                  padding: var(--button-padding, 12px 16px);\
+                  background: var(--bg-alt, #f5f5f5);\
+                  color: var(--fg, #000000);\
+                  border: 1px solid var(--border-default, #e5e5e5);\
+                  border-radius: var(--button-border-radius, var(--border-radius-md, 8px));\
+                  cursor: pointer;\
+                  font-size: var(--font-size-base, 16px);\
+                  font-weight: var(--font-weight-bold, 500);\
+                  min-width: var(--button-min-width, 120px);\
+                ">\
+                  Update App\
+                </button>';
+      }
+
+      function showMinimalErrorScreen(details) {
+        if (errorScreenMounted) return;
+        errorScreenMounted = true;
+
+        const root = document.getElementById('q-app') || document.body;
+        root.innerHTML =
+          '\
+          <div style="\
+            position: fixed;\
+            inset: 0;\
+           display: flex;\
+            flex-direction: column;\
+            align-items: center;\
+            justify-content: center;\
+            background: var(--bg, #ffffff);\
+            color: var(--fg, #000000);\
+            padding: var(--padding-lg, 20px);\
+            font-family: system-ui, -apple-system, sans-serif;\
+            z-index: 9999;\
+          ">\
+            <div style="max-width: 600px; width: 100%; text-align: center;">\
+              <h1 style="font-size: var(--font-size-2xl, 24px); margin-bottom: var(--margin-md, 16px); color: var(--red, #ef4444);">\
+                Critical Error\
+              </h1>\
+              <p style="margin-bottom: var(--margin-lg, 24px); color: var(--fg-alt, #666666); line-height: var(--line-height-relaxed, 1.625);">\
+                The application encountered an unexpected error during startup and cannot continue.\
+              </p>\
+              <div style="display: flex; gap: var(--gap-sm, 12px); justify-content: center; flex-wrap: wrap; margin-bottom: var(--margin-lg, 24px);">\
+                <button onclick="window.location.reload()" style="\
+                  padding: var(--button-padding, 12px 16px);\
+                  background: var(--default-red, #f65866);\
+                  color: var(--btn-text, white);\
+                  border: var(--btn-action-border, none);\
+                  border-radius: var(--button-border-radius, var(--border-radius-md, 8px));\
+                  cursor: pointer;\
+                  font-size: var(--font-size-base, 16px);\
+                  font-weight: var(--font-weight-bold, 500);\
+                  min-width: var(--button-min-width, 120px);\
+                ">\
+                  Reload\
+                </button>' +
+          buildUpdateAppButton(details) +
+          '\
+                <button onclick="\
+                  var text = window.__errorBuffer.exportAsText();\
+                  navigator.clipboard.writeText(text).then(function() {\
+                    alert(\'Error log copied to clipboard\');\
+                  }).catch(function() {\
+                    var textarea = document.createElement(\'textarea\');\
+                    textarea.value = text;\
+                    textarea.style.position = \'fixed\';\
+                    textarea.style.opacity = \'0\';\
+                    document.body.appendChild(textarea);\
+                    textarea.select();\
+                    document.execCommand(\'copy\');\
+                    document.body.removeChild(textarea);\
+                    alert(\'Error log copied to clipboard\');\
+                  });\
+                " style="\
+                  padding: var(--button-padding, 12px 16px);\
+                  background: var(--bg-alt, #f5f5f5);\
+                  color: var(--fg, #000000);\
+                  border: 1px solid var(--border-default, #e5e5e5);\
+                  border-radius: var(--button-border-radius, var(--border-radius-md, 8px));\
+                  cursor: pointer;\
+                  font-size: var(--font-size-base, 16px);\
+                  font-weight: var(--font-weight-bold, 500);\
+                  min-width: var(--button-min-width, 120px);\
+                ">\
+                  Copy Error Log\
+                </button>\
+              </div>\
+              <details style="text-align: left; border: 1px solid var(--border-default, #e5e5e5); border-radius: var(--border-radius-md, 8px); padding: var(--padding-md, 16px); background: var(--bg-alt, #f5f5f5);">\
+                <summary style="cursor: pointer; color: var(--fg-alt, #666666); font-weight: var(--font-weight-medium, 500); user-select: none;">\
+                  Show Error Details\
+                </summary>\
+                <pre style="\
+                  margin-top: var(--margin-md, 12px);\
+                  padding: var(--padding-md, 16px);\
+                  background: var(--bg, #ffffff);\
+                  border-radius: var(--border-radius-sm, 4px);\
+                  overflow: auto;\
+                  max-height: 300px;\
+                  font-size: var(--font-size-sm, 12px);\
+                  white-space: pre-wrap;\
+                  word-break: break-word;\
+                  font-family: ui-monospace, monospace;\
+                ">' +
+          window.__errorBuffer.exportAsText() +
+          '</pre>\
+              </details>\
+            </div>\
+          </div>\
+        ';
+      }
+
+      function buildLocationMeta(event) {
+        var meta = {};
+        if (event.filename) meta.url = event.filename;
+        if (event.lineno) meta.line = event.lineno;
+        if (event.colno) meta.col = event.colno;
+        return Object.keys(meta).length ? meta : null;
+      }
+
+      function formatLocation(meta) {
+        if (!meta || !meta.url) return '';
+        var line = meta.line ? ':' + meta.line : '';
+        var col = meta.col ? ':' + meta.col : '';
+        return ' (' + meta.url + line + col + ')';
+      }
+
+      function isSameOriginStack(stack) {
+        if (!stack) return false;
+        var origin = window.location.origin;
+        return stack.split('\n').some(function (line) {
+          return line.indexOf(origin) !== -1;
+        });
+      }
+
+      function isResourceTarget(target) {
+        if (!target) return false;
+        return target.tagName === 'SCRIPT' || target.tagName === 'LINK' || target.tagName === 'IMG';
+      }
+
+      function extractResourceErrorDetails(target) {
+        if (!isResourceTarget(target)) return null;
+        var source = target.src || target.href || '';
+        var label = source ? target.tagName + ' ' + source : target.tagName;
+        return {
+          value: 'Resource failed to load: ' + label,
+          message: 'Resource failed to load: ' + label,
+          type: 'resource_error',
+          meta: {
+            tagName: target.tagName,
+            src: source || undefined,
+          },
+        };
+      }
+
+      function buildErrorDetailsFromError(error, meta) {
+        var message = toReadableMessage(error) + formatLocation(meta);
+        return {
+          value: error,
+          message: message,
+          type: 'error',
+          meta: meta,
+        };
+      }
+
+      function buildErrorDetailsFromMessage(message, meta) {
+        var readable = toReadableMessage(message, 'Unknown error occurred') + formatLocation(meta);
+        return {
+          value: readable,
+          message: readable,
+          type: 'error',
+          meta: meta,
+        };
+      }
+
+      function extractErrorDetails(event) {
+        var resourceDetails = extractResourceErrorDetails(event.target);
+        if (resourceDetails) return resourceDetails;
+        var meta = buildLocationMeta(event);
+        if (event.error) return buildErrorDetailsFromError(event.error, meta);
+        return buildErrorDetailsFromMessage(event.message, meta);
+      }
+
+      function extractRejectionDetails(event) {
+        var reason = event.reason;
+        var message = 'Unhandled promise rejection: ' + toReadableMessage(reason, 'Unknown reason');
+        var value = reason === null || reason === undefined ? message : reason;
+        return {
+          value: value,
+          message: message,
+          type: 'rejection',
+          meta: {
+            reasonType: reason === null ? 'null' : typeof reason,
+          },
+        };
+      }
+
+      function isNonFatalRejectionReason(reason) {
+        if (reason === null || reason === undefined) return true;
+        var name = reason && typeof reason === 'object' ? reason.name : null;
+        if (name === 'AbortError' || name === 'CanceledError' || name === 'CancelledError')
+          return true;
+        var message = toReadableMessage(reason);
+        return message.indexOf('Failed to fetch') !== -1 || message.indexOf('NetworkError') !== -1;
+      }
+
+      function isFatalResourceError(details) {
+        if (!details.meta || details.meta.tagName !== 'SCRIPT') return false;
+        return isSameOriginUrl(details.meta.src);
+      }
+
+      function isFatalErrorEvent(event, details) {
+        if (event && event.message && event.message.trim() === 'Script error.') return false;
+        if (event && event.error && event.error.stack && isSameOriginStack(event.error.stack))
+          return true;
+        if (details.meta && details.meta.url && isSameOriginUrl(details.meta.url)) return true;
+        return false;
+      }
+
+      function isFatalRejection(details) {
+        var reason = details.value;
+        if (isNonFatalRejectionReason(reason)) return false;
+        if (reason && reason.stack && isSameOriginStack(reason.stack)) return true;
+        return false;
+      }
+
+      function shouldShowCriticalScreen(event, details) {
+        if (details.type === 'resource_error') return isFatalResourceError(details);
+        if (details.type === 'rejection') return isFatalRejection(details);
+        return isFatalErrorEvent(event, details);
+      }
+
+      window.addEventListener(
+        'error',
+        function (event) {
+          if (window.__appBooted) return;
+
+          var details = extractErrorDetails(event);
+          window.__errorBuffer.capture(details.value, details.type, details.meta);
+          console.error('[FALLBACK] Uncaught error:', details.message);
+          if (shouldShowCriticalScreen(event, details)) showMinimalErrorScreen(details);
+        },
+        true,
+      );
+
+      window.addEventListener('unhandledrejection', function (event) {
+        if (window.__appBooted) return;
+
+        var details = extractRejectionDetails(event);
+        window.__errorBuffer.capture(details.value, details.type, details.meta);
+        console.error('[FALLBACK] Unhandled rejection:', details.message);
+        if (shouldShowCriticalScreen(event, details)) showMinimalErrorScreen(details);
+      });
+    </script>
+    <!-- quasar:entry-point -->
+  </body>
+</html>

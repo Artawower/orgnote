@@ -1,0 +1,315 @@
+@mixin flexify($direction: row, $justify: space-between, $align: center, $gap: 0px) {
+  display: flex !important;
+  flex-direction: $direction;
+  justify-content: $justify;
+  align-items: $align;
+  gap: $gap;
+}
+
+@mixin flexify-inline($direction: row, $justify: space-between, $align: center) {
+  display: inline-flex !important;
+  flex-direction: $direction;
+  justify-content: $justify;
+  align-items: $align;
+}
+
+@mixin fontify($size, $weight, $color: false, $line-height: null) {
+  @if type-of($size) == 'string' {
+    font-size: $size;
+  } @else {
+    font-size: #{$size}px;
+  }
+  font-weight: $weight;
+
+  @if round($size) == $size {
+    font-size: #{$size}px;
+  } @else {
+    font-size: #{$size};
+  }
+
+  @if $color {
+    color: $color;
+  }
+
+  @if $line-height {
+    line-height: $line-height;
+  }
+}
+
+@mixin dark-mode {
+  body.body--dark {
+    @content;
+  }
+}
+
+@mixin light-mode {
+  body.body--light {
+    @content;
+  }
+}
+
+@mixin native-mobile {
+  body.capacitor {
+    @content;
+  }
+}
+
+@mixin mobile {
+  @media (max-width: calc($tablet - 1px)) {
+    @content;
+  }
+}
+
+@mixin desktop {
+  @media (min-width: $desktop) {
+    @content;
+  }
+}
+
+@mixin electron {
+  body.electron {
+    @content;
+  }
+}
+
+@mixin tablet {
+  @media (min-width: $mobile) and (max-width: calc($desktop - 1px)) {
+    @content;
+  }
+}
+
+@mixin tablet-above {
+  @media (min-width: $tablet) {
+    @content;
+  }
+}
+
+@mixin desktop-below {
+  @media (max-width: calc($desktop - 1px)) {
+    @content;
+  }
+}
+
+@mixin tablet-below {
+  @media (max-width: calc($tablet - 1px)) {
+    @content;
+  }
+}
+
+@mixin line-limit($lines) {
+  overflow: hidden;
+  white-space: normal;
+  display: -webkit-box !important;
+  -webkit-line-clamp: $lines;
+  -webkit-box-orient: vertical;
+}
+
+@mixin overflow-ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@mixin reset-input {
+  background: transparent;
+  border: 0;
+
+  &:focus {
+    outline: none;
+  }
+
+  &::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  &[type='number'] {
+    -moz-appearance: textfield;
+  }
+}
+
+@mixin sticky-header {
+  position: sticky;
+  top: -1px;
+  z-index: 1000;
+}
+
+@mixin mobile-footer-padding($offset: 0px) {
+  @include desktop-below {
+    padding-bottom: calc(var(--footer-height) + #{$offset});
+  }
+}
+
+@mixin fit {
+  height: 100%;
+  width: 100%;
+}
+
+@mixin overscreen($z-index: 2) {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: $z-index;
+}
+
+$type-colors: (
+  info: var(--blue),
+  warning: var(--yellow),
+  danger: var(--red),
+);
+
+@mixin for-each-view-type {
+  @each $type, $color in $type-colors {
+    @content ($type, $color);
+  }
+}
+
+@mixin hide-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@mixin hover {
+  @media (hover: hover) and (pointer: fine) {
+    &:hover {
+      @content;
+    }
+  }
+}
+
+@mixin interactive-no-select {
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+@mixin floating-surface {
+  background: var(--floating-bg);
+  border: var(--floating-border);
+  box-shadow: var(--floating-box-shadow);
+  border-radius: var(--floating-border-radius);
+}
+
+@mixin glass-surface {
+  background: var(--glass-bg, rgba(255, 255, 255, 0.08));
+  border: var(--glass-border, 1px solid rgba(255, 255, 255, 0.15));
+  border-top: var(--glass-border-top, 1px solid rgba(255, 255, 255, 0.2));
+  -webkit-backdrop-filter: var(--glass-backdrop-filter, blur(10px) saturate(150%));
+  backdrop-filter: var(--glass-backdrop-filter, blur(10px) saturate(150%));
+  background-clip: padding-box;
+  box-shadow: var(--glass-box-shadow, 0 2px 4px rgba(0, 0, 0, 0.2));
+}
+
+@mixin glass-scroll-fade($direction: top) {
+  $fade-size: var(--glass-scroll-fade-size);
+
+  @if $direction == top {
+    mask-image: linear-gradient(to bottom, transparent 0, black #{$fade-size});
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0, black #{$fade-size});
+  } @else if $direction == bottom {
+    mask-image: linear-gradient(
+      to bottom,
+      black 0,
+      black calc(100% - #{$fade-size}),
+      transparent 100%
+    );
+    -webkit-mask-image: linear-gradient(
+      to bottom,
+      black 0,
+      black calc(100% - #{$fade-size}),
+      transparent 100%
+    );
+  } @else if $direction == both {
+    mask-image: linear-gradient(
+      to bottom,
+      transparent 0,
+      black #{$fade-size},
+      black calc(100% - #{$fade-size}),
+      transparent 100%
+    );
+    -webkit-mask-image: linear-gradient(
+      to bottom,
+      transparent 0,
+      black #{$fade-size},
+      black calc(100% - #{$fade-size}),
+      transparent 100%
+    );
+  }
+}
+
+@mixin glass-tint($color: var(--accent)) {
+  background: color-mix(in srgb, #{$color} calc(var(--glass-tint-opacity) * 100%), var(--glass-bg));
+}
+
+@mixin glass-btn {
+  --btn-action-hover-bg: transparent;
+  --btn-action-hover-brightness: 1.15;
+  --btn-action-hover-scale: 1.05;
+  --btn-action-active-scale: 0.92;
+}
+
+$org-priority-letters: a, b, c, d, e;
+
+@mixin org-priority-colors($property: color) {
+  @each $letter in $org-priority-letters {
+    .priority-#{$letter} {
+      #{$property}: var(--priority-#{$letter});
+    }
+  }
+}
+
+@mixin glass-specular {
+  position: relative;
+  overflow: hidden;
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    background: radial-gradient(
+      circle at var(--glass-specular-x, 50%) var(--glass-specular-y, 50%),
+      rgba(255, 255, 255, 0.35) 0%,
+      rgba(255, 255, 255, 0.1) 40%,
+      transparent 70%
+    );
+    transition: var(--glass-specular-transition, opacity 0.3s ease);
+    pointer-events: none;
+    border-radius: inherit;
+  }
+
+  &:active::after {
+    opacity: 1;
+  }
+}
+
+@mixin hoverable-area {
+  border: 1px solid transparent;
+  border-radius: var(--border-radius-md);
+  transition: border-color 0.15s ease;
+
+  &:focus-within {
+    border-color: var(--border-color);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    &:hover {
+      border-color: var(--border-color);
+    }
+  }
+}
+
+@mixin hoverable-actions {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+
+  @include tablet {
+    opacity: 1;
+    pointer-events: auto;
+  }
+}

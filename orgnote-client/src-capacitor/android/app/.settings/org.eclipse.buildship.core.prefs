@@ -1,0 +1,13 @@
+arguments=--init-script /Users/darkawower/.local/share/opencode/bin/jdtls/config_mac/org.eclipse.osgi/59/0/.cp/gradle/init/init.gradle
+auto.sync=false
+build.scans.enabled=false
+connection.gradle.distribution=GRADLE_DISTRIBUTION(VERSION(8.9))
+connection.project.dir=
+eclipse.preferences.version=1
+gradle.user.home=
+java.home=/nix/store/dqjjg2zpsnsbcms3lhxw0rfbv959mmq5-zulu-ca-jdk-21.0.8/Library/Java/JavaVirtualMachines/zulu-21.jdk/Contents/Home
+jvm.arguments=
+offline.mode=false
+override.workspace.settings=true
+show.console.view=true
+show.executions.view=true

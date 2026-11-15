@@ -1,0 +1,28 @@
+name: Client prod
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - orgnote-client/**
+      - orgnote-api/**
+      - package.json
+      - bun.lock
+      - bunfig.toml
+
+permissions:
+  contents: read
+
+jobs:
+  ci:
+    name: CI
+    uses: ./.github/workflows/ci-client.yml
+
+  deploy:
+    name: Docker build and deploy
+    needs: [ci]
+    uses: ./.github/workflows/client-deploy.yml
+    with:
+      environment: deploy
+      image_tag: latest
+    secrets: inherit

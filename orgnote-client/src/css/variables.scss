@@ -1,0 +1,682 @@
+@use 'mixins' as m;
+@use 'quasar.variables' as a;
+
+body {
+  // Safe Area
+  --device-safe-area-top: env(safe-area-inset-top, 0px);
+  --device-safe-area-bottom: var(--device-padding-bottom, env(safe-area-inset-bottom, 0px));
+  --device-safe-area-left: env(safe-area-inset-left, 0px);
+  --device-safe-area-right: env(safe-area-inset-right, 0px);
+  --window-title-bar-height: 0px;
+  --safe-area-top: var(--device-safe-area-top);
+  --safe-area-bottom: var(--device-safe-area-bottom);
+  --safe-area-left: var(--device-safe-area-left);
+  --safe-area-right: var(--device-safe-area-right);
+  --app-top-inset: max(var(--device-safe-area-top), var(--window-title-bar-height));
+
+  // Content offset (for floating headers)
+  --content-top-offset: 0px;
+
+  --padding-xs: 2px;
+  --padding-sm: 4px;
+  --padding-md: 8px;
+  --padding-lg: 16px;
+  --padding-xl: 32px;
+
+  // Margins
+  --margin-sm: 8px;
+  --margin-md: 16px;
+  --margin-lg: 32px;
+
+  // Font Sizes
+  --font-size-xs: 12px;
+  --font-size-sm: 14px;
+  --font-size-md: 16px;
+  --font-size-lg: 20px;
+  --font-size-xl: 24px;
+  --font-size-2xl: 32px;
+  --font-size-3xl: 48px;
+  --font-size-4xl: 56px;
+
+  // Font Weights
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-bold: 700;
+
+  // Line Heights
+  --line-height-sm: 1.2;
+  --line-height-md: 1.5;
+  --line-height-lg: 1.8;
+
+  // Border Radius
+  --border-radius-xs: 4px;
+  --border-radius-sm: 6px;
+  --border-radius-md: 10px;
+  --border-radius-lg: 16px;
+  --border-radius-xl: 32px;
+  --border-radius-factor: 0.45;
+
+  // Default borders
+  --border-color: var(--fg-muted);
+  --border-default: none;
+  --border-accent: 1px solid var(--accent);
+
+  // Opacity
+  --disabled-opacity: 0.4;
+
+  // Shadows
+  --shadow-sm: 0px 1px 2px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0px 10px 15px rgba(0, 0, 0, 0.1);
+
+  // Spacing (Gaps)
+  --gap-xxs: 2px;
+  --gap-xs: 4px;
+  --gap-sm: 8px;
+  --gap-md: 16px;
+  --gap-lg: 24px;
+  --gap-xl: 32px;
+
+  --glass-backdrop-filter: blur(16px) saturate(180%);
+  --glass-border: 1px solid var(--glass-border-color, rgba(255, 255, 255, 0.15));
+  --glass-border-top: 1px solid var(--glass-border-top-color, rgba(255, 255, 255, 0.3));
+  --glass-tint-opacity: 0.15;
+  --glass-scroll-fade-size: 32px;
+
+  // Floating surface (popups, dropdowns, context menus)
+  --floating-bg: var(--bg);
+  --floating-border: var(--border-default);
+  --floating-box-shadow: var(--shadow-md);
+  --floating-border-radius: var(--border-radius-md);
+
+  // Shared glass bar height
+  --bar-height: var(--control-height-bar);
+
+  // Header
+  --header-height: var(--bar-height);
+  --header-bg: transparent;
+  --header-border: none;
+  --header-border-radius: 0;
+  --header-padding: var(--padding-sm) 0;
+  --header-top: 0;
+
+  // Header wrapper
+  --header-wrapper-bg: transparent;
+  --header-wrapper-border-radius: 0;
+  --header-wrapper-padding-y: var(--padding-md);
+  --header-wrapper-padding-x: var(--padding-lg);
+  --header-wrapper-padding: var(--header-wrapper-padding-y) var(--header-wrapper-padding-x);
+  --main-header-total-height: calc(var(--header-wrapper-padding-y) * 2 + var(--bar-height));
+
+  // Header items (left/center/right sections)
+  --header-item-bg: var(--glass-bg);
+  --header-item-border: var(--glass-border);
+  --header-item-height: var(--bar-height);
+  --header-item-border-radius: calc(var(--header-item-height) * var(--border-radius-factor, 0.45));
+  --header-item-padding: 0;
+  --header-item-backdrop-filter: var(--glass-backdrop-filter);
+  --header-item-box-shadow: var(--glass-box-shadow);
+  --header-item-center-bg: var(--header-item-bg);
+  --header-item-center-border: var(--header-item-border);
+  --header-item-center-border-top: var(--header-item-border-top, var(--glass-border-top));
+  --header-item-center-backdrop-filter: var(--header-item-backdrop-filter);
+  --header-item-center-box-shadow: var(--header-item-box-shadow);
+  --header-item-center-overflow: hidden;
+  --header-fade-blur: 1px;
+  --main-header-title-max-width: 72vw;
+  --main-header-actions-gap-mobile: var(--padding-md);
+
+  // Footer
+  --footer-height: 0px;
+  --footer-border-top: 0;
+  --footer-border-radius: var(--border-radius-xl);
+  --footer-wrapper-padding-y: var(--padding-lg);
+  --footer-wrapper-padding-x: var(--padding-lg);
+  --footer-wrapper-padding: var(--footer-wrapper-padding-y) var(--footer-wrapper-padding-x);
+  --footer-padding: 0 var(--padding-md);
+  --footer-bg: var(--glass-bg);
+  --footer-backdrop-filter: var(--glass-backdrop-filter);
+  --footer-box-shadow: var(--glass-box-shadow);
+  --footer-border: var(--glass-border);
+
+  --floating-footer-height: 0px;
+  --floating-padding-bottom: max(var(--floating-footer-height, 0px), var(--padding-lg));
+
+  // Special offset for floating footer
+  --scroll-bottom-padding: 0px;
+
+  // Sidebar
+  --sidebar-width: 360px;
+  --sidebar-mini-width: 54px;
+  --sidebar-bg: var(--bg-secondary);
+  --sidebar-fg: var(--fg);
+  --sidebar-border-right: var(--border-default);
+  --sidebar-padding: var(--padding-md);
+  --mobile-sidebar-menu-items-gap: var(--gap-xxs);
+  --sidebar-hover-bg: var(--bg-hover);
+  --sidebar-fg-muted: var(--fg-muted);
+
+  // Button
+  --btn-action-padding: var(--padding-md);
+  --btn-action-radius: var(--border-radius-md);
+  --btn-action-fg: var(--fg);
+  --btn-action-bg: var(--bg);
+  --btn-action-hover-bg: var(--bg-hover);
+  --btn-action-hover-brightness: 100%;
+  --btn-action-hover-opacity: 1;
+  --btn-action-hover-scale: 1;
+  --btn-action-active-scale: 0.95;
+  --btn-action-transition: transform 0.2s cubic-bezier(0.2, 0.9, 0.3, 1.2), filter 0.15s ease;
+  --btn-action-xs-size: var(--control-height-xs);
+  --btn-action-sm-size: var(--control-height-sm);
+  --btn-action-md-size: var(--control-height-md);
+  --btn-action-lg-size: var(--control-height-lg);
+  --btn-action-xl-size: var(--control-height-xl);
+  --btn-action-border: none;
+  --btn-action-active-fg: var(--accent);
+  --btn-action-text-width: 180px;
+  --btn-action-text-padding-x: var(--padding-sm);
+
+  --button-radius: var(--border-radius-md);
+
+  --button-xs-height: var(--control-height-xs);
+  --button-xs-padding: 0 var(--padding-sm);
+  --button-xs-min-width: 48px;
+
+  --button-sm-height: var(--control-height-sm);
+  --button-sm-padding: 0 var(--padding-md);
+  --button-sm-min-width: 72px;
+
+  --button-md-height: var(--control-height-md);
+  --button-md-padding: 0 var(--padding-lg);
+  --button-md-min-width: 120px;
+
+  --button-lg-height: var(--control-height-lg);
+  --button-lg-padding: 0 var(--padding-xl);
+  --button-lg-min-width: 160px;
+
+  // Platform specific value
+  --device-padding-bottom: 0px;
+  --full-height: var(--screen-height, 100vh);
+
+  // Backdrop
+  --backdrop-bg: rgba(0, 0, 0, 0.2);
+  --backdrop-focus-bg: rgba(0, 0, 0, 0.8);
+
+  // Modal
+  --modal-backdrop-bg: var(--backdrop-bg);
+  --modal-border: var(--border-default);
+  --modal-radius: var(--border-radius-md);
+  --modal-padding: var(--padding-lg);
+  --settings-padding: var(--padding-lg);
+  --modal-max-width: min(1280px, calc(100vw - var(--padding-xl)));
+  --modal-min-width: 460px;
+  --modal-max-height: min(860px, calc(100vh - 2 * var(--padding-xl)));
+
+  // Cards
+  --card-padding: var(--padding-lg);
+  --card-border: var(--border-default);
+  --card-radius: var(--border-radius-md);
+
+  // Interactive control heights
+  --control-height-xs: 24px;
+  --control-height-sm: 28px;
+  --control-height-md: 32px;
+  --control-height-lg: 36px;
+  --control-height-xl: 40px;
+  --control-height-touch: 44px;
+  --control-height-bar: 48px;
+
+  // Input surface
+  --input-bg: var(--bg-secondary);
+  --input-hover-bg: var(--bg-hover);
+  --input-focus-bg: var(--bg-secondary);
+  --input-border: var(--border-default);
+  --input-radius: var(--border-radius-md);
+  --input-shadow: none;
+  --input-focus-shadow: inset 0 0 0 2px
+    color-mix(in srgb, var(--accent) 35%, transparent);
+  --input-transition: 0.15s ease;
+
+  // Search input
+  --search-input-field-padding: 0 var(--padding-md);
+  --search-input-field-height: var(--control-height-xl);
+
+  // Dropdown
+  --dropdown-height: var(--control-height-md);
+  --dropdown-label-min-width: 180px;
+  --dropdown-radius: var(--border-radius-md);
+  --dropdown-hover-bg: var(--bg-hover);
+  --dropdown-padding-x: var(--padding-sm);
+  --dropdown-content-gap: var(--gap-sm);
+  --dropdown-menu-padding-x: var(--gap-xs);
+  --dropdown-menu-padding-y: var(--gap-xs);
+  --dropdown-menu-radius: var(--border-radius-md);
+  --dropdown-option-padding-x: var(--padding-sm);
+  --dropdown-option-padding-y: var(--padding-xs);
+  --dropdown-option-radius: var(--border-radius-sm);
+  --dropdown-tag-padding-x: var(--padding-xs);
+
+  // Context menu
+  --context-menu-padding: var(--gap-xs);
+
+  // Menu group
+  --menu-group-bg: transparent;
+  --menu-group-border: var(--border-default);
+  --menu-group-radius: 0;
+  --menu-group-shadow: none;
+  --menu-group-padding: 0;
+  --menu-group-gap: var(--gap-sm);
+  --menu-group-items-gap: var(--gap-xxs);
+  --menu-group-title-fg: var(--fg-muted);
+  --menu-group-title-font-size: var(--font-size-sm);
+  --menu-group-title-font-weight: var(--font-weight-medium);
+  --menu-group-title-padding: 0 var(--menu-item-padding-x);
+
+  // Menu item
+  --menu-item-padding-x: 10px;
+  --menu-item-padding-y: 6px;
+  --menu-item-padding: var(--menu-item-padding-y) var(--menu-item-padding-x);
+  --menu-item-content-gap: var(--gap-xs);
+  --menu-item-height: var(--nav-item-height);
+  --menu-item-hover-bg: var(--bg-hover);
+  --menu-item-radius: var(--nav-item-radius);
+
+  --menu-item-height-xs: var(--control-height-sm);
+  --menu-item-height-sm: var(--control-height-sm);
+  --menu-item-height-md: var(--control-height-md);
+  --menu-item-height-lg: var(--control-height-lg);
+  --menu-item-height-xl: var(--control-height-xl);
+  --menu-item-active-fg: var(--fg);
+  --menu-item-active-bg: var(--bg-hover);
+  --menu-item-active-radius: var(--menu-item-radius);
+  --sidebar-sections-z-index: 10;
+
+  // File Manager
+  --file-item-active-bg: var(--bg-hover);
+  --file-item-active-fg: var(--accent);
+
+  // Icons
+  --icon-size-xs: 16px;
+  --icon-size-sm: 20px;
+  --icon-size-md: 24px;
+  --icon-size-lg: 28px;
+  --icon-size-xl: 32px;
+  --icon-rounded-radius: var(--border-radius-sm);
+  --icon-border: var(--border-default);
+  --icon-border-padding: var(--padding-md);
+  --icon-radius: var(--border-radius-md);
+
+  // Device sizes
+  --tablet: #{a.$tablet};
+  --desktop: #{a.$desktop};
+
+  // Toggle button
+  --toggle-height: 24px;
+  --toggle-width: 42px;
+  --toggle-knob-size: 22px;
+  --toggle-knob-offset: 1px;
+  --toggle-radius: 60px;
+  --toggle-bg: var(--bg-hover);
+  --toggle-bg-checked: var(--accent);
+  --toggle-knob-bg: var(--bg);
+  --toggle-knob-shadow: 0 0 0 1px hsla(0, 0%, 0%, 0.1), 0 2px 4px hsla(0, 0%, 0%, 0.1);
+  --toggle-transition: 0.2s ease;
+
+  --segmented-control-bg: rgba(255, 255, 255, 0.08);
+  --segmented-control-border: ;
+  --segmented-control-active-bg: rgba(255, 255, 255, 0.2);
+  --segmented-control-active-shadow: ;
+
+  --chart-calendar-month-height: 136px;
+  --chart-calendar-year-height: 128px;
+  --chart-time-range-height: 320px;
+
+  --pomodoro-ring-color: var(--accent);
+  --pomodoro-ring-track-color: color-mix(in srgb, var(--fg) 12%, transparent);
+
+  // Completion
+  --completion-width: 100vw;
+  --completion-max-width: 768px;
+  --completion-max-height: 68dvh;
+  --completion-padding: var(--padding-md);
+  --completion-footer-height: 24px;
+  --completion-item-hover-bg: var(--bg-elevated);
+  --completion-item-radius: var(--border-radius-md);
+  --completion-item-padding: var(--padding-md);
+  --completion-item-height: var(--control-height-md);
+
+  // Completion header (mobile floating glass input)
+  --completion-header-bg: var(--glass-bg);
+  --completion-header-backdrop-filter: var(--glass-backdrop-filter);
+  --completion-header-box-shadow: var(--glass-box-shadow);
+  --completion-header-border: var(--glass-border);
+  --completion-header-border-radius: var(--border-radius-xl);
+  --completion-header-height: var(--bar-height);
+  --completion-header-margin: var(--padding-lg);
+  --completion-header-offset: calc(
+    var(--completion-header-height) + 2 * var(--completion-header-margin)
+  );
+
+  // Inputs
+  --placeholder-fg: var(--fg-muted);
+
+  // Content frames
+  --content-max-width: 768px;
+  --buffer-content-max-width: var(--content-max-width);
+
+  // Pages
+  --page-padding: var(--padding-lg);
+  --page-max-width: 960px;
+
+  // Panes
+  --splitter-size: 1px;
+  --splitter-bg: var(--bg-secondary);
+  --splitter-hover-bg: var(--accent);
+  --splitter-hover-scale: 4;
+  --splitter-transition-duration: 0.15s;
+
+  // Navigation
+  --nav-item-height: var(--control-height-md);
+  --nav-item-radius: var(--border-radius-md);
+
+  // Tab
+  --nav-tabs-bg: var(--bg-secondary);
+  --nav-tabs-padding: var(--padding-md) var(--padding-md) var(--tab-connection-depth);
+  --tab-connection-depth: var(--padding-sm);
+  --tab-padding: 0 var(--padding-md);
+  --tab-height: var(--nav-item-height);
+  --tab-bg: transparent;
+  --tab-border: 0;
+  --tab-border-radius: var(--nav-item-radius);
+  --tab-fg: var(--fg-muted);
+  --tab-width: 160px;
+  --tab-active-border: 0;
+  --tab-active-radius: var(--nav-item-radius);
+  --tab-active-border-radius: var(--tab-active-radius) var(--tab-active-radius) 0 0;
+  --tab-active-hover-bg: var(--bg-hover);
+  --tab-active-fg: var(--fg);
+  --tab-active-bg: var(--bg);
+  --tab-drop-indicator-width: 2px;
+  --tab-drop-indicator-color: var(--accent);
+
+  // Tab overview
+  --tab-preview-active-border: 3px solid var(--accent);
+  --tab-preview-border: 2px solid color-mix(in srgb, var(--fg-muted), var(--bg) 60%);
+  --tab-preview-text-shadow: unset;
+
+  // Tab overview grid
+  --tab-overview-container-padding: var(--padding-md);
+  --tab-overview-grid-gap: var(--gap-lg);
+  --tab-overview-grid-columns: 3;
+
+  // Context menu
+  --context-menu-item-padding: var(--padding-md);
+  --context-menu-item-hover-bg: var(--bg-elevated);
+
+  // Drop zone
+  --drop-zone-border: 4px dashed var(--accent);
+  --drop-zone-bg: none;
+  --drop-zone-opacity: 0.3;
+
+  // Uploader
+  --uploader-info-bg: var(--bg-elevated);
+  --uploader-info-fg: var(--fg);
+  --uploader-info-border: 4px dashed var(--fg-muted);
+  --uploader-info-radius: 16px;
+
+  // Spoiler
+  --spoiler-max-height: 400px;
+
+  // Layout
+  --layout-gap: 0;
+
+  // Badge
+  --badge-radius: 6px;
+
+  // Modal overlay (below notifications so toasts render above the modal)
+  --modal-z-index: 9000;
+
+  // Floating page elements
+  --floating-z-index: 4;
+
+  // Notifications
+  --notification-z-index: 9999;
+  --notification-max-width: 480px;
+  --notification-min-width: 400px;
+  --notification-container-top: var(--padding-lg);
+  --notification-container-right: var(--padding-lg);
+  --notification-container-bottom: auto;
+  --notification-container-left: auto;
+  --notification-container-gap: var(--gap-sm);
+
+  --notification-padding: var(--padding-lg);
+  --notification-radius: var(--border-radius-md);
+  --notification-bg: var(--bg-secondary);
+  --notification-fg: var(--fg);
+  --notification-border: var(--border-default);
+  --notification-shadow: var(--shadow-lg);
+
+  --notification-message-font-size: var(--font-size-sm);
+  --notification-message-font-weight: var(--font-weight-bold);
+  --notification-caption-font-size: var(--font-size-xs);
+  --notification-caption-opacity: 0.8;
+
+  --notification-close-opacity: 0.7;
+
+  // Editor
+  --editor-toolbar-height: var(--bar-height);
+  --editor-max-width: var(--content-max-width);
+  --editor-padding: var(--padding-xl) var(--padding-lg) var(--padding-lg) var(--padding-lg);
+  --editor-cursor-color: var(--accent);
+  --editor-cursor-width: 2px;
+  --editor-selection-bg: var(--accent);
+  --editor-selection-fg: var(--bg);
+  --editor-active-line-bg: transparent;
+  --editor-line-height: 1.6em;
+  --editor-headline-line-height: 1.4;
+
+  // Headline font sizes
+  --headline-font-size-1: 2rem;
+  --headline-font-size-2: 1.8rem;
+  --headline-font-size-3: 1.6rem;
+  --headline-font-size-4: 1.4rem;
+  --headline-font-size-5: 1.2rem;
+  --headline-font-size-6: 1rem;
+
+  --inline-code-bg: var(--bg-elevated);
+  --inline-code-fg: var(--fg);
+
+  // Editor line
+  --editor-line-left-padding: 6px;
+
+  // Src blocks
+  --src-block-padding-x: var(--padding-md);
+  --src-footer-padding-y: var(--padding-sm);
+  --src-margin-y: var(--margin-md);
+
+  --org-list-item-bullet-margin-left: 20px;
+  --org-list-bullet-offset-x: -14px;
+  --org-list-bullet-offset-x-mobile: -10px;
+  --org-list-bullet-scale: 1.6;
+
+  // Radio button
+  --radio-sm-size: 16px;
+  --radio-md-size: 20px;
+  --radio-lg-size: 24px;
+
+  // Checkbox
+  --checkbox-size: 20px;
+  --checkbox-color: var(--accent);
+  --checkbox-radius: var(--border-radius-sm);
+  --checkbox-transition-speed: 150ms;
+
+  --checkbox-border-width: 1px;
+  --checkbox-border-color: var(--fg);
+
+  --checkbox-bg-unchecked: transparent;
+  --checkbox-bg-checked: var(--checkbox-color);
+  --checkbox-bg-hover-unchecked: var(--bg-hover);
+  --checkbox-bg-hover-checked: var(--checkbox-color);
+
+  --checkbox-icon-color: #ffffff;
+  --checkbox-icon-stroke: 3.5;
+  --checkbox-icon-size: 80%;
+  --checkbox-icon-transform-unchecked: scale(0);
+  --checkbox-icon-transform-checked: scale(1);
+
+  --checkbox-disabled-opacity: 0.5;
+  --checkbox-focus-shadow: 0 0 0 2px var(--accent);
+  --checkbox-hover-filter: brightness(0.9);
+
+  // Date Picker
+  --date-picker-bg: var(--bg);
+  --date-picker-fg: var(--fg);
+  --date-picker-border: var(--border-default);
+  --date-picker-radius: var(--border-radius-md);
+  --date-picker-padding: var(--padding-md);
+  --date-picker-font-size: var(--font-size-sm);
+
+  --date-picker-header-fg: var(--fg-muted);
+  --date-picker-header-font-size: var(--font-size-sm);
+  --date-picker-header-font-weight: var(--font-weight-medium);
+
+  --date-picker-day-size: 32px;
+  --date-picker-day-radius: var(--border-radius-sm);
+  --date-picker-day-fg: var(--fg);
+  --date-picker-day-hover-bg: var(--bg-hover);
+  --date-picker-day-selected-bg: color-mix(in srgb, var(--accent) 85%, var(--bg));
+  --date-picker-day-selected-fg: var(--white);
+  --date-picker-day-today-border: 1px solid var(--accent);
+  --date-picker-day-disabled-opacity: 0.35;
+  --date-picker-day-outside-opacity: 0.3;
+
+  --date-picker-range-bg: color-mix(in srgb, var(--accent) 66%, transparent);
+  --date-picker-range-edge-radius: var(--border-radius-sm);
+
+  --date-picker-weekday-fg: var(--fg-muted);
+  --date-picker-weekday-font-size: var(--font-size-xs);
+
+  --date-picker-marker-size: 4px;
+  --date-picker-marker-bar-height: 3px;
+  --date-picker-marker-highlight-bg: color-mix(in srgb, var(--accent) 15%, transparent);
+  --date-picker-marker-gap: var(--padding-xs);
+  --date-picker-marker-offset: var(--padding-xs);
+  --date-picker-marker-default-color: var(--accent);
+
+  --date-picker-nav-btn-size: var(--btn-action-sm-size);
+  --date-picker-nav-btn-radius: var(--border-radius-sm);
+  --date-picker-nav-btn-hover-bg: var(--bg-hover);
+  --date-picker-transition: 0.15s ease;
+
+  --graph-node-color: var(--fg-muted);
+  --graph-node-dim-color: color-mix(in srgb, var(--fg-muted) 50%, transparent);
+  --graph-edge-color: color-mix(in srgb, var(--fg-muted) 30%, transparent);
+  --graph-edge-highlight-color: color-mix(in srgb, var(--red) 70%, transparent);
+  --graph-edge-dim-color: color-mix(in srgb, var(--fg-muted) 12%, transparent);
+  --graph-active-color: var(--red);
+  --graph-label-color: color-mix(in srgb, var(--fg-muted) 75%, transparent);
+  --graph-label-font: var(--main-font-family);
+  --graph-canvas-min-height: 320px;
+  --graph-surface-min-height: 420px;
+  --graph-config-input-width: 80px;
+  --graph-modal-min-width: 280px;
+
+  // Progress
+  --progress-indicator-size: 12px;
+}
+
+@include desktop-below {
+  body {
+    --modal-max-width: 100%;
+    --modal-max-height: 100%;
+    --modal-min-width: 100%;
+    --modal-border: none;
+    --modal-radius: var(--border-radius-md) var(--border-radius-md) 0 0;
+
+    --tab-overview-container-padding: var(--padding-lg);
+    --tab-overview-grid-gap: var(--gap-lg);
+    --tab-overview-grid-columns: 3;
+
+    --notification-container-top: var(--padding-md);
+    --notification-container-right: var(--padding-md);
+    --notification-container-left: var(--padding-md);
+    --notification-max-width: none;
+    --notification-min-width: none;
+    --footer-height: var(--bar-height);
+  }
+}
+
+@include tablet-below {
+  body {
+  }
+}
+
+@include mobile {
+  body {
+    --tab-overview-grid-columns: 2;
+    --footer-padding: 0 var(--padding-lg);
+    --floating-footer-height: calc(
+      var(--footer-height) + var(--footer-wrapper-padding-y) * 2 +
+        var(--device-padding-bottom, 0px) + var(--padding-xl, 0)
+    );
+
+    --nav-item-height: var(--control-height-touch);
+    --search-input-field-height: var(--control-height-touch);
+    --btn-action-sm-size: var(--control-height-md);
+    --btn-action-md-size: var(--control-height-touch);
+    --btn-action-lg-size: var(--control-height-touch);
+    --btn-action-xl-size: var(--control-height-bar);
+    --button-xs-height: var(--control-height-md);
+    --button-sm-height: var(--control-height-touch);
+    --button-md-height: var(--control-height-touch);
+    --button-lg-height: var(--control-height-bar);
+    --menu-item-height-xs: var(--control-height-md);
+    --menu-item-height-sm: var(--control-height-touch);
+    --menu-item-height-md: var(--control-height-touch);
+    --menu-item-height-lg: var(--control-height-touch);
+    --menu-item-height-xl: var(--control-height-bar);
+  }
+}
+
+@include native-mobile {
+  --device-padding-bottom: 14px;
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  body {
+    --glass-bg: var(--bg);
+    --glass-backdrop-filter: none;
+    --glass-box-shadow: var(--shadow-md);
+    --glass-border: var(--border-default);
+    --glass-border-top: var(--border-default);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body {
+    --btn-action-transition: none;
+    --btn-action-hover-scale: 1;
+    --btn-action-active-scale: 1;
+    --btn-action-hover-brightness: 100%;
+    --glass-specular-transition: none;
+  }
+}
+
+body.keyboard-opened {
+  --device-padding-bottom: 0px;
+  --floating-footer-height: 0px;
+}
+
+body.electron.platform-mac {
+  --window-title-bar-height: 32px;
+  --full-height: calc(var(--screen-height, 100vh) - var(--window-title-bar-height));
+  --sidebar-mini-width: 66px;
+}
+
+@include m.light-mode {
+  --segmented-control-bg: rgba(0, 0, 0, 0.06);
+  --segmented-control-border: ;
+  --segmented-control-active-bg: var(--bg);
+  --segmented-control-active-shadow: ;
+}

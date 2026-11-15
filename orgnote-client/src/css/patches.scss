@@ -1,0 +1,39 @@
+html,
+body,
+dialog {
+  overscroll-behavior: none;
+  overflow: hidden;
+  touch-action: none;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100vh;
+  max-height: 100vh;
+  box-sizing: border-box;
+  background: var(--bg);
+
+  @include tablet-below {
+    height: var(--screen-height, 100vh);
+    max-height: var(--screen-height, 100vh);
+  }
+}
+
+dialog {
+  background: var(--bg);
+}
+
+#q-app {
+  height: 100%;
+}
+
+.q-menu {
+  border-radius: var(--card-radius);
+  box-shadow: unset;
+
+  &.context-menu {
+    @include floating-surface;
+  }
+}

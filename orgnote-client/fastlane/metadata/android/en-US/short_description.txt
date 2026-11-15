@@ -1,0 +1,1 @@
+Note taking app based on the popular Emacs package - Org Roam

@@ -1,0 +1,41 @@
+name: CLI publish
+
+on:
+  push:
+    branches: [master, dev]
+    paths:
+      - orgnote-cli/package.json
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cli-publish-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  ci:
+    name: CI
+    uses: ./.github/workflows/ci-cli.yml
+
+  publish:
+    name: Publish to npm
+    needs: [ci]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: npm-publish
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: ./.github/actions/setup-workspace
+      - uses: ./.github/actions/publish-npm-package
+        with:
+          package-dir: orgnote-cli
+          build-script: build

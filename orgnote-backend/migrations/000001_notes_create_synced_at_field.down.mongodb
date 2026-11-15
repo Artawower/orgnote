@@ -1,0 +1,16 @@
+[
+  {
+    "update": "notes",
+    "updates": [
+      {
+        "q": {},
+        "u": {
+          "$unset": {
+            "lastSyncAt": ""
+          }
+        },
+        "multi": true
+      }
+    ]
+  }
+]

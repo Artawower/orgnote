@@ -1,0 +1,27 @@
+name: Backend CD
+
+on:
+  push:
+    branches: [master, dev]
+    paths:
+      - orgnote-backend/**
+      - .github/workflows/backend-cd.yml
+      - .github/workflows/backend-deploy.yml
+
+permissions:
+  contents: read
+
+jobs:
+  ci:
+    name: CI
+    uses: ./.github/workflows/ci-backend.yml
+
+  deploy:
+    name: Deploy
+    needs: [ci]
+    uses: ./.github/workflows/backend-deploy.yml
+    with:
+      environment: ${{ github.ref_name == 'master' && 'deploy' || 'dev' }}
+      debug: ${{ github.ref_name != 'master' }}
+      client_image_tag: ${{ github.ref_name == 'master' && 'latest' || 'dev' }}
+    secrets: inherit

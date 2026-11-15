@@ -1,0 +1,3 @@
+export const RIGHT_SIDEBAR_MIN_WIDTH = 200;
+export const RIGHT_SIDEBAR_MAX_WIDTH = 600;
+export const RIGHT_SIDEBAR_DEFAULT_WIDTH = 300;

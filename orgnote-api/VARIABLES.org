@@ -1,0 +1,153 @@
+:PROPERTIES:
+:ID: css-variables
+:END:
+
+#+TITLE: List of CSS Variables
+#+ID: css-variables
+
+* colors.scss
+** Common
+- =--red=:  var(--default-red);
+- =--orange=:  var(--default-orange);
+- =--green=:  var(--default-green);
+- =--teal=:  var(--default-teal);
+- =--yellow=:  var(--default-yellow);
+- =--blue=:  var(--default-blue);
+- =--dark-blue=:  dark-var(--default-blue);
+- =--magenta=:  var(--default-magenta);
+- =--violet=:  var(--default-violet);
+- =--cyan=:  var(--default-cyan);
+- =--dark-cyan=:  dark-var(--default-cyan);
+- =--white=:  var(--default-white);
+- =--bg=:  var(--default-bg);
+- =--bg-alt=:  var(--default-bg-alt);
+- =--bg-alt2=:  var(--default-bg-alt2);
+- =--bg-active=:  var(--default-bg-active);
+- =--fg=:  var(--default-fg);
+- =--fg-alt=:  var(--default-fg-alt);
+- =--accent=:  var(--violet);
+* scroll.scss
+** Common
+- =--scroll-bar-width=:  4px;
+- =--scroll-bar-color=:  var(--base4);
+* typography.scss
+** Common
+- =--font-size-sm=:  14px;
+- =--font-size-md=:  16px;
+- =--font-size-lg=:  22px;
+- =--main-font-family=:  ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica,
+- =--editor-font-family-main=:  'Menlo', charter, Georgia, Cambria, 'Roboto', Times, serif;
+- =--paragraph-font-family=:  var(--main-font-family);
+- =--headline-font-family=:  'Roboto', '-apple-system', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+- =--code-font-family=:  monospace, monospace;
+- =--description-font-family=:  var(--main-font-family);
+- =--description-font-size=:  16px;
+- =--description-font-style=:  unset;
+- =--description-font-color=:  var(--fg-alt);
+- =--description-padding=:  18px 0px;
+* variables.scss
+** Paddings
+- =--block-padding-sm=:  8px;
+- =--block-padding-md=:  16px;
+- =--block-padding-lg=:  32px;
+- =--padding-sm=:  4px;
+- =--padding-md=:  8px;
+- =--padding-lg=:  16px;
+** Margins
+- =--block-margin-sm=:  8px;
+- =--block-margin-md=:  16px;
+- =--block-margin-lg=:  32px;
+** Font Sizes
+- =--font-size-xs=:  12px;
+- =--font-size-sm=:  14px;
+- =--font-size-md=:  16px;
+- =--font-size-lg=:  20px;
+- =--font-size-xl=:  24px;
+** Font Weights
+- =--font-weight-regular=:  400;
+- =--font-weight-bold=:  500;
+- =--font-weight-extra-bold=:  700;
+** Line Heights
+- =--line-height-sm=:  1.2;
+- =--line-height-md=:  1.5;
+- =--line-height-lg=:  1.8;
+** Colors
+- =--color-primary=:  #3490dc;
+- =--color-secondary=:  #ffed4a;
+- =--color-success=:  #38c172;
+- =--color-error=:  #e3342f;
+- =--color-background=:  #f8f9fa;
+- =--color-text=:  #343a40;
+- =--color-border=:  #ced4da;
+** Border Radius
+- =--border-radius-sm=:  4px;
+- =--border-radius-md=:  8px;
+- =--border-radius-lg=:  16px;
+** Default borders
+- =--border-default=:  1px solid var(--fg-alt);
+** Shadows
+- =--shadow-sm=:  0px 1px 2px rgba(0, 0, 0, 0.1);
+- =--shadow-md=:  0px 4px 6px rgba(0, 0, 0, 0.1);
+- =--shadow-lg=:  0px 10px 15px rgba(0, 0, 0, 0.1);
+** Spacing (Gaps)
+- =--gap-xs=:  4px;
+- =--gap-sm=:  8px;
+- =--gap-md=:  16px;
+- =--gap-lg=:  24px;
+- =--gap-xl=:  32px;
+** Footer
+- =--footer-height=:  60px;
+- =--footer-border-top=:  var(--border-default);
+- =--footer-padding=:  0;
+- =--footer-background=:  var(--bg-alt);
+** Sidebar
+- =--sidebar-width=:  360px;
+- =--sidebar-mini-width=:  72px;
+- =--sidebar-background=:  var(--bg-alt);
+- =--sidebar-border-right=:  var(--border-default);
+- =--sidebar-padding=:  var(--block-padding-md);
+** Button
+- =--btn-action-padding=:  var(--padding-md);
+- =--btn-action-radius=:  var(--border-radius-md);
+- =--btn-action-color=:  var(--fg);
+- =--btn-action-bg=:  var(--bg);
+- =--btn-action-hover-bg=:  var(--fg-alt);
+- =--btn-action-hover-brightness=:  130%;
+- =--btn-action-sm-size=:  24px;
+- =--btn-action-md-size=:  32px;
+- =--btn-action-lg-size=:  48px;
+- =--btn-action-border=:  none;
+- =--btn-action-active-color=:  var(--accent);
+** Platform specific value
+- =--device-padding-bottom=:  0px;
+** Backdrop
+- =--backdrop-bg=:  rgba(0, 0, 0, 0.2);
+** Modal
+- =--modal-backdrop-bg=:  var(--backdrop-bg);
+- =--modal-border=:  var(--border-default);
+- =--modal-border-radius=:  var(--border-radius-md);
+- =--modal-padding=:  var(--block-padding-lg);
+- =--modal-max-width=:  1280px;
+- =--modal-max-height=:  860px;
+** Cards
+- =--card-padding=:  var(--block-padding-md);
+- =--card-border=:  var(--border-default);
+- =--card-border-radius=:  var(--border-radius-md);
+** Menu item
+- =--menu-item-padding=:  8px;
+- =--menu-item-height=:  50px;
+- =--menu-item-max-height=:  200px;
+- =--menu-item-hover-bg=:  var(--bg-active);
+** Icons
+- =--icon-rounded-border-radius=:  var(--border-radius-sm);
+** Device sizes
+- =--tablet=:  #{a.$tablet};
+- =--desktop=:  #{a.$desktop};
+** Toggle button
+- =--toggle-button-scale=:  0.45;
+- =--modal-max-width=:  unset;
+- =--modal-max-height=:  unset;
+- =--modal-padding=:  var(--block-padding-md);
+- =--modal-border=:  none;
+- =--modal-border-radius=:  0;
+- =--device-padding-bottom=:  24px;

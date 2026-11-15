@@ -1,0 +1,4 @@
+services:
+  orgnote-backend-local:
+    env_file:
+      - .env.ios

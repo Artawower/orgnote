@@ -1,0 +1,166 @@
+import { beforeEach, expect, test, vi } from 'vitest';
+import { createPinia, setActivePinia } from 'pinia';
+import { computed, nextTick, ref } from 'vue';
+import { createAtomicFileContent } from '../../../../test/mocks/atomic-file-content';
+
+let fileContent = createAtomicFileContent({});
+const mockReportError = vi.fn();
+const mockGetAll = vi.fn();
+const mockIsIndexing = ref(false);
+const mockGetExtensionConfig = vi.fn(() => ({ value: {} }));
+
+vi.mock('src/boot/api', () => ({
+  api: {
+    core: {
+      useFileContent: () => fileContent,
+      useFileMeta: () => ({ getAll: mockGetAll }),
+      useExtensions: () => ({ getExtensionConfig: mockGetExtensionConfig }),
+      useFileWatcher: () => ({ watch: vi.fn() }),
+      useFileSearch: () => ({ isIndexing: mockIsIndexing }),
+    },
+  },
+}));
+
+vi.mock('src/boot/report', () => ({
+  reporter: { reportError: mockReportError, reportInfo: vi.fn() },
+}));
+
+vi.mock('src/extensions/org-agenda/manifest', () => ({
+  orgAgendaManifest: { name: 'org-agenda' },
+}));
+
+const { useAgendaTasksStore } = await import('./agenda-tasks-store');
+
+beforeEach(() => {
+  setActivePinia(createPinia());
+  vi.clearAllMocks();
+  mockGetAll.mockResolvedValue([]);
+  mockIsIndexing.value = false;
+  fileContent = createAtomicFileContent({});
+});
+
+test('createTaskInFile_missingInbox_createsItThroughAtomicUpdate', async () => {
+  const store = useAgendaTasksStore();
+
+  const ok = await store.createTaskInFile({ title: 'New task' });
+
+  expect(ok).toBe(true);
+  expect(fileContent.update).toHaveBeenCalledOnce();
+  expect(fileContent.readText('/inbox.org')).toContain('* TODO New task');
+});
+
+test('createTaskInFile_returnsFalse_whenUpdateFails', async () => {
+  fileContent.update.mockRejectedValueOnce(new Error('Disk full'));
+  const store = useAgendaTasksStore();
+
+  const ok = await store.createTaskInFile({ title: 'New task' });
+
+  expect(ok).toBe(false);
+  expect(mockReportError).toHaveBeenCalledOnce();
+});
+
+test('ensureLoaded shares one metadata request between concurrent buffers', async () => {
+  let resolveFiles!: (files: []) => void;
+  const filesPromise = new Promise<[]>((resolve) => {
+    resolveFiles = resolve;
+  });
+  mockGetAll.mockReturnValue(filesPromise);
+  const store = useAgendaTasksStore();
+
+  const firstLoad = store.ensureLoaded();
+  const secondLoad = store.ensureLoaded();
+
+  expect(mockGetAll).toHaveBeenCalledOnce();
+  resolveFiles([]);
+  await Promise.all([firstLoad, secondLoad]);
+});
+
+test('Agenda reloads metadata after content indexing completes', async () => {
+  const existingFile = {
+    id: 'existing',
+    filePath: ['agenda', 'existing.org'],
+    title: 'Existing',
+    tasks: [],
+  };
+  const indexedFile = {
+    id: 'orgnote',
+    filePath: ['agenda', 'orgnote.org'],
+    title: 'OrgNote',
+    tasks: [{ id: 'task-1', kind: 'headline-todo', state: 'todo', text: 'Indexed task' }],
+  };
+  mockGetAll
+    .mockResolvedValueOnce([existingFile])
+    .mockResolvedValue([existingFile, indexedFile]);
+  const store = useAgendaTasksStore();
+
+  await store.ensureLoaded();
+  mockIsIndexing.value = true;
+  await nextTick();
+  mockIsIndexing.value = false;
+
+  await vi.waitFor(() => {
+    expect(store.allFiles.map((file) => file.id)).toEqual(['existing', 'orgnote']);
+  });
+});
+
+test('loadFiles makes agenda tasks searchable through the task index', async () => {
+  mockGetAll.mockResolvedValue([
+    {
+      id: 'work',
+      filePath: ['agenda', 'work.org'],
+      title: 'Work',
+      tasks: [
+        {
+          id: 'task-1',
+          kind: 'headline-todo',
+          state: 'todo',
+          text: 'Prepare quarterly review',
+          tags: ['planning'],
+        },
+      ],
+    },
+  ]);
+  const store = useAgendaTasksStore();
+
+  await store.loadFiles();
+
+  expect(store.searchTaskIds('quarter')).toEqual(['/agenda/work.org\u0000task-1']);
+});
+
+test('agenda tasks store shows a predicted task state until the prediction is released', async () => {
+  mockGetAll.mockResolvedValue([
+    {
+      id: 'work',
+      filePath: ['work.org'],
+      tasks: [{ id: 'report', kind: 'headline-todo', state: 'todo', text: 'report', start: 0 }],
+    },
+  ]);
+  const store = useAgendaTasksStore();
+  await store.ensureLoaded();
+
+  const release = store.predictTask('report', { state: 'done' });
+  const predictedState = store.allFiles[0]?.tasks?.[0]?.state;
+  release();
+
+  expect(predictedState).toBe('done');
+  expect(store.allFiles[0]?.tasks?.[0]?.state).toBe('todo');
+});
+
+test('agenda search results follow reloaded task ids', async () => {
+  const createWorkFile = (taskId: string) => ({
+    id: 'work',
+    filePath: ['work.org'],
+    title: 'Work',
+    tasks: [{ id: taskId, kind: 'headline-todo', state: 'todo', text: 'Prepare review' }],
+  });
+  mockGetAll.mockResolvedValueOnce([createWorkFile('before')]).mockResolvedValue([createWorkFile('after')]);
+  const store = useAgendaTasksStore();
+  await store.loadFiles();
+  const matchingTaskIds = computed(() => store.searchTaskIds('review'));
+  expect(matchingTaskIds.value).toEqual(['/work.org\u0000before']);
+
+  await store.loadFiles(true);
+
+  expect(matchingTaskIds.value).toEqual(['/work.org\u0000after']);
+});
+

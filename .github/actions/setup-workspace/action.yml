@@ -1,0 +1,28 @@
+name: Setup workspace
+description: Install Bun workspace dependencies and build orgnote-api for its consumers
+
+inputs:
+  build-api:
+    description: Build orgnote-api after installing dependencies
+    required: false
+    default: 'true'
+
+runs:
+  using: composite
+  steps:
+    - uses: oven-sh/setup-bun@v2
+      with:
+        bun-version-file: package.json
+    - uses: actions/cache@v4
+      with:
+        path: ~/.bun/install/cache
+        key: ${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
+        restore-keys: ${{ runner.os }}-bun-
+    - name: Install dependencies
+      shell: bash
+      run: bun install --frozen-lockfile
+    - name: Build orgnote-api
+      if: inputs.build-api == 'true'
+      shell: bash
+      working-directory: orgnote-api
+      run: bun run build

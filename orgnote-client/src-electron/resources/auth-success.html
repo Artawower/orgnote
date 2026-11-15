@@ -1,0 +1,58 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Authentication</title>
+    <style>
+      body {
+        font-family:
+          system-ui,
+          -apple-system,
+          sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+        background: #9356e8;
+      }
+      .container {
+        text-align: center;
+        padding: 2rem;
+      }
+      h2 {
+        color: #ffffff;
+        margin: 0 0 1rem;
+        font-size: 1.5rem;
+      }
+      p {
+        color: rgba(255, 255, 255, 0.8);
+        margin: 0 0 1.5rem;
+      }
+      .spinner {
+        width: 40px;
+        height: 40px;
+        border: 3px solid rgba(255, 255, 255, 0.3);
+        border-top-color: #ffffff;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin: 0 auto;
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h2>Authentication successful!</h2>
+      <p>This window will close automatically...</p>
+      <div class="spinner"></div>
+    </div>
+    <script>
+      setTimeout(() => window.close(), 3000);
+    </script>
+  </body>
+</html>

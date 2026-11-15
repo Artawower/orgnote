@@ -1,0 +1,5 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Should return unique name with multiple default names 1`] = `"untitled-note.org"`;
+
+exports[`should return unique name 1`] = `"untitled-note.org"`;

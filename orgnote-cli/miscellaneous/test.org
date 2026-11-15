@@ -1,0 +1,10 @@
+:PROPERTIES:
+:ID: unencrypted-note
+:END:
+
+#+TITLE: My unencrypted note
+#+DESCRIPTION: This is description of unencrypted note
+#+FILETAGS: :tag1:tag2:tag3:
+
+
+* Hello world

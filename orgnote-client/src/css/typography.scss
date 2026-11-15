@@ -1,0 +1,158 @@
+@import 'mixins';
+
+@font-face {
+  font-family: 'JetBrains Mono';
+  src: url('./fonts/JetBrainsMono-Regular.woff2') format('woff2');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Menlo';
+  src: url('./fonts/Menlo-Regular.ttf') format('truetype');
+  font-display: swap;
+}
+
+body {
+  --font-size-xs: 10px;
+  --font-size-sm: 14px;
+  --font-size-md: 16px;
+  --font-size-lg: 22px;
+
+  --main-font-family:
+    ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+  --editor-font-family-main: Menlo, charter, Georgia, Cambria, Times, serif;
+  --paragraph-font-family: var(--main-font-family);
+  --headline-font-family: var(--main-font-family);
+  --headline-font-weight: var(--font-weight-bold);
+  --code-font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  --code-font-size: var(--font-size-sm);
+
+  --description-font-family: var(--main-font-family);
+  --description-font-size: 16px;
+  --description-font-style: unset;
+  --description-font-color: var(--fg-muted);
+  --description-padding: 18px 0px;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--headline-font-family);
+}
+
+.color-white {
+  color: white !important;
+}
+
+.color-main {
+  color: var(--fg) !important;
+}
+
+.color-secondary {
+  color: var(--fg-muted);
+}
+
+.color-red {
+  color: var(--red);
+}
+
+.color-green {
+  color: var(--green);
+}
+
+.color-blue {
+  color: var(--blue);
+}
+
+.color-yellow {
+  color: var(--yellow);
+}
+
+.color-magenta {
+  color: var(--magenta);
+}
+
+.color-cyan {
+  color: var(--cyan);
+}
+
+.color-violet {
+  color: var(--violet);
+}
+
+.color-dark-blue {
+  color: var(--dark-blue);
+}
+
+.color-teal {
+  color: var(--teal);
+}
+
+.color-orange {
+  color: var(--orange);
+}
+
+.color-reverse {
+  color: var(--bg);
+}
+
+.color-action {
+  color: var(--font-color-action);
+}
+
+.capitalize::first-letter {
+  text-transform: capitalize;
+}
+
+.line-limit-1 {
+  @include line-limit(1);
+}
+
+.line-limit-2 {
+  @include line-limit(2);
+}
+
+.title {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  line-height: 1;
+}
+
+.description {
+  font-family: var(--description-font-family);
+  font-size: var(--description-font-size);
+  font-style: var(--description-font-style);
+  color: var(--description-font-color);
+  padding: var(--description-padding);
+}
+
+.text-bold {
+  font-weight: var(--font-weight-bold);
+}
+
+.text-medium {
+  font-weight: var(--font-weight-medium);
+}
+
+p,
+ul {
+  font-size: var(--font-size-md);
+  font-family: var(--paragraph-font-family);
+}
+
+p {
+  margin-bottom: var(--margin-md);
+}
+
+.link {
+  color: var(--fg);
+  text-decoration: underline;
+  cursor: pointer;
+
+  &:hover {
+    color: var(--accent);
+  }
+}

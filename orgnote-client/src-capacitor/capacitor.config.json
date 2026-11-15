@@ -1,0 +1,41 @@
+{
+  "appId": "org.note.app",
+  "appName": "OrgNote",
+  "webDir": "www",
+  "ios": {
+    "minVersion": "15.0",
+    "backgroundColor": "#ffffff"
+  },
+  "server": {
+    "androidScheme": "https",
+    "iosScheme": "capacitor",
+    "url": "https://192.168.1.124:3001",
+    "cleartext": true
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 250,
+      "launchAutoHide": true,
+      "launchFadeOutDuration": 250,
+      "backgroundColor": "#9356E8",
+      "androidSplashResourceName": "splash",
+      "androidScaleType": "CENTER_CROP",
+      "showSpinner": true,
+      "androidSpinnerStyle": "large",
+      "iosSpinnerStyle": "small",
+      "spinnerColor": "#999999",
+      "splashFullScreen": true,
+      "splashImmersive": true,
+      "layoutName": "launch_screen",
+      "useDialog": false
+    },
+    "StatusBar": {
+      "backgroundColor": "#9356E8",
+      "style": "DARK"
+    },
+    "Keyboard": {
+      "resize": "none",
+      "resizeOnFullScreen": true
+    }
+  }
+}

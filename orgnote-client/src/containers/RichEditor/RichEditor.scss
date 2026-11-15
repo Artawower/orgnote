@@ -1,0 +1,213 @@
+@import '../../css/prose-editor';
+
+@mixin cm-hidden {
+  display: none;
+}
+
+.editor-wrapper {
+  @include fit;
+
+  .rich-editor {
+    height: 100%;
+    margin: auto;
+  }
+
+  .cm-editor {
+    @include prose-editor-base;
+
+    .cm-selectionMatch {
+      background-color: color-mix(in srgb, var(--editor-selection-bg) 40%, transparent);
+    }
+
+    .cm-content ::selection {
+      background-color: var(--editor-selection-bg) !important;
+      color: var(--editor-selection-fg) !important;
+    }
+
+    .cm-line::selection,
+    .cm-line *::selection {
+      background-color: var(--editor-selection-bg) !important;
+      color: var(--editor-selection-fg) !important;
+    }
+
+    .cm-line,
+    .org-text,
+    .header-text {
+      letter-spacing: 0.5px;
+      white-space: pre-wrap;
+      font-size: var(--paragraph-font-size);
+      font-family: var(--main-font-family);
+      color: var(--fg);
+      -webkit-font-smoothing: auto;
+    }
+
+    .cm-line {
+      line-height: var(--editor-line-height);
+
+      &:not(.org-headline-line),
+      &:not(.org-keyword-title-line) {
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+
+      &.org-src-block-line {
+        line-height: inherit;
+      }
+
+      &.org-description-line {
+        color: var(--fg-muted);
+        font-size: var(--font-size-md);
+      }
+
+      > .org-quote-block:not(.org-keyword):first-child {
+        padding-left: var(--padding-lg);
+        position: relative;
+      }
+
+      .org-embedded-checkbox {
+        display: inline-flex;
+        vertical-align: text-top;
+      }
+
+      &.org-headline-line .org-embedded-checkbox {
+        vertical-align: middle;
+      }
+    }
+
+    .cm-activeLine {
+      .org-operator,
+      .org-link-url {
+        display: inline !important;
+      }
+    }
+
+    [class^='org-embedded-'] {
+      max-width: 100%;
+      overflow-x: auto;
+      box-sizing: border-box;
+    }
+
+    [class^='org-embedded-'].org-embedded-multiline {
+      overflow: visible;
+    }
+
+    .cm-tag-name,
+    .cm-angle-bracket {
+      color: var(--yellow);
+    }
+
+    .cm-string,
+    .cm-regexp {
+      color: var(--green);
+    }
+
+    .cm-definition-keyword,
+    .cm-keyword,
+    .cm-control-keyword,
+    .cm-type-name,
+    .cm-type-definition,
+    .cm-property-definition,
+    .cm-private-property-definition {
+      color: var(--violet);
+    }
+
+    .cm-variable-name,
+    .cm-bool {
+      color: var(--fg);
+    }
+
+    .cm-property-name,
+    .cm-name {
+      color: var(--blue);
+    }
+
+    .cm-attribute-value {
+      color: var(--green);
+    }
+  }
+
+  &.hide-special-symbols .cm-editor {
+    @for $i from 1 through 12 {
+      .cm-line.org-headline-#{$i}:not(.cm-activeLine) {
+        .org-headline-#{$i}.org-operator {
+          @include cm-hidden;
+        }
+      }
+
+      .org-headline-#{$i}.org-operator {
+        color: var(--fg-muted);
+      }
+    }
+
+    .org-keyword-description-line,
+    .org-keyword-title-line,
+    .org-keyword-filetags-line {
+      &:not(.cm-activeLine) {
+        .org-keyword:first-of-type {
+          @include cm-hidden;
+        }
+      }
+    }
+  }
+
+  &.show-property-drawer .cm-editor {
+    .org-embedded-propertydrawer {
+      display: block;
+    }
+  }
+
+  &.readonly .cm-editor {
+    .cm-cursor,
+    .cm-dropCursor {
+      display: none !important;
+      border-color: transparent !important;
+    }
+
+    .org-property-drawer,
+    .org-operator,
+    .org-src-block-line {
+      .org-keyword {
+        display: none !important;
+      }
+    }
+
+    .org-keyword-line {
+      .org-keyword:first-of-type {
+        display: none !important;
+      }
+    }
+
+    .org-widget-edit-badge {
+      display: none !important;
+    }
+  }
+
+
+  .cm-foldPlaceholder {
+    padding-left: var(--padding-sm);
+    border: none;
+    font-weight: inherit;
+    background: transparent;
+    color: var(--fg-muted);
+    font-size: inherit;
+    line-height: inherit;
+    vertical-align: baseline;
+  }
+}
+
+@include mobile {
+  .editor-wrapper {
+    .cm-editor {
+      background: transparent !important;
+
+      .cm-gutters {
+        left: calc(-1 * var(--padding-lg)) !important;
+        position: absolute !important;
+      }
+
+      .cm-scroller {
+        outline: none !important;
+      }
+    }
+  }
+}

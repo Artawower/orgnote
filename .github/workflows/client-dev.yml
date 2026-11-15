@@ -1,0 +1,41 @@
+name: Client dev
+
+on:
+  push:
+    branches: [dev]
+    paths:
+      - orgnote-client/package.json
+
+permissions:
+  contents: write
+
+jobs:
+  ci:
+    name: CI
+    uses: ./.github/workflows/ci-client.yml
+
+  deploy:
+    name: Docker build and deploy
+    needs: [ci]
+    uses: ./.github/workflows/client-deploy.yml
+    with:
+      environment: dev
+      image_tag: dev
+    secrets: inherit
+
+  release:
+    name: Build and publish dev prerelease
+    needs: [ci]
+    uses: ./.github/workflows/client-release.yml
+    with:
+      ci_checks_passed: true
+      environment: dev
+      tag_prefix: v
+      version_suffix: -dev
+      release_name_prefix: 'Dev Build v'
+      prerelease: true
+      update_channel: dev
+      enable_devtools: true
+      cleanup_old_dev_releases: true
+      skip_existing: false
+    secrets: inherit

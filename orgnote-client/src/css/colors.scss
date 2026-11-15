@@ -1,0 +1,121 @@
+@import 'quasar/src/css/variables.sass';
+
+:root {
+  --default-red: #f65866;
+  --default-orange: #dd9046;
+  --default-green: #8bcd5b;
+  --default-teal: #4db5bd;
+  --default-yellow: #ecbe7b;
+  --default-blue: #41a7fc;
+  --default-dark-blue: #1c4a6e;
+  --default-magenta: #ca9ee6;
+  --default-violet: #9356e8;
+  --default-cyan: #34bfd0;
+  --default-dark-cyan: #5699af;
+  --default-white: #f8f9fc;
+  --default-black: #1a1a1a;
+}
+
+:root {
+  // Colors
+  --red: var(--default-red);
+  --orange: var(--default-orange);
+  --green: var(--default-green);
+  --teal: var(--default-teal);
+  --yellow: var(--default-yellow);
+  --blue: var(--default-blue);
+  --dark-blue: dark-var(--default-blue);
+  --magenta: var(--default-magenta);
+  --violet: var(--default-violet);
+  --cyan: var(--default-cyan);
+  --dark-cyan: dark-var(--default-cyan);
+  --white: var(--default-white);
+  --black: var(--default-black);
+
+  --priority-a: var(--red, var(--q-negative));
+  --priority-b: var(--orange);
+  --priority-c: var(--yellow);
+  --priority-d: var(--blue);
+  --priority-e: var(--green);
+}
+
+@include dark-mode {
+  --default-bg: var(--q-dark);
+  --default-bg-secondary: #22272e;
+  --default-bg-elevated: var(--q-dark);
+  --default-bg-muted: color-mix(in srgb, #22272e, var(--q-dark) 35%);
+  --default-bg-hover: rgba(99, 110, 123, 0.4);
+  --default-fg: #adbac7;
+  --default-fg-secondary: #adbac7;
+  --default-fg-muted: #{$grey-6};
+  --default-bg-active: #252123;
+  --default-fg-active: #fafbf9;
+
+  --violet: #b98df6;
+
+  --glass-bg: rgba(255, 255, 255, 0.08);
+  --glass-backdrop-filter: blur(20px) saturate(180%);
+  --glass-border-color: rgba(255, 255, 255, 0.1);
+  --glass-border-top-color: rgba(255, 255, 255, 0.2);
+  --glass-box-shadow-outer: 0 2px 4px rgba(0, 0, 0, 0.2);
+  --glass-box-shadow-inset: inset 0 0.5px 0 0 rgba(255, 255, 255, 0.12);
+  --glass-box-shadow: var(--glass-box-shadow-outer), var(--glass-box-shadow-inset);
+
+  // Tab overview for dark theme
+  --tab-preview-overlay-bg: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.6),
+    rgba(255, 255, 255, 0.3),
+    rgba(255, 255, 255, 0)
+  );
+  --tab-preview-text-shadow: 0 1px 2px rgba(255, 255, 255, 0.3);
+
+  --uploader-overlay-bg: rgba(0, 0, 0, 0.7);
+}
+
+@include light-mode {
+  --default-bg: #ffffff;
+  --default-bg-secondary: #f6f6f6;
+  --default-bg-muted: #fafbfc;
+  --default-bg-hover: #e8e8e8;
+  --default-bg-elevated: #fafbfc;
+  --default-fg: #34495e;
+  --default-fg-secondary: #34495e;
+  --default-fg-muted: #{$grey-5};
+  --default-bg-active: #34495e;
+  --default-fg-active: #fafbf9;
+
+  --glass-bg: rgba(255, 255, 255, 0.28);
+  --glass-backdrop-filter: blur(5px) saturate(150%);
+  --glass-border-color: rgba(255, 255, 255, 0.3);
+  --glass-border-top-color: rgba(255, 255, 255, 0.6);
+  --glass-box-shadow-outer: 0 2px 3px rgba(0, 0, 0, 0.09), 0 0 5px rgba(0, 0, 0, 0.04);
+  --glass-box-shadow-inset:
+    inset 1px 1px 1px 0 rgba(255, 255, 255, 0.5), inset -1px -1px 1px 0 rgba(255, 255, 255, 0.4);
+  --glass-box-shadow: var(--glass-box-shadow-outer), var(--glass-box-shadow-inset);
+
+  // Tab overview for light theme
+  --tab-preview-overlay-bg: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.6),
+    rgba(0, 0, 0, 0.3),
+    rgba(0, 0, 0, 0)
+  );
+  --tab-preview-text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+
+  --uploader-overlay-bg: rgba(255, 255, 255, 0.7);
+}
+
+body {
+  --bg: var(--default-bg);
+  --bg-secondary: var(--default-bg-secondary);
+  --bg-elevated: var(--default-bg-elevated);
+  --bg-muted: var(--default-bg-muted);
+  --bg-hover: var(--default-bg-hover);
+  --fg: var(--default-fg);
+  --fg-muted: var(--default-fg-muted);
+  --accent: var(--violet);
+
+  --bg-active: var(--default-bg-active);
+  --fg-active: var(--default-fg-active);
+}

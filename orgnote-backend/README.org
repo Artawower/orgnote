@@ -1,0 +1,118 @@
+:PROPERTIES:
+:ID: orgnote-backend
+:END:
+
+#+html: <div align='center'>
+#+html: <img src='./images/image.png' width='256px' height='256px'>
+#+html: </div>
+#+html: &nbsp;
+
+#+TITLE: ✨ Org Note backend.
+
+#+html: <div align='center'>
+#+html: <span class='badge-buymeacoffee'>
+#+html: <a href='https://www.paypal.me/darkawower' title='Paypal' target='_blank'><img src='https://img.shields.io/badge/paypal-donate-blue.svg' alt='Buy Me A Coffee donate button' /></a>
+#+html: </span>
+#+html: <span class='badge-patreon'>
+#+html: <a href='https://patreon.com/artawower' target='_blank' title='Donate to this project using Patreon'><img src='https://img.shields.io/badge/patreon-donate-orange.svg' alt='Patreon donate button' /></a>
+#+html: </span>
+#+html: </div>
+#+html: <div align='center'>
+#+html: <a href="https://twitter.com/org_note" target="_blank"><img src="https://img.shields.io/twitter/follow/org_note" alt="Twitter link" /></a>
+#+html: <a href="https://emacs.ch/@orgnote" target="_blank"><img alt="Mastodon Follow" src="https://img.shields.io/mastodon/follow/113090697216193319?domain=https%3A%2F%2Ffosstodon.org&style=social"></a>
+#+html: <a href="https://discord.com/invite/SFpUb2vSDm" target="_blank"><img src="https://img.shields.io/discord/1161751315324604417" alt="Discord"></a>
+#+html: <a href="https://www.youtube.com/@OrgNote" target="_blank"><img alt="YouTube Channel Views" src="https://img.shields.io/youtube/channel/views/UCN14DUE5umdrlEm7odW3gOw"></a>
+#+html: </div>
+
+
+
+* Introduction
+This project is part of [[https://github.com/Artawower/orgnote][Org Note project]]. It is a backend part based on the [[https://gofiber.io/][GO fiber]] framework.
+* Connected links
+- [[http://65.108.90.95/api/v1/swagger/index.html][Swagger schema]] 
+- [[https://github.com/Artawower/orgnote][Main repo]]
+- [[https://github.com/Artawower/orgnote/tree/master/orgnote-client][Org Note frontend]] 
+- [[https://en.wikipedia.org/wiki/Zettelkasten][About Zettelkasten approach]] 
+- [[https://gofiber.io/][GO fiber framework]]
+- [[https://github.com/swaggo/swag][GO swagger library]] 
+
+*  Install
+** Environment variables
+| Variable                | Description                                       | Example                     |
+|-------------------------+---------------------------------------------------+-----------------------------|
+| ~APP_ADDRESS~           | Application bind address                          | =127.0.0.1:3000=            |
+| ~DEBUG~                 | Enable debug mode                                 | =true=                      |
+| ~BACKEND_DOMAIN~        | Backend domain                                    | =localhost=                 |
+| ~BACKEND_SCHEMA~        | Backend schema                                    | =http= / =https=            |
+| ~BACKEND_PORT~          | Backend port                                      | =3000=                      |
+| ~CLIENT_ADDRESS~        | Client address for OAuth redirect                 | =http://localhost:9000=     |
+| ~MONGO_URL~             | MongoDB host                                      | =localhost=                 |
+| ~MONGO_PORT~            | MongoDB port                                      | =27017=                     |
+| ~MONGO_USERNAME~        | MongoDB username                                  | =orgnote=                   |
+| ~MONGO_PASSWORD~        | MongoDB password                                  | =orgnote_secret=            |
+| ~GITHUB_ID~             | GitHub OAuth App ID                               |                             |
+| ~GITHUB_SECRET~         | GitHub OAuth App Secret                           |                             |
+| ~S3_ENDPOINT~           | S3-compatible storage endpoint                    | =localhost:9000=            |
+| ~S3_ACCESS_KEY~         | S3 access key                                     | =orgnote=                   |
+| ~S3_SECRET_KEY~         | S3 secret key                                     | =orgnote_secret=            |
+| ~S3_BUCKET~             | S3 bucket name                                    | =orgnote-files=             |
+| ~S3_USE_SSL~            | Use SSL for S3 connection                         | =false=                     |
+| ~MAXIMUM_FILE_SIZE~     | Maximum upload file size (bytes)                  | =52428800=                  |
+| ~ACCESS_CHECK_URL~      | Subscription check URL (empty for self-hosted)    |                             |
+| ~ACCESS_CHECK_TOKEN~    | Auth token for subscription check                 |                             |
+| ~SELF_HOSTED_SPACE_LIMIT_BYTES~ | Default sync quota when subscription check is disabled | =104857600=                 |
+| ~ACME_EMAIL~            | Email for Let's Encrypt SSL certificates          | =your-email@example.com=    |
+
+** Local development
+*** Prerequisites
+- Docker & Docker Compose
+- [[https://github.com/casey/just][just]] command runner
+- Go 1.21+
+
+*** Setup
+#+BEGIN_SRC bash
+cp .env.example .env
+#+END_SRC
+
+*** Run
+#+BEGIN_SRC bash
+just local
+#+END_SRC
+
+*** Available commands
+| Command            | Description                    |
+|--------------------+--------------------------------|
+| =just local=       | Start local environment        |
+| =just local-build= | Rebuild and start              |
+| =just local-down=  | Stop local environment         |
+| =just logs-local=  | Show backend logs              |
+| =just test=        | Run tests                      |
+| =just prune=       | Docker cleanup                 |
+
+** External API schema
+[[https://github.com/deepmap/oapi-codegen][Install open api codegen and execute script]]
+#+BEGIN_SRC bash
+SUBSCRIPTION_SCHEMA_URL=http://localhost:8000/api/schema/ ./generate-subscription-api.sh
+SUBSCRIPTION_SCHEMA_URL=http://localhost:8000/api/schema/ just check-subscription-api
+#+END_SRC
+
+Docker builds also need =SUBSCRIPTION_SCHEMA_URL= because the generated subscription client is refreshed during image build. The value is a build argument, not only a container runtime variable, so =env_file= alone is not enough unless Docker Compose receives it through =--env-file=.
+
+For GitHub deployments, set the environment variable =SUBSCRIPTION_SCHEMA_URL= in the target environment variables. It should point to a reachable subscription schema endpoint, for example:
+
+#+BEGIN_SRC text
+http://<subscription-service-host>:8000/api/schema/
+#+END_SRC
+
+The compose files fail fast when the variable is missing to avoid falling back to =localhost= inside the Docker build container.
+
+
+* 🍩 Contribute guide
+Any contribution is very much appreciated! Please read the [[https://github.com/Artawower/orgnote/wiki/Contribution-guide][style guide]] before contributing to avoid misunderstandings!
+I would also appreciate it if you would consider becoming my [[https://www.patreon.com/artawower][patron]]
+
+* Development
+** Migrations
+=migrate create -ext mongodb -dir ./migrations -seq change_encrypted_field_name=
+[[https://github.com/golang-migrate/migrate/blob/master/GETTING_STARTED.md][See more details here]]
+

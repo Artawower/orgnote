@@ -1,0 +1,113 @@
+:PROPERTIES:
+:ID: about
+:END:
+#+TITLE: About
+#+BEGIN_HTML
+<div class="text-center">
+    <img src="/icons/modern-unicorn-round.png" alt="unicorn icon" width="120px" height="120px" style="margin: auto;" />
+</div>
+
+<div style="display: flex; flex-direction: row; gap: 8px; align-items: center; justify-content: center;">
+  <a href="https://github.com/Artawower/orgnote" target="_blank" style="line-height: 0;">
+    <img class="block" alt="license" src="https://img.shields.io/github/license/artawower/orgnote" />
+  </a>
+  <a href="https://github.com/Artawower/orgnote" target="_blank" style="line-height: 0;">
+    <img class="block" alt="stars" src="https://badgen.net/github/stars/artawower/orgnote" />
+  </a>
+  <a href="https://www.paypal.me/darkawower" title="Paypal" target="_blank" style="line-height: 0;">
+    <img class="block" src="https://img.shields.io/badge/paypal-donate-blue.svg" alt="Donate via PayPal" />
+  </a>
+  <a href="https://patreon.com/artawower" target="_blank" title="Donate to this project using Patreon" style="line-height: 0;">
+    <img class="block" src="https://img.shields.io/badge/patreon-donate-orange.svg" alt="Donate via Patreon" />
+  </a>
+</div>
+#+END_HTML
+
+* [#A] OrgNote
+[[https://github.com/Artawower/orgnote][OrgNote]] is a knowledge management system built around [[https://www.orgroam.com/][Org-roam]], a GNU Emacs package for organizing and linking notes.
+/This is a beta version: it may contain bugs and could be unstable. Please report any issues you encounter./
+
+* Related links
+- [[./installation.org][Installation guide]]
+- [[./write-extensions.org][How to write extensions]]
+- [[./faq.org][FAQ]]
+- [[https://github.com/Artawower/orgnote/tree/master/orgnote-backend][OrgNote backend]]
+- [[https://github.com/Artawower/orgnote/tree/master/orgnote-client][OrgNote client]]
+- [[https://github.com/Artawower/orgnote/tree/master/orgnote-cli][CLI tool for note synchronization]]
+- [[https://github.com/Artawower/orgnote.el][Emacs package for note publishing]]
+- [[https://github.com/Artawower/org-mode-ast][TypeScript abstract syntax tree for org-mode]]
+- [[https://en.wikipedia.org/wiki/Zettelkasten][About the Zettelkasten method]]
+- [[https://discord.gg/SFpUb2vSDm][Discord server]]
+
+* [#B] Manifesto
+The project's goal is to provide a full-featured Org-roam experience across desktop, mobile, and web (+PWA).
+
+- The project is free for everyone /except for some premium features that require server resources/.
+- This is an open-source project: anyone can contribute and inspect the codebase.
+- The project is community-oriented. If you have ideas, please share them.
+  /Patrons can vote on feature priorities./
+- Premium features are free for open-source developers.
+  /Distribution is limited, but I'll do my best to accommodate./
+- No personal data collection and no trackers.
+
+* [#C] Limitations
+*Back up your data regularly.*
+
+- There is currently no support for [[https://en.wikipedia.org/wiki/Conflict-free_replicated_data_type][CRDT]]. This means that synchronization via =orgnote-cli= may result in data conflicts.
+  (Automatic backups are created if you use [[https://github.com/Artawower/orgnote.el][orgnote.el]] in Emacs.)
+- Database migrations are not yet implemented. I'm focusing on core features first.
+  This means that after updates, your data may not be automatically migrated.
+- The org-mode parser is custom-built and doesn't support all org-mode constructs yet.
+  If you encounter parsing bugs, please report them: [[https://github.com/Artawower/orgnote/issues][orgnote/issues]].
+- The UI design is evolving. Contributions from designers are welcome!
+- The iOS version is not published yet. It will be released when we raise enough for Apple Developer Program fees via [[https://www.patreon.com/artawower][Patreon]] (~$120/year).
+  /You can use the *PWA* version on Apple devices right now./
+
+* [#D] Plans
+I have many ideas for integrating org-mode into a mobile app. Some features require significant time and resources; others are part of a longer-term vision.
+
+The ideal app should include:
+
+- Programmable configuration
+- Linking and executing =src= code blocks
+- Extension support
+- CRDT support for seamless synchronization
+- Full support for org-mode constructs
+- Mobile notifications for your agenda
+- Integration with third-party tools
+
+* [#E] Contribution
+If you would like to help the project, you can:
+
+- Help with debugging and feature development (please read the contribution guide first)
+- Star the GitHub repo: [[https://github.com/Artawower/orgnote][orgnote]]
+- Help with alpha testing
+- Consider becoming a [[https://www.patreon.com/artawower][Patreon supporter]]
+- Share the project with your friends (it’s still early!)
+
+* Many thanks to Patreon supporters
+- Semyon Sinchenko
+- Jordan Moore
+- Antonio
+- Jess W
+- Hao Yan
+- TC
+- William Moore
+- Yoshi
+- Jaynam Shah
+- Gaelan
+- Array
+- Luis Eduardo
+- Persephone
+- Zoe
+- Tony Sidaway
+- Somebody
+
+* Acknowledgements
+I also want to thank the following projects:
+
+- [[https://www.gnu.org/software/emacs/][Emacs]]
+- [[https://www.orgroam.com/][Org-roam]]
+- [[https://codemirror.net/][CodeMirror]]
+- [[https://quasar.dev/][Quasar]]
+- [[https://capacitorjs.com/][Capacitor]]

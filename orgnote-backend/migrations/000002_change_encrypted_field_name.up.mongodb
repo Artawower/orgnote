@@ -1,0 +1,15 @@
+[
+  {
+    "update": "notes",
+    "updates": [
+      {
+        "q": {},
+        "u": {
+          "$rename": {
+            "encrypted": "encryptionType"
+          }
+        }
+      }
+    ]
+  }
+]

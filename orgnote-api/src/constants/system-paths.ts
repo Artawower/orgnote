@@ -1,0 +1,2 @@
+export const ORGNOTE_SYSTEM_ROOT_PATH = '.orgnote';
+export const ORGNOTE_EXTENSION_RUNTIME_ROOT_PATH = `${ORGNOTE_SYSTEM_ROOT_PATH}/extensions`;
