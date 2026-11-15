@@ -3,7 +3,7 @@ import { expect, test, vi } from 'vitest';
 import { updateFileText } from '../update-file-text';
 
 const createFileContent = (initialText: string) => {
-  let stored = new TextEncoder().encode(initialText);
+  let stored: Uint8Array = new TextEncoder().encode(initialText);
   const write = vi.fn();
   const fileContent: FileContent = {
     read: vi.fn(async () => stored),
