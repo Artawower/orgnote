@@ -6,7 +6,6 @@ import android.util.Log;
 import androidx.documentfile.provider.DocumentFile;
 import com.getcapacitor.JSArray;
 import java.io.*;
-import java.nio.charset.StandardCharsets;
 
 /**
  * Handles file operations for the Storage Access Framework. Responsible for reading, writing,
@@ -17,8 +16,8 @@ public class SafFileManager {
   private static final String WRITE_TRUNCATE_MODE = "wt";
   private final SafUriResolver uriResolver = new SafUriResolver();
 
-  /** Writes data to a file within the specified directory. Creates the file if it doesn't exist. */
-  public void writeFile(Context context, DocumentFile dir, String fileName, String data)
+  /** Writes bytes to a file within the specified directory. Creates the file if it doesn't exist. */
+  public void writeFile(Context context, DocumentFile dir, String fileName, byte[] data)
       throws IOException {
     DocumentFile file = dir.findFile(fileName);
     if (file == null) {
@@ -27,12 +26,12 @@ public class SafFileManager {
 
     try (OutputStream os =
         context.getContentResolver().openOutputStream(file.getUri(), WRITE_TRUNCATE_MODE)) {
-      os.write(data.getBytes(StandardCharsets.UTF_8));
+      os.write(data);
     }
   }
 
-  /** Reads the content of a file as a string. */
-  public String readFile(Context context, Uri fileUri) throws IOException {
+  /** Reads the raw bytes of a file. */
+  public byte[] readFile(Context context, Uri fileUri) throws IOException {
     try (InputStream in = context.getContentResolver().openInputStream(fileUri)) {
       ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 
@@ -42,7 +41,7 @@ public class SafFileManager {
         buffer.write(data, 0, nRead);
       }
       buffer.flush();
-      return buffer.toString(StandardCharsets.UTF_8.name());
+      return buffer.toByteArray();
     }
   }
 

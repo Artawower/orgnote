@@ -1,7 +1,18 @@
+export type SafEncoding = 'utf8' | 'base64';
+
 export interface SafPlugin {
   openDirectoryPicker(): Promise<{ uri: string }>;
-  readFile(options: { uri: string; path: string[] }): Promise<{ data: string }>;
-  writeFile(options: { uri: string; path: string[]; data: string }): Promise<void>;
+  readFile(options: {
+    uri: string;
+    path: string[];
+    encoding?: SafEncoding;
+  }): Promise<{ data: string }>;
+  writeFile(options: {
+    uri: string;
+    path: string[];
+    data: string;
+    encoding?: SafEncoding;
+  }): Promise<void>;
   delete(options: { uri: string; path: string[] }): Promise<void>;
   rename(options: { uri: string; oldPath: string[]; newPath: string[] }): Promise<void>;
   fileInfo(options: {

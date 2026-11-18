@@ -1,6 +1,6 @@
 import { splitPath, type DiskFile, type FileSystem, type FileSystemParams } from 'orgnote-api';
-import { getAndroidSaf, type SafPlugin } from 'src/plugins/saf.plugin';
-import { isPresent } from 'orgnote-api/utils';
+import { getAndroidSaf, type SafEncoding, type SafPlugin } from 'src/plugins/saf.plugin';
+import { base64ToUint8Array, isPresent, uint8ArrayToBase64 } from 'orgnote-api/utils';
 import { to } from 'orgnote-api/utils';
 
 export const ANDROID_SAF_FS_NAME = 'SAF android file system';
@@ -72,16 +72,16 @@ export const useAndroidFs = (): FileSystem => {
     encoding: T = 'utf8' as T,
   ) => {
     const safInstance = await ensureSaf();
+    const isBinary = encoding === 'binary';
     const file = await to(safInstance.readFile.bind(safInstance))({
       uri: rootUri,
       path: splitPath(path),
+      encoding: isBinary ? 'base64' : 'utf8',
     });
     if (file.isErr()) {
       throw file.error;
     }
-    return (
-      encoding === 'utf8' ? file.value.data : new TextEncoder().encode(file.value.data)
-    ) as never;
+    return (isBinary ? base64ToUint8Array(file.value.data) : file.value.data) as never;
   };
 
   const appendParentPath = (
@@ -108,11 +108,19 @@ export const useAndroidFs = (): FileSystem => {
     }
   };
 
+  const toSafWriteData = (content: string | Uint8Array): { data: string; encoding: SafEncoding } =>
+    typeof content === 'string'
+      ? { data: content, encoding: 'utf8' }
+      : { data: uint8ArrayToBase64(content), encoding: 'base64' };
+
   const writeFile: FileSystem['writeFile'] = async (path, content) => {
     const safInstance = await ensureSaf();
-    const data = typeof content === 'string' ? content : new TextDecoder().decode(content);
     await ensureParentDirectories(path);
-    await safInstance.writeFile({ uri: rootUri, path: splitPath(path), data });
+    await safInstance.writeFile({
+      uri: rootUri,
+      path: splitPath(path),
+      ...toSafWriteData(content),
+    });
   };
 
   const readDir: FileSystem['readDir'] = async (path) => {

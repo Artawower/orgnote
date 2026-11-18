@@ -56,7 +56,7 @@ public class SafPlugin extends Plugin {
         () -> {
           String rootUri = call.getString("uri");
           String[] fullPath = SafPluginUtils.extractStringArray(call.getArray("path"));
-          String data = call.getString("data");
+          byte[] data = SafFileData.decode(call.getString("data"), call.getString("encoding"));
 
           if (fullPath.length == 0) {
             throw new IllegalArgumentException("Path must contain at least one segment.");
@@ -90,10 +90,10 @@ public class SafPlugin extends Plugin {
                 "File not found or not a file: " + String.join("/", path));
           }
 
-          String result = fileManager.readFile(getActivity(), file.getUri());
+          byte[] content = fileManager.readFile(getActivity(), file.getUri());
 
           JSObject res = new JSObject();
-          res.put("data", result);
+          res.put("data", SafFileData.encode(content, call.getString("encoding")));
           call.resolve(res);
         });
   }
